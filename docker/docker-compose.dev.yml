@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: techshop-postgres
+    environment:
+      POSTGRES_DB: techshop
+      POSTGRES_USER: techshop
+      POSTGRES_PASSWORD: techshop_dev_2026
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5432:5432"
+    volumes:
+      - techshop_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: techshop-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  techshop_postgres_data:
