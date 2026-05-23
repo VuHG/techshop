@@ -1,0 +1,7 @@
+app:
+  mail:
+    dev-mode: true   # OTP sẽ được log ra console, không cần SendGrid khi dev
+
+spring:
+  jpa:
+    show-sql: true
