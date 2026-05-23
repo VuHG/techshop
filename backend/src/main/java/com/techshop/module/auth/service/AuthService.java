@@ -131,6 +131,7 @@ public class AuthService {
 
     // ===================== ĐĂNG NHẬP =====================
 
+    @Transactional(readOnly = true)
     public AuthResponse dangNhap(DangNhapRequest req) {
         NguoiDung nd = nguoiDungRepository.findBySoDienThoai(req.getSoDienThoai())
                 .orElseThrow(() -> new AppException(ErrorCode.AUTH_002));
@@ -200,6 +201,7 @@ public class AuthService {
 
     // ===================== REFRESH TOKEN =====================
 
+    @Transactional(readOnly = true)
     public AuthResponse refreshToken(RefreshTokenRequest req) {
         String token = req.getRefreshToken();
 
