@@ -19,7 +19,8 @@ public enum ErrorCode {
     // Product
     PROD_001("PROD_001", "Sản phẩm không tồn tại", HttpStatus.NOT_FOUND),
     PROD_002("PROD_002", "Biến thể sản phẩm không tồn tại", HttpStatus.NOT_FOUND),
-    PROD_003("PROD_003", "Sản phẩm đã ngừng kinh doanh", HttpStatus.BAD_REQUEST),
+    PROD_003("PROD_003", "Không thể so sánh sản phẩm khác phân loại", HttpStatus.BAD_REQUEST),
+    PROD_004("PROD_004", "Biến thể đã hết hàng", HttpStatus.BAD_REQUEST),
 
     // Cart
     CART_001("CART_001", "Sản phẩm không đủ số lượng trong kho", HttpStatus.BAD_REQUEST),
