@@ -42,9 +42,13 @@ public class SanPhamService {
             String sortBy, int page, int size) {
 
         Pageable pageable = buildPageable(sortBy, page, size);
-        String searchTrim = (search != null && !search.isBlank()) ? search.trim() : null;
+        // Pattern đã lowercase + bọc %...% để khớp với LIKE :search trong JPQL.
+        // Không nhúng param vào CONCAT/LOWER vì param null sẽ bị PostgreSQL suy ra kiểu bytea → lỗi lower(bytea).
+        String searchPattern = (search != null && !search.isBlank())
+                ? "%" + search.trim().toLowerCase() + "%"
+                : null;
 
-        Page<SanPham> result = sanPhamRepo.findWithFilters(phanLoaiId, searchTrim, minPrice, maxPrice, pageable);
+        Page<SanPham> result = sanPhamRepo.findWithFilters(phanLoaiId, searchPattern, minPrice, maxPrice, pageable);
         List<SanPhamCardResponse> items = result.getContent().stream()
                 .map(this::toCardResponse)
                 .toList();

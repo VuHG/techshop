@@ -19,7 +19,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
             SELECT DISTINCT s FROM SanPham s
             WHERE s.trangThai = 'CON_HANG'
             AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
-            AND (:search IS NULL OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
+            AND (:search IS NULL OR LOWER(s.tenSanPham) LIKE :search)
             AND (:minPrice IS NULL OR EXISTS (
                 SELECT bt FROM BienTheSanPham bt WHERE bt.sanPham = s
                 AND bt.trangThai = 'CON_HANG'
