@@ -21,6 +21,16 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
     @Query("UPDATE SanPham s SET s.soLuotBan = s.soLuotBan + :soLuong WHERE s.id = :id")
     int tangSoLuotBan(@Param("id") Long id, @Param("soLuong") int soLuong);
 
+    // Cập nhật incremental điểm đánh giá trung bình + tăng số lượt. RHS dùng giá trị cũ của hàng.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE SanPham s
+            SET s.diemDanhGiaTb = (COALESCE(s.diemDanhGiaTb, 0) * s.soLuotDanhGia + :diem) / (s.soLuotDanhGia + 1),
+                s.soLuotDanhGia = s.soLuotDanhGia + 1
+            WHERE s.id = :id
+            """)
+    int capNhatDiemDanhGia(@Param("id") Long id, @Param("diem") int diem);
+
     @Query("""
             SELECT DISTINCT s FROM SanPham s
             WHERE s.trangThai = 'CON_HANG'

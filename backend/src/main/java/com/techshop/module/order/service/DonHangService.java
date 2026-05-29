@@ -4,6 +4,7 @@ import com.techshop.module.cart.dto.response.GioHangItemResponse;
 import com.techshop.module.cart.service.GioHangService;
 import com.techshop.module.discount.dto.KetQuaApDungMa;
 import com.techshop.module.discount.service.MaGiamGiaService;
+import com.techshop.module.notification.service.NotificationService;
 import com.techshop.module.order.dto.request.DatHangRequest;
 import com.techshop.module.order.dto.response.ChiTietDonHangResponse;
 import com.techshop.module.order.dto.response.DonHangResponse;
@@ -44,6 +45,7 @@ public class DonHangService {
     private final GioHangService gioHangService;
     private final ProductQueryService productQueryService;
     private final MaGiamGiaService maGiamGiaService;
+    private final NotificationService notificationService;
 
     // Chính sách phí vận chuyển (business logic ở Java, không tính ở DB).
     private static final BigDecimal PHI_SHIP = BigDecimal.valueOf(30000);
@@ -141,6 +143,11 @@ public class DonHangService {
         log.info("Tạo đơn hàng {} cho user {} — tổng thanh toán {}",
                 saved.getMaDonHang(), nguoiDungId, tongThanhToan);
 
+        notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
+                "Đặt hàng thành công",
+                "Đơn hàng " + saved.getMaDonHang() + " đã được tạo và đang chờ xử lý.",
+                donHangId);
+
         // Re-fetch để map response trên entity managed (tránh lazy-load lỗi sau khi context bị clear).
         DonHang fresh = donHangRepo.findById(donHangId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
@@ -206,6 +213,11 @@ public class DonHangService {
             maGiamGiaService.hoanTraSuDung(maGiamGiaId, id);
         }
 
+        notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
+                "Đã hủy đơn hàng",
+                "Đơn hàng " + donHang.getMaDonHang() + " đã được hủy.",
+                id);
+
         DonHang fresh = donHangRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
         return toDetailResponse(fresh);
@@ -240,6 +252,12 @@ public class DonHangService {
             soLuongTheoSanPham.merge(info.getSanPhamId(), ct.getSoLuong(), Integer::sum);
         }
         soLuongTheoSanPham.forEach(productQueryService::tangSoLuotBan);
+
+        notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
+                "Đơn hàng hoàn thành",
+                "Cảm ơn bạn! Đơn hàng " + donHang.getMaDonHang()
+                        + " đã hoàn thành. Hãy đánh giá sản phẩm để nhận ưu đãi nhé.",
+                id);
 
         DonHang fresh = donHangRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORD_001));

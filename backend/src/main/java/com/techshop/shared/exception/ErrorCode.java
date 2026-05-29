@@ -43,6 +43,14 @@ public enum ErrorCode {
     // Review
     REV_001("REV_001", "Chỉ được đánh giá sau khi đơn hàng hoàn thành", HttpStatus.BAD_REQUEST),
     REV_002("REV_002", "Bạn đã đánh giá sản phẩm này", HttpStatus.CONFLICT),
+    REV_003("REV_003", "Sản phẩm không thuộc đơn hàng này", HttpStatus.BAD_REQUEST),
+
+    // Profile & Address
+    PROFILE_001("PROFILE_001", "Email đã được sử dụng bởi tài khoản khác", HttpStatus.CONFLICT),
+    ADDR_001("ADDR_001", "Địa chỉ không tồn tại", HttpStatus.NOT_FOUND),
+
+    // Notification
+    NOTI_001("NOTI_001", "Thông báo không tồn tại", HttpStatus.NOT_FOUND),
 
     // Common
     VALIDATION_ERROR("VALIDATION_ERROR", "Dữ liệu đầu vào không hợp lệ", HttpStatus.BAD_REQUEST),

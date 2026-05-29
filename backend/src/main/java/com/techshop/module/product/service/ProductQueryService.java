@@ -19,4 +19,10 @@ public interface ProductQueryService {
 
     /** Tăng cache field so_luot_ban atomic khi đặt hàng thành công. */
     void tangSoLuotBan(Long sanPhamId, int soLuong);
+
+    /**
+     * Cập nhật cache điểm đánh giá khi có review mới (incremental, KHÔNG tính AVG lại toàn bộ):
+     * tb_moi = (tb_cu * count + diem) / (count + 1); count += 1.
+     */
+    void capNhatDiemDanhGia(Long sanPhamId, int diem);
 }

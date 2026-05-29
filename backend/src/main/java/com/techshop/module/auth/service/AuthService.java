@@ -9,6 +9,7 @@ import com.techshop.module.auth.entity.VaiTro;
 import com.techshop.module.auth.repository.MatKhauResetRepository;
 import com.techshop.module.auth.repository.NguoiDungRepository;
 import com.techshop.module.auth.repository.VaiTroRepository;
+import com.techshop.module.notification.service.NotificationService;
 import com.techshop.shared.config.EmailService;
 import com.techshop.shared.exception.AppException;
 import com.techshop.shared.exception.ErrorCode;
@@ -37,6 +38,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Value("${app.otp.expiry-minutes}")
     private int otpExpiryMinutes;
@@ -103,6 +105,11 @@ public class AuthService {
         nd.setOtpXacThuc(null);
         nd.setOtpHetHan(null);
         nguoiDungRepository.save(nd);
+
+        notificationService.taoThongBao(nd.getId(), NotificationService.LOAI_HE_THONG,
+                "Chào mừng đến TechShop",
+                "Tài khoản của bạn đã được kích hoạt. Khám phá ngay các sản phẩm công nghệ mới nhất!",
+                null);
 
         return taoAuthResponse(nd);
     }

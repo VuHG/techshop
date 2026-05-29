@@ -72,4 +72,10 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     public void tangSoLuotBan(Long sanPhamId, int soLuong) {
         sanPhamRepo.tangSoLuotBan(sanPhamId, soLuong);
     }
+
+    @Override
+    @Transactional
+    public void capNhatDiemDanhGia(Long sanPhamId, int diem) {
+        sanPhamRepo.capNhatDiemDanhGia(sanPhamId, diem);
+    }
 }
