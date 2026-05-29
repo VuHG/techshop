@@ -5,6 +5,16 @@ phase*_tong_ket.md
 backend/target/
 *.class
 
+# Node (ai-gateway, frontend)
+node_modules/
+.next/
+npm-debug.log*
+
+# Biến môi trường (giữ lại .env.example)
+.env
+.env.*
+!.env.example
+
 # IDE
 .vscode/
 .idea/
