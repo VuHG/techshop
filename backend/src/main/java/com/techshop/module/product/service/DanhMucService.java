@@ -14,8 +14,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +31,8 @@ public class DanhMucService {
     @Cacheable("danh-muc-cay")
     public List<DanhMucResponse> getCayDanhMuc() {
         List<DanhMuc> roots = danhMucRepository.findRootCategories();
-        return roots.stream().map(this::toDanhMucResponse).toList();
+        return roots.stream().map(this::toDanhMucResponse)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Cacheable(value = "phan-loai", key = "#slug")
@@ -42,7 +45,7 @@ public class DanhMucService {
                         .tenPhanLoai(pl.getTenPhanLoai())
                         .danhMucId(pl.getDanhMuc().getId())
                         .build())
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Cacheable(value = "filter-schema", key = "#phanLoaiId")
@@ -61,7 +64,7 @@ public class DanhMucService {
                     return Integer.compare(ta, tb);
                 })
                 .map(this::toDanhMucResponse)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         return DanhMucResponse.builder()
                 .id(dm.getId())

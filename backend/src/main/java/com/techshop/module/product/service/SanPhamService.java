@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -75,8 +76,10 @@ public class SanPhamService {
                 .diemDanhGiaTb(sp.getDiemDanhGiaTb())
                 .soLuotDanhGia(sp.getSoLuotDanhGia())
                 .soLuotBan(sp.getSoLuotBan())
-                .bienThes(bienThes.stream().map(this::toBienTheResponse).toList())
-                .sanPhamTuongTu(tuongTu.stream().map(this::toCardResponse).toList())
+                .bienThes(bienThes.stream().map(this::toBienTheResponse)
+                        .collect(Collectors.toCollection(ArrayList::new)))
+                .sanPhamTuongTu(tuongTu.stream().map(this::toCardResponse)
+                        .collect(Collectors.toCollection(ArrayList::new)))
                 .build();
     }
 
@@ -166,7 +169,7 @@ public class SanPhamService {
                 .distinct()
                 .map(n -> NhanResponse.builder()
                         .id(n.getId()).tenNhan(n.getTenNhan()).mauSac(n.getMauSac()).build())
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         return SanPhamCardResponse.builder()
                 .id(sp.getId())
@@ -189,7 +192,7 @@ public class SanPhamService {
                 .map(a -> AnhResponse.builder()
                         .id(a.getId()).urlAnh(a.getUrlAnh())
                         .laAnhChinh(a.isLaAnhChinh()).thuTu(a.getThuTu()).build())
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         Set<NhanResponse> nhans = bt.getNhans().stream()
                 .map(n -> NhanResponse.builder()
