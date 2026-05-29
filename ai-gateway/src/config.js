@@ -13,9 +13,9 @@ function required(name) {
 
 export const config = {
   port: Number(process.env.PORT) || 3001,
-  groqApiKey: required('GROQ_API_KEY'),
-  // Tên model Groq có thể thay đổi theo thời gian — để env hóa, đổi không cần sửa code.
-  groqModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+  geminiApiKey: required('GEMINI_API_KEY'),
+  // Tên model Gemini có thể thay đổi theo thời gian — để env hóa, đổi không cần sửa code.
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000')
     .split(',')
     .map((s) => s.trim())

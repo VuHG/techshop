@@ -1,7 +1,7 @@
 {
   "name": "techshop-ai-gateway",
   "version": "1.0.0",
-  "description": "TechShop AI Gateway — Node.js proxy tới Groq LLM cho chatbot tư vấn",
+  "description": "TechShop AI Gateway — Node.js proxy tới Google Gemini cho chatbot tư vấn",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
@@ -12,10 +12,10 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@google/genai": "latest",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "groq-sdk": "latest",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0"
   }

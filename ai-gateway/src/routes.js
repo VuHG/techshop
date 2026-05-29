@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { config } from './config.js';
-import { chat } from './groqService.js';
+import { chat } from './geminiService.js';
 
 export const router = Router();
 
 router.get('/health', (req, res) => {
-  res.json({ status: 'OK', model: config.groqModel });
+  res.json({ status: 'OK', model: config.geminiModel });
 });
 
 router.post('/chat', async (req, res) => {
@@ -38,7 +38,7 @@ router.post('/chat', async (req, res) => {
     return res.json({ success: true, reply, sessionId: sessionId ?? null });
   } catch (err) {
     const isTimeout =
-      err?.name === 'APIConnectionTimeoutError' ||
+      err?.name === 'TimeoutError' ||
       err?.name === 'AbortError' ||
       err?.code === 'ETIMEDOUT';
     if (isTimeout) {

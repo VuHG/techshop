@@ -21,6 +21,6 @@ app.use((req, res) => {
 
 app.listen(config.port, () => {
   console.log(
-    `TechShop AI Gateway chạy tại http://localhost:${config.port} (model: ${config.groqModel})`,
+    `TechShop AI Gateway chạy tại http://localhost:${config.port} (model: ${config.geminiModel})`,
   );
 });
