@@ -1,0 +1,14 @@
+# File tổng kết phase — chỉ giữ local, không đẩy lên GitHub
+phase*_tong_ket.md
+
+# Build artifacts
+backend/target/
+*.class
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

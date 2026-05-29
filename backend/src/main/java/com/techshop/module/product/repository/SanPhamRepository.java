@@ -4,6 +4,7 @@ import com.techshop.module.product.entity.SanPham;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +15,11 @@ import java.util.Optional;
 public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
 
     Optional<SanPham> findBySlugAndTrangThai(String slug, String trangThai);
+
+    // Atomic cập nhật cache field so_luot_ban khi đặt hàng thành công.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE SanPham s SET s.soLuotBan = s.soLuotBan + :soLuong WHERE s.id = :id")
+    int tangSoLuotBan(@Param("id") Long id, @Param("soLuong") int soLuong);
 
     @Query("""
             SELECT DISTINCT s FROM SanPham s

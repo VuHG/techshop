@@ -25,6 +25,7 @@ public enum ErrorCode {
     // Cart
     CART_001("CART_001", "Sản phẩm không đủ số lượng trong kho", HttpStatus.BAD_REQUEST),
     CART_002("CART_002", "Giỏ hàng trống", HttpStatus.BAD_REQUEST),
+    CART_003("CART_003", "Sản phẩm không có trong giỏ hàng", HttpStatus.NOT_FOUND),
 
     // Order
     ORD_001("ORD_001", "Đơn hàng không tồn tại", HttpStatus.NOT_FOUND),
@@ -36,6 +37,8 @@ public enum ErrorCode {
     DIS_002("DIS_002", "Mã giảm giá đã hết lượt sử dụng", HttpStatus.BAD_REQUEST),
     DIS_003("DIS_003", "Mã giảm giá chưa đến thời gian áp dụng hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
     DIS_004("DIS_004", "Bạn đã sử dụng mã này trước đó", HttpStatus.BAD_REQUEST),
+    DIS_005("DIS_005", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này", HttpStatus.BAD_REQUEST),
+    DIS_006("DIS_006", "Mã giảm giá không áp dụng cho sản phẩm trong giỏ", HttpStatus.BAD_REQUEST),
 
     // Review
     REV_001("REV_001", "Chỉ được đánh giá sau khi đơn hàng hoàn thành", HttpStatus.BAD_REQUEST),
