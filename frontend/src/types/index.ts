@@ -120,6 +120,15 @@ export interface PhanLoai {
   danhMucId: number;
 }
 
+export interface DanhGia {
+  id: number;
+  sanPhamId: number;
+  donHangId: number;
+  diem: number;
+  noiDung: string;
+  ngayTao: string;
+}
+
 // Filter schema JSONB (chi_tiet_thuoc_tinh_loc) — cấu trúc động.
 export type FilterSchema = Record<string, unknown>;
 

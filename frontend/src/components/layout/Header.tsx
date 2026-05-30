@@ -2,18 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Code2, Scale, ShoppingCart, Search, User, Menu } from 'lucide-react';
+import { Code2, Scale, ShoppingCart, User, Menu } from 'lucide-react';
 import { CategoryMenu } from './CategoryMenu';
 import { MobileMenu } from './MobileMenu';
+import { SearchBar } from './SearchBar';
 import { useCompareStore } from '@/stores/compareStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Container } from '@/components/ui/Container';
 
 export function Header() {
-  const router = useRouter();
-  const [tuKhoa, setTuKhoa] = useState('');
   const [moMobile, setMoMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -24,12 +22,6 @@ export function Header() {
 
   // Tránh lệch hydration: badge & trạng thái auth chỉ render sau khi mount.
   useEffect(() => setMounted(true), []);
-
-  const timKiem = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = tuKhoa.trim();
-    if (q) router.push(`/tim-kiem?q=${encodeURIComponent(q)}`);
-  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white">
@@ -61,22 +53,8 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Search */}
-        <form onSubmit={timKiem} className="relative flex-1">
-          <input
-            value={tuKhoa}
-            onChange={(e) => setTuKhoa(e.target.value)}
-            placeholder="Tìm kiếm sản phẩm..."
-            className="w-full rounded-full border border-gray-200 py-2 pl-4 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <button
-            type="submit"
-            aria-label="Tìm kiếm"
-            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-500 hover:text-primary"
-          >
-            <Search className="h-5 w-5" />
-          </button>
-        </form>
+        {/* Search + auto-suggest */}
+        <SearchBar />
 
         {/* So sánh */}
         <Link
