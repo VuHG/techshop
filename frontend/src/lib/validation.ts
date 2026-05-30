@@ -50,3 +50,21 @@ export const datLaiMatKhauSchema = z
     path: ['xacNhanMatKhau'],
   });
 export type DatLaiMatKhauForm = z.infer<typeof datLaiMatKhauSchema>;
+
+export const capNhatProfileSchema = z.object({
+  hoTen: z.string().min(1, 'Họ tên không được để trống').max(100, 'Tối đa 100 ký tự'),
+  email: z.union([z.string().email('Email không hợp lệ'), z.literal('')]).optional(),
+  ngaySinh: z.string().optional(),
+});
+export type CapNhatProfileForm = z.infer<typeof capNhatProfileSchema>;
+
+export const diaChiSchema = z.object({
+  hoTenNguoiNhan: z.string().min(1, 'Vui lòng nhập họ tên người nhận'),
+  soDienThoai: z.string().regex(/^0\d{9}$/, 'Số điện thoại không hợp lệ'),
+  diaChiChiTiet: z.string().min(1, 'Vui lòng nhập địa chỉ chi tiết'),
+  phuongXa: z.string().min(1, 'Vui lòng nhập phường/xã'),
+  quanHuyen: z.string().min(1, 'Vui lòng nhập quận/huyện'),
+  tinhThanh: z.string().min(1, 'Vui lòng nhập tỉnh/thành'),
+  laMacDinh: z.boolean(),
+});
+export type DiaChiForm = z.infer<typeof diaChiSchema>;

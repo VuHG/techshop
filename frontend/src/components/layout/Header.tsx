@@ -6,6 +6,7 @@ import { Code2, Scale, ShoppingCart, User, Menu } from 'lucide-react';
 import { CategoryMenu } from './CategoryMenu';
 import { MobileMenu } from './MobileMenu';
 import { SearchBar } from './SearchBar';
+import { UserMenu } from './UserMenu';
 import { useCompareStore } from '@/stores/compareStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,7 +19,6 @@ export function Header() {
   const soSanh = useCompareStore((s) => s.items.length);
   const soGio = useCartStore((s) => s.soLuong);
   const isAuth = useAuthStore((s) => s.isAuthenticated);
-  const user = useAuthStore((s) => s.user);
 
   // Tránh lệch hydration: badge & trạng thái auth chỉ render sau khi mount.
   useEffect(() => setMounted(true), []);
@@ -78,13 +78,7 @@ export function Header() {
 
         {/* Auth */}
         {mounted && isAuth ? (
-          <Link
-            href="/tai-khoan"
-            className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-primary"
-          >
-            <User className="h-5 w-5" />
-            <span className="hidden max-w-[8rem] truncate sm:inline">{user?.hoTen ?? 'Tài khoản'}</span>
-          </Link>
+          <UserMenu />
         ) : (
           <Link
             href="/dang-nhap"
