@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { Laptop, Monitor, Cpu, Mouse, Recycle, type LucideIcon } from 'lucide-react';
+import { Laptop, Monitor, Cpu, Mouse, Gamepad2, type LucideIcon } from 'lucide-react';
 import { DANH_MUC_SIDEBAR } from '@/lib/constants';
 
-const ICONS: Record<string, LucideIcon> = { Laptop, Monitor, Cpu, Mouse, Recycle };
+const ICONS: Record<string, LucideIcon> = { Laptop, Monitor, Cpu, Mouse, Gamepad2 };
 
 /** Danh mục nhanh (icon tròn) — cột trái trang chủ. */
 export function CategorySidebar() {
