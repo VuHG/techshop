@@ -57,9 +57,12 @@ api.interceptors.response.use(
   async (error: AxiosError<ApiError>) => {
     const original = error.config as RetriableConfig | undefined;
     const status = error.response?.status;
+    // Endpoint auth (đăng nhập/đăng ký/refresh...) KHÔNG refresh: 401 ở đây là sai
+    // thông tin đăng nhập, phải để trang tự hiển thị lỗi.
+    const isAuthEndpoint = original?.url?.includes('/auth/') ?? false;
 
-    // 401 -> thử refresh một lần
-    if (status === 401 && original && !original._retry) {
+    // 401 -> thử refresh một lần (trừ endpoint auth)
+    if (status === 401 && original && !original._retry && !isAuthEndpoint) {
       original._retry = true;
 
       if (dangRefresh) {
@@ -89,9 +92,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Toast thông điệp lỗi từ backend (nếu có), bỏ qua 401 đã xử lý ở trên.
+    // Toast thông điệp lỗi từ backend. Bỏ qua 401 non-auth (đã xử lý refresh ở trên),
+    // nhưng VẪN toast lỗi 401 của endpoint auth (vd sai mật khẩu).
     const message = error.response?.data?.message;
-    if (message && status !== 401 && typeof window !== 'undefined') {
+    const da401NonAuth = status === 401 && !isAuthEndpoint;
+    if (message && !da401NonAuth && typeof window !== 'undefined') {
       toast.error(message);
     }
     return Promise.reject(error);

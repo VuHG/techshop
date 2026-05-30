@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { SanPham } from '@/types';
+import type { SanPhamCard } from '@/types';
 
 const MAX_SO_SANH = 3;
 
 interface CompareState {
-  items: SanPham[];
-  them: (sp: SanPham) => boolean; // false nếu đã đầy hoặc trùng
+  items: SanPhamCard[];
+  them: (sp: SanPhamCard) => boolean; // false nếu đã đầy hoặc trùng
   xoa: (id: number) => void;
   xoaTatCa: () => void;
   coTrong: (id: number) => boolean;
