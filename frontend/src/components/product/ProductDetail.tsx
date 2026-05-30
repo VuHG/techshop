@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ShoppingCart, GitCompare } from 'lucide-react';
 import { productService } from '@/services/productService';
@@ -25,6 +25,7 @@ export function ProductDetail({ slug }: { slug: string }) {
     queryFn: () => productService.getChiTiet(slug),
   });
   const router = useRouter();
+  const qc = useQueryClient();
   const themSoSanh = useCompareStore((s) => s.them);
   const isAuth = useAuthStore((s) => s.isAuthenticated);
   const setSoLuong = useCartStore((s) => s.setSoLuong);
@@ -82,6 +83,7 @@ export function ProductDetail({ slug }: { slug: string }) {
     try {
       const gio = await cartService.themVaoGio(selected.id, 1);
       setSoLuong(gio.tongSoLuong);
+      qc.setQueryData(['gio-hang'], gio); // đồng bộ cache trang giỏ
       if (muaNgay) router.push('/gio-hang');
       else toast.success('Đã thêm vào giỏ hàng');
     } catch {

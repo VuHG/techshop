@@ -33,7 +33,12 @@ function GioHangContent() {
   const setSoLuong = useCartStore((s) => s.setSoLuong);
   const setCheckout = useCheckoutStore((s) => s.set);
 
-  const { data: gio, isLoading } = useQuery({ queryKey: ['gio-hang'], queryFn: cartService.getGioHang });
+  const { data: gio, isLoading, isError } = useQuery({
+    queryKey: ['gio-hang'],
+    queryFn: cartService.getGioHang,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
   const items = gio?.items ?? [];
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -148,6 +153,14 @@ function GioHangContent() {
     return (
       <Container className="py-10">
         <div className="h-64 animate-pulse rounded-xl bg-gray-100" />
+      </Container>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Container className="py-16 text-center text-gray-500">
+        Không tải được giỏ hàng. Vui lòng tải lại trang.
       </Container>
     );
   }
