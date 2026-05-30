@@ -46,7 +46,7 @@ router.post('/chat', async (req, res) => {
         .status(504)
         .json({ success: false, error: 'Hệ thống AI đang quá tải, vui lòng thử lại sau' });
     }
-    console.error('[ai] Groq error:', err?.status ?? '', err?.message ?? err);
+    console.error('[ai] Gemini error:', err?.status ?? '', err?.message ?? err);
     return res
       .status(503)
       .json({ success: false, error: 'Trợ lý ảo hiện đang bảo trì, vui lòng thử lại sau' });

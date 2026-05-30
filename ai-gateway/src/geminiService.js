@@ -38,8 +38,11 @@ export async function chat(message, history = []) {
     contents,
     config: {
       systemInstruction: SYSTEM_PROMPT,
-      maxOutputTokens: 500,
+      maxOutputTokens: 1500,
       temperature: 0.7,
+      // Tắt "thinking" để tiết kiệm token + giảm độ trễ (chỉ áp với 2.5-flash trở lên,
+      // các model khác bỏ qua field này — không lỗi).
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
 
