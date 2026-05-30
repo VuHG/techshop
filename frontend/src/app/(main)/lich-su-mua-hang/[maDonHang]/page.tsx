@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,6 +11,7 @@ import { cartService } from '@/services/cartService';
 import { useCartStore } from '@/stores/cartStore';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { OrderStatusBadge } from '@/components/order/OrderStatusBadge';
+import { ReviewModal } from '@/components/review/ReviewModal';
 import { Container } from '@/components/ui/Container';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { ORDER_STATUS } from '@/lib/constants';
@@ -32,6 +34,7 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
   const qc = useQueryClient();
   const router = useRouter();
   const setSoLuong = useCartStore((s) => s.setSoLuong);
+  const [moReview, setMoReview] = useState(false);
 
   const { data: don, isLoading, isError } = useQuery({
     queryKey: ['don-hang-chi-tiet', maDonHang],
@@ -82,7 +85,7 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
     router.push('/gio-hang');
   };
 
-  const danhGia = () => toast('Tính năng đánh giá sẽ có ở Phase 10', { icon: '⭐' });
+  const danhGia = () => setMoReview(true);
 
   if (isLoading) {
     return (
@@ -245,6 +248,10 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
           </button>
         )}
       </div>
+
+      {moReview && (
+        <ReviewModal donHangId={don.id} items={don.items} onClose={() => setMoReview(false)} />
+      )}
     </Container>
   );
 }

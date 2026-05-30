@@ -7,6 +7,7 @@ import { CategoryMenu } from './CategoryMenu';
 import { MobileMenu } from './MobileMenu';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
+import { NotificationBell } from './NotificationBell';
 import { useCompareStore } from '@/stores/compareStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -75,6 +76,9 @@ export function Header() {
           <ShoppingCart className="h-6 w-6" />
           {mounted && soGio > 0 && <Badge value={soGio} />}
         </Link>
+
+        {/* Thông báo (chỉ khi đăng nhập) */}
+        {mounted && isAuth && <NotificationBell />}
 
         {/* Auth */}
         {mounted && isAuth ? (

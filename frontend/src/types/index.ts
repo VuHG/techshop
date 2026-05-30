@@ -226,6 +226,16 @@ export interface Profile {
   vaiTro: string;
 }
 
+export interface ThongBao {
+  id: number;
+  tieuDe: string;
+  noiDung: string;
+  loaiThongBao: string; // DON_HANG | KHUYEN_MAI | HE_THONG
+  daDoc: boolean;
+  thamChieuId: number | null;
+  ngayTao: string;
+}
+
 // Filter schema JSONB (chi_tiet_thuoc_tinh_loc) — cấu trúc động.
 export type FilterSchema = Record<string, unknown>;
 

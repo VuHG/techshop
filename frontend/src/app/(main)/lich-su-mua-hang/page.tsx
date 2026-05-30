@@ -61,8 +61,6 @@ function LichSuContent() {
     }
   };
 
-  const danhGia = () => toast('Tính năng đánh giá sẽ có ở Phase 10', { icon: '⭐' });
-
   return (
     <Container className="py-5">
       <h1 className="mb-4 text-xl font-bold text-gray-800">Lịch sử mua hàng</h1>
@@ -112,7 +110,7 @@ function LichSuContent() {
       ) : (
         <div className="space-y-3">
           {orders.map((o) => (
-            <OrderCard key={o.id} order={o} onHuy={huy} onXacNhan={xacNhan} onDanhGia={danhGia} />
+            <OrderCard key={o.id} order={o} onHuy={huy} onXacNhan={xacNhan} />
           ))}
         </div>
       )}
@@ -124,12 +122,10 @@ function OrderCard({
   order,
   onHuy,
   onXacNhan,
-  onDanhGia,
 }: {
   order: DonHangSummary;
   onHuy: (id: number) => void;
   onXacNhan: (id: number) => void;
-  onDanhGia: () => void;
 }) {
   return (
     <div className="rounded-xl border border-gray-100 bg-white">
@@ -171,13 +167,12 @@ function OrderCard({
             </button>
           )}
           {order.trangThai === 'HOAN_THANH' && (
-            <button
-              type="button"
-              onClick={onDanhGia}
+            <Link
+              href={`/lich-su-mua-hang/${order.maDonHang}`}
               className="rounded-lg border border-primary px-3 py-1.5 text-sm text-primary hover:bg-primary-50"
             >
               Đánh giá
-            </button>
+            </Link>
           )}
           <Link
             href={`/lich-su-mua-hang/${order.maDonHang}`}
