@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Zap } from 'lucide-react';
 import type { SanPhamCard } from '@/types';
 import { cn, formatPrice } from '@/lib/utils';
@@ -13,6 +14,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) {
+  const router = useRouter();
   const { slug, tenSanPham, giaThap, giaCao, diemDanhGiaTb, soLuotDanhGia, anhChinh, nhans } =
     sanPham;
   const isFlash = variant === 'flash';
@@ -53,10 +55,11 @@ export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) 
           )}
         </div>
 
-        {/* Nút mua (handler ở Phase 9) */}
+        {/* Nút → mở trang chi tiết để chọn biến thể rồi thêm vào giỏ */}
         <div className="mt-3 flex items-stretch gap-2">
           <button
             type="button"
+            onClick={() => router.push(`/san-pham/${slug}`)}
             className={cn(
               'flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm font-semibold text-white transition',
               isFlash ? 'bg-flash-gradient hover:opacity-90' : 'bg-primary hover:bg-primary-dark',
@@ -67,7 +70,8 @@ export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) 
           </button>
           <button
             type="button"
-            aria-label="Thêm vào giỏ"
+            aria-label="Xem sản phẩm"
+            onClick={() => router.push(`/san-pham/${slug}`)}
             className={cn(
               'flex items-center justify-center rounded-lg px-3 text-white transition',
               isFlash ? 'bg-sale hover:bg-sale-dark' : 'bg-primary hover:bg-primary-dark',

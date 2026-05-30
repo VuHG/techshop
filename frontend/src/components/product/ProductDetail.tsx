@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ShoppingCart, GitCompare } from 'lucide-react';
 import { productService } from '@/services/productService';
+import { cartService } from '@/services/cartService';
 import { useCompareStore } from '@/stores/compareStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useCartStore } from '@/stores/cartStore';
 import { Container } from '@/components/ui/Container';
 import { StarRating } from '@/components/ui/StarRating';
 import { ProductGallery } from './ProductGallery';
@@ -20,8 +24,12 @@ export function ProductDetail({ slug }: { slug: string }) {
     queryKey: ['san-pham-chi-tiet', slug],
     queryFn: () => productService.getChiTiet(slug),
   });
+  const router = useRouter();
   const themSoSanh = useCompareStore((s) => s.them);
+  const isAuth = useAuthStore((s) => s.isAuthenticated);
+  const setSoLuong = useCartStore((s) => s.setSoLuong);
   const [variantId, setVariantId] = useState<number | null>(null);
+  const [dangThem, setDangThem] = useState(false);
 
   if (isLoading) {
     return (
@@ -59,7 +67,29 @@ export function ProductDetail({ slug }: { slug: string }) {
     else toast.error('Đã đủ 3 sản phẩm hoặc sản phẩm đã có trong danh sách');
   };
 
-  const chuaCo = () => toast('Giỏ hàng & đặt hàng sẽ có ở Phase 9', { icon: '🛒' });
+  const themGio = async (muaNgay: boolean) => {
+    if (!selected) return;
+    if (!isAuth) {
+      toast.error('Vui lòng đăng nhập để mua hàng');
+      router.push('/dang-nhap');
+      return;
+    }
+    if (selected.soLuongTon <= 0) {
+      toast.error('Sản phẩm đã hết hàng');
+      return;
+    }
+    setDangThem(true);
+    try {
+      const gio = await cartService.themVaoGio(selected.id, 1);
+      setSoLuong(gio.tongSoLuong);
+      if (muaNgay) router.push('/gio-hang');
+      else toast.success('Đã thêm vào giỏ hàng');
+    } catch {
+      /* interceptor toast */
+    } finally {
+      setDangThem(false);
+    }
+  };
 
   return (
     <Container className="py-5">
@@ -100,15 +130,17 @@ export function ProductDetail({ slug }: { slug: string }) {
           <div className="mt-5 flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={chuaCo}
-              className="flex items-center gap-2 rounded-lg border border-primary px-5 py-3 font-semibold text-primary transition hover:bg-primary-50"
+              onClick={() => themGio(false)}
+              disabled={dangThem}
+              className="flex items-center gap-2 rounded-lg border border-primary px-5 py-3 font-semibold text-primary transition hover:bg-primary-50 disabled:opacity-60"
             >
               <ShoppingCart className="h-5 w-5" /> Thêm vào giỏ
             </button>
             <button
               type="button"
-              onClick={chuaCo}
-              className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary-dark"
+              onClick={() => themGio(true)}
+              disabled={dangThem}
+              className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60"
             >
               Mua ngay
             </button>
