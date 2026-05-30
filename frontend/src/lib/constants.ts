@@ -38,6 +38,26 @@ export const DANH_MUC_SIDEBAR = [
   { id: 'phu-kien', ten: 'Phụ kiện', icon: 'Mouse' },
 ] as const;
 
+/** 6 tab trạng thái đơn (khóa cứng MVP). value rỗng = tất cả. */
+export const ORDER_TABS = [
+  { label: 'Tất cả', value: '' },
+  { label: 'Chờ xử lý', value: 'CHO_XU_LY' },
+  { label: 'Đang giao', value: 'DANG_GIAO' },
+  { label: 'Giao thành công', value: 'GIAO_THANH_CONG' },
+  { label: 'Hoàn thành', value: 'HOAN_THANH' },
+  { label: 'Đã hủy', value: 'DA_HUY' },
+] as const;
+
+/** Nhãn + màu cho trạng thái đơn. */
+export const ORDER_STATUS: Record<string, { label: string; color: string }> = {
+  CHO_THANH_TOAN: { label: 'Chờ thanh toán', color: 'text-amber-600' },
+  CHO_XU_LY: { label: 'Chờ xử lý', color: 'text-amber-600' },
+  DANG_GIAO: { label: 'Đang giao hàng', color: 'text-blue-600' },
+  GIAO_THANH_CONG: { label: 'Giao thành công', color: 'text-green-600' },
+  HOAN_THANH: { label: 'Hoàn thành', color: 'text-green-700' },
+  DA_HUY: { label: 'Đã hủy', color: 'text-gray-500' },
+};
+
 /** Tùy chọn sắp xếp — KHỚP sortBy backend hỗ trợ (newest/rating/sold). */
 export const SORT_OPTIONS = [
   { value: 'newest', label: 'Mới nhất' },
