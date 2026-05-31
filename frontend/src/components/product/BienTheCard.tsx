@@ -16,6 +16,15 @@ function nhanBienThe(thongSo: Record<string, unknown>): string {
     .join(' / ');
 }
 
+// Màu nền nhãn theo tên (Tailwind class — không dùng inline style theo quy ước dự án).
+const TAG_CLASS: Record<string, string> = {
+  Hot: 'bg-red-500',
+  'Mới về': 'bg-green-600',
+  'Trả góp 0%': 'bg-blue-600',
+  'Bán chạy': 'bg-purple-600',
+  'Nổi bật': 'bg-primary',
+};
+
 export function BienTheCard({ item }: { item: BienTheCardType }) {
   const router = useRouter();
   const { slug, bienTheId, tenSanPham, thongSoBienThe, anhChinh, gia, giaBan, phanTramGiam } = item;
@@ -23,25 +32,36 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
   const coGiam = phanTramGiam > 0 && giaBan < gia;
   const isFlash = item.flashSale; // → dùng màu Flash Sale (đỏ/sale + gradient) giống mục Flash Sale
   const nhanBt = nhanBienThe(thongSoBienThe);
+  // Bỏ nhãn "Sale" vì đã có badge % giảm giá bên trái.
+  const tags = item.nhans.filter((n) => n.tenNhan.toLowerCase() !== 'sale');
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md">
-      {/* Nhãn từ DB (Hot/Sale...) */}
-      {item.nhans.length > 0 && (
-        <span className="absolute right-2 top-2 z-10 rounded bg-sale px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
-          {item.nhans[0].tenNhan}
-        </span>
-      )}
-      {/* Badge % giảm — flash sale dùng màu sale + tia chớp, ngược lại màu primary */}
-      {(coGiam || isFlash) && (
-        <span
-          className={cn(
-            'absolute left-2 top-2 z-10 flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-white',
-            isFlash ? 'bg-sale' : 'bg-primary',
+      {/* Hàng nhãn trên cùng: badge % (trái) + các nhãn, flex-wrap sát nhau, đầy thì xuống dòng */}
+      {(coGiam || isFlash || tags.length > 0) && (
+        <div className="absolute inset-x-2 top-2 z-10 flex flex-wrap gap-1">
+          {(coGiam || isFlash) && (
+            <span
+              className={cn(
+                'flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-white',
+                isFlash ? 'bg-sale' : 'bg-primary',
+              )}
+            >
+              {isFlash && <Zap className="h-3 w-3" />}-{phanTramGiam}%
+            </span>
           )}
-        >
-          {isFlash && <Zap className="h-3 w-3" />}-{phanTramGiam}%
-        </span>
+          {tags.map((n) => (
+            <span
+              key={n.id}
+              className={cn(
+                'rounded px-1.5 py-0.5 text-[10px] font-bold uppercase text-white',
+                TAG_CLASS[n.tenNhan] ?? 'bg-gray-500',
+              )}
+            >
+              {n.tenNhan}
+            </span>
+          ))}
+        </div>
       )}
 
       <Link href={href} className="block p-3">
