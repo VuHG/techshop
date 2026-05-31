@@ -22,6 +22,8 @@ interface FilterSidebarProps {
   thongSo: Record<string, string>;
   onChonTieuChi: (key: string, value: string) => void;
   onXoaTatCa: () => void;
+  /** true = render trong drawer mobile (bỏ ẩn lg, full width). */
+  asDrawer?: boolean;
 }
 
 // Một tiêu chí lọc trong filter-schema JSONB.
@@ -58,6 +60,7 @@ export function FilterSidebar({
   thongSo,
   onChonTieuChi,
   onXoaTatCa,
+  asDrawer = false,
 }: FilterSidebarProps) {
   const [tuGia, setTuGia] = useState('');
   const [denGia, setDenGia] = useState('');
@@ -74,7 +77,13 @@ export function FilterSidebar({
   const coDangLoc = minPrice != null || maxPrice != null || tieuChiDangChon.length > 0;
 
   return (
-    <aside className="hidden w-56 shrink-0 rounded-xl border border-gray-100 bg-white p-4 lg:block">
+    <aside
+      className={cn(
+        asDrawer
+          ? 'w-full p-4'
+          : 'hidden w-56 shrink-0 rounded-xl border border-gray-100 bg-white p-4 lg:block',
+      )}
+    >
       {/* 1. Lọc danh mục — toàn bộ danh mục từ DB */}
       {dmFlat.length > 0 && (
         <div className="mb-5">
