@@ -66,7 +66,7 @@ function FlashCard({ item }: { item: FlashSaleItem }) {
     >
       <div className="relative p-3">
         {item.phanTramGiam > 0 && (
-          <span className="absolute left-2 top-2 z-10 rounded bg-sale px-1.5 py-0.5 text-[10px] font-bold text-white">
+          <span className="absolute left-2 top-2 z-10 rounded bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
             -{item.phanTramGiam}%
           </span>
         )}

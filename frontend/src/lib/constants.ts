@@ -8,25 +8,8 @@ export const DANH_MUC_NAV: DanhMucNav[] = [
   { id: 'laptop', ten: 'Laptop' },
   { id: 'pc-gaming', ten: 'PC Gaming' },
   { id: 'man-hinh', ten: 'Màn hình' },
-  {
-    id: 'linh-kien',
-    ten: 'Linh kiện',
-    children: [
-      { id: 'ram', ten: 'RAM' },
-      { id: 'ssd', ten: 'SSD' },
-      { id: 'card-do-hoa', ten: 'Card đồ họa' },
-      { id: 'cpu', ten: 'CPU' },
-    ],
-  },
-  {
-    id: 'phu-kien',
-    ten: 'Phụ kiện',
-    children: [
-      { id: 'chuot', ten: 'Chuột' },
-      { id: 'ban-phim', ten: 'Bàn phím' },
-      { id: 'tai-nghe', ten: 'Tai nghe' },
-    ],
-  },
+  { id: 'linh-kien', ten: 'Linh kiện' },
+  { id: 'phu-kien', ten: 'Phụ kiện' },
 ];
 
 /** Danh mục nhanh ở sidebar trang chủ (icon tròn). */

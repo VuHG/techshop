@@ -41,12 +41,7 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
       {(coGiam || isFlash || tags.length > 0) && (
         <div className="absolute inset-x-2 top-2 z-10 flex flex-wrap gap-1">
           {(coGiam || isFlash) && (
-            <span
-              className={cn(
-                'flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-white',
-                isFlash ? 'bg-sale' : 'bg-primary',
-              )}
-            >
+            <span className="flex items-center gap-0.5 rounded bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
               {isFlash && <Zap className="h-3 w-3" />}-{phanTramGiam}%
             </span>
           )}

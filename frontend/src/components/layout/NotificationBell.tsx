@@ -50,12 +50,12 @@ export function NotificationBell() {
   const items = list?.items ?? [];
 
   return (
-    <div ref={ref} className="relative shrink-0">
+    <div ref={ref} className="relative flex shrink-0 items-center">
       <button
         type="button"
         aria-label="Thông báo"
         onClick={() => setOpen((v) => !v)}
-        className="relative text-gray-700 hover:text-primary"
+        className="relative flex items-center text-gray-700 hover:text-primary"
       >
         <Bell className="h-6 w-6" />
         {!!soChuaDoc && soChuaDoc > 0 && (
