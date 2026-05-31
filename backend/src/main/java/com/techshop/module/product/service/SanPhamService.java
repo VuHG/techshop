@@ -40,7 +40,7 @@ public class SanPhamService {
     public PageResponse<BienTheCardResponse> getSanPham(
             Long phanLoaiId, String search,
             BigDecimal minPrice, BigDecimal maxPrice,
-            String sortBy, String thongSo, boolean khuyenMai, int page, int size) {
+            String sortBy, String thongSo, boolean khuyenMai, String nhanMa, int page, int size) {
 
         // Sort nhúng trong native query → pageable chỉ dùng cho limit/offset (unsorted).
         Pageable pageable = PageRequest.of(page, size);
@@ -50,10 +50,11 @@ public class SanPhamService {
                 : null;
         // Chuẩn hóa chuỗi JSON tiêu chí lọc; null nếu rỗng/không hợp lệ (→ bỏ lọc tiêu chí).
         String thongSoJson = normalizeThongSo(thongSo);
+        String nhan = (nhanMa != null && !nhanMa.isBlank()) ? nhanMa.trim() : null;
         String sort = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy;
 
         Page<BienTheSanPham> result = bienTheRepo.findBienTheCards(
-                phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai ? 1 : 0, thongSoJson, sort, pageable);
+                phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai ? 1 : 0, thongSoJson, nhan, sort, pageable);
         List<BienTheCardResponse> items = result.getContent().stream()
                 .map(this::toBienTheCardResponse)
                 .collect(Collectors.toCollection(ArrayList::new));

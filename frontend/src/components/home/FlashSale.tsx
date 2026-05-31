@@ -6,6 +6,7 @@ import { Zap } from 'lucide-react';
 import { useCountdown } from '@/hooks/useCountdown';
 import { flashSaleService } from '@/services/flashSaleService';
 import { ProductImage } from '@/components/ui/ProductImage';
+import { DragScroll } from '@/components/ui/DragScroll';
 import { formatPrice } from '@/lib/utils';
 import type { FlashSaleItem } from '@/types';
 
@@ -41,14 +42,14 @@ export function FlashSale() {
         </Link>
       </div>
 
-      {/* Dải sản phẩm cuộn ngang */}
-      <div className="no-scrollbar flex gap-3 overflow-x-auto p-4">
+      {/* Dải sản phẩm cuộn ngang — kéo trái/phải bằng chuột */}
+      <DragScroll className="p-4">
         {items.map((it) => (
           <div key={it.flashSaleId} className="w-44 shrink-0">
             <FlashCard item={it} />
           </div>
         ))}
-      </div>
+      </DragScroll>
     </section>
   );
 }

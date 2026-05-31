@@ -33,11 +33,12 @@ public class SanPhamController {
             @RequestParam(defaultValue = "newest") String sortBy,
             @RequestParam(required = false) String thongSo,
             @RequestParam(defaultValue = "false") boolean khuyenMai,
+            @RequestParam(required = false) String nhan,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         return ApiResponse.ok(sanPhamService.getSanPham(
-                phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, khuyenMai, page, size));
+                phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, khuyenMai, nhan, page, size));
     }
 
     /**

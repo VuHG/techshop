@@ -23,6 +23,8 @@ export interface SanPhamQuery {
   thongSo?: string;
   /** true = chỉ sản phẩm khuyến mãi (giá bán < giá niêm yết). */
   khuyenMai?: boolean;
+  /** ma_nhan để lọc theo tag, vd 'noi-bat' (Nổi bật), 'hot'... */
+  nhan?: string;
   page?: number;
   size?: number;
 }

@@ -30,6 +30,9 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             AND (CAST(:thongSo AS text) IS NULL
                  OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
                     @> CAST(:thongSo AS jsonb))
+            AND (CAST(:nhanMa AS text) IS NULL OR EXISTS (
+                 SELECT 1 FROM bien_the_nhan bn JOIN nhan_san_pham n ON bn.nhan_id = n.id
+                 WHERE bn.bien_the_id = bt.id AND n.ma_nhan = :nhanMa))
             ORDER BY
                 CASE WHEN :sortBy = 'rating'     THEN sp.diem_danh_gia_tb END DESC NULLS LAST,
                 CASE WHEN :sortBy = 'sold'       THEN sp.so_luot_ban END DESC NULLS LAST,
@@ -49,6 +52,9 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             AND (CAST(:thongSo AS text) IS NULL
                  OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
                     @> CAST(:thongSo AS jsonb))
+            AND (CAST(:nhanMa AS text) IS NULL OR EXISTS (
+                 SELECT 1 FROM bien_the_nhan bn JOIN nhan_san_pham n ON bn.nhan_id = n.id
+                 WHERE bn.bien_the_id = bt.id AND n.ma_nhan = :nhanMa))
             """,
             nativeQuery = true)
     Page<BienTheSanPham> findBienTheCards(
@@ -58,6 +64,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("khuyenMai") int khuyenMai,
             @Param("thongSo") String thongSo,
+            @Param("nhanMa") String nhanMa,
             @Param("sortBy") String sortBy,
             Pageable pageable
     );
