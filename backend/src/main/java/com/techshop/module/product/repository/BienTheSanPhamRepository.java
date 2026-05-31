@@ -22,11 +22,11 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             SELECT bt.* FROM bien_the_san_pham bt
             JOIN san_pham sp ON bt.san_pham_id = sp.id
             WHERE bt.trang_thai = 'CON_HANG' AND sp.trang_thai = 'CON_HANG'
-            AND (:phanLoaiId IS NULL OR sp.phan_loai_id = :phanLoaiId)
-            AND (:search IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
-            AND (:minPrice IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
-            AND (:maxPrice IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
-            AND (:khuyenMai = FALSE OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
+            AND (CAST(:phanLoaiId AS bigint) IS NULL OR sp.phan_loai_id = :phanLoaiId)
+            AND (CAST(:search AS text) IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
+            AND (CAST(:minPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
+            AND (CAST(:maxPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
+            AND (:khuyenMai = 0 OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
             AND (CAST(:thongSo AS text) IS NULL
                  OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
                     @> CAST(:thongSo AS jsonb))
@@ -41,11 +41,11 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             SELECT COUNT(*) FROM bien_the_san_pham bt
             JOIN san_pham sp ON bt.san_pham_id = sp.id
             WHERE bt.trang_thai = 'CON_HANG' AND sp.trang_thai = 'CON_HANG'
-            AND (:phanLoaiId IS NULL OR sp.phan_loai_id = :phanLoaiId)
-            AND (:search IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
-            AND (:minPrice IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
-            AND (:maxPrice IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
-            AND (:khuyenMai = FALSE OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
+            AND (CAST(:phanLoaiId AS bigint) IS NULL OR sp.phan_loai_id = :phanLoaiId)
+            AND (CAST(:search AS text) IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
+            AND (CAST(:minPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
+            AND (CAST(:maxPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
+            AND (:khuyenMai = 0 OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
             AND (CAST(:thongSo AS text) IS NULL
                  OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
                     @> CAST(:thongSo AS jsonb))
@@ -56,7 +56,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             @Param("search") String search,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
-            @Param("khuyenMai") boolean khuyenMai,
+            @Param("khuyenMai") int khuyenMai,
             @Param("thongSo") String thongSo,
             @Param("sortBy") String sortBy,
             Pageable pageable

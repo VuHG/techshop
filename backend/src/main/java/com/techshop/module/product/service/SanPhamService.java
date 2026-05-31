@@ -52,7 +52,7 @@ public class SanPhamService {
         String sort = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy;
 
         Page<BienTheSanPham> result = bienTheRepo.findBienTheCards(
-                phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai, thongSoJson, sort, pageable);
+                phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai ? 1 : 0, thongSoJson, sort, pageable);
         List<BienTheCardResponse> items = result.getContent().stream()
                 .map(this::toBienTheCardResponse)
                 .collect(Collectors.toCollection(ArrayList::new));
