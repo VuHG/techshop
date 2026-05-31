@@ -58,11 +58,13 @@ export const ORDER_STATUS: Record<string, { label: string; color: string }> = {
   DA_HUY: { label: 'Đã hủy', color: 'text-gray-500' },
 };
 
-/** Tùy chọn sắp xếp — KHỚP sortBy backend hỗ trợ (newest/rating/sold). */
+/** Tùy chọn sắp xếp — KHỚP sortBy backend hỗ trợ. */
 export const SORT_OPTIONS = [
   { value: 'newest', label: 'Mới nhất' },
   { value: 'rating', label: 'Đánh giá cao' },
   { value: 'sold', label: 'Bán chạy' },
+  { value: 'price_asc', label: 'Giá thấp → cao' },
+  { value: 'price_desc', label: 'Giá cao → thấp' },
 ] as const;
 
 /** Cấu hình menu tài khoản (sidebar). `stub: true` = tính năng ngoài MVP → trang "Sắp có". */

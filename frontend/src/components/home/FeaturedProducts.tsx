@@ -1,8 +1,19 @@
+'use client';
+
 import Link from 'next/link';
-import { FEATURED_PRODUCTS } from '@/data/mock';
-import { ProductCard } from '@/components/product/ProductCard';
+import { useQuery } from '@tanstack/react-query';
+import { productService } from '@/services/productService';
+import { BienTheCard } from '@/components/product/BienTheCard';
 
 export function FeaturedProducts() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['san-pham-noi-bat'],
+    queryFn: () => productService.getSanPham({ sortBy: 'sold', size: 12 }),
+    staleTime: 60 * 1000,
+  });
+
+  const items = data?.items ?? [];
+
   return (
     <section className="mt-6">
       <div className="mb-4 flex items-center justify-between">
@@ -11,11 +22,20 @@ export function FeaturedProducts() {
           Xem tất cả
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {FEATURED_PRODUCTS.map((sp) => (
-          <ProductCard key={sp.id} sanPham={sp} />
-        ))}
-      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-72 animate-pulse rounded-xl border border-gray-100 bg-gray-100" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {items.map((it) => (
+            <BienTheCard key={it.bienTheId} item={it} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

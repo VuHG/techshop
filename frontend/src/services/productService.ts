@@ -1,6 +1,7 @@
 import { api } from '@/lib/api';
 import type {
   ApiResponse,
+  BienTheCard,
   DanhMuc,
   FilterSchema,
   PageResult,
@@ -10,21 +11,25 @@ import type {
   Suggest,
 } from '@/types';
 
+export type SortValue = 'newest' | 'rating' | 'sold' | 'price_asc' | 'price_desc';
+
 export interface SanPhamQuery {
   phanLoaiId?: number;
   search?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: 'newest' | 'rating' | 'sold';
+  sortBy?: SortValue;
   /** Chuỗi JSON tiêu chí lọc JSONB, vd '{"ram":"16GB","cpu":"Intel Core i7"}'. */
   thongSo?: string;
+  /** true = chỉ sản phẩm khuyến mãi (giá bán < giá niêm yết). */
+  khuyenMai?: boolean;
   page?: number;
   size?: number;
 }
 
 export const productService = {
-  async getSanPham(params: SanPhamQuery): Promise<PageResult<SanPhamCard>> {
-    const res = await api.get<ApiResponse<PageResult<SanPhamCard>>>('/san-pham', { params });
+  async getSanPham(params: SanPhamQuery): Promise<PageResult<BienTheCard>> {
+    const res = await api.get<ApiResponse<PageResult<BienTheCard>>>('/san-pham', { params });
     return res.data.data;
   },
 

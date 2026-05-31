@@ -1,9 +1,9 @@
 import { PackageX } from 'lucide-react';
-import type { SanPhamCard } from '@/types';
-import { ProductCard } from './ProductCard';
+import type { BienTheCard as BienTheCardType } from '@/types';
+import { BienTheCard } from './BienTheCard';
 
 interface ProductGridProps {
-  items: SanPhamCard[];
+  items: BienTheCardType[];
   loading?: boolean;
   error?: boolean;
 }
@@ -39,8 +39,8 @@ export function ProductGrid({ items, loading, error }: ProductGridProps) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {items.map((sp) => (
-        <ProductCard key={sp.id} sanPham={sp} />
+      {items.map((it) => (
+        <BienTheCard key={it.bienTheId} item={it} />
       ))}
     </div>
   );

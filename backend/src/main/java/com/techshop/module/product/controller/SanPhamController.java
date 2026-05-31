@@ -18,23 +18,26 @@ public class SanPhamController {
     private final SanPhamService sanPhamService;
 
     /**
-     * GET /api/san-pham
-     * Query: page, size, phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo
+     * GET /api/san-pham — danh sách CARD THEO BIẾN THỂ (1 biến thể = 1 card).
+     * Query: page, size, phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, khuyenMai
+     * sortBy: newest | rating | sold | price_asc | price_desc
      * thongSo: chuỗi JSON tiêu chí lọc JSONB, vd {"ram":"16GB","cpu":"Intel Core i7"}
+     * khuyenMai=true: chỉ biến thể có giá khuyến mãi < giá niêm yết
      */
     @GetMapping
-    public ApiResponse<PageResponse<SanPhamCardResponse>> getSanPham(
+    public ApiResponse<PageResponse<BienTheCardResponse>> getSanPham(
             @RequestParam(required = false) Long phanLoaiId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "newest") String sortBy,
             @RequestParam(required = false) String thongSo,
+            @RequestParam(defaultValue = "false") boolean khuyenMai,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        return ApiResponse.ok(
-                sanPhamService.getSanPham(phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, page, size));
+        return ApiResponse.ok(sanPhamService.getSanPham(
+                phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, khuyenMai, page, size));
     }
 
     /**

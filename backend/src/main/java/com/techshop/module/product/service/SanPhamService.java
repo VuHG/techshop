@@ -14,7 +14,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,28 +36,69 @@ public class SanPhamService {
 
     // ─── Danh sách sản phẩm ───────────────────────────────────────────────
 
-    public PageResponse<SanPhamCardResponse> getSanPham(
+    public PageResponse<BienTheCardResponse> getSanPham(
             Long phanLoaiId, String search,
             BigDecimal minPrice, BigDecimal maxPrice,
-            String sortBy, String thongSo, int page, int size) {
+            String sortBy, String thongSo, boolean khuyenMai, int page, int size) {
 
-        Pageable pageable = buildPageable(sortBy, page, size);
+        // Sort nhúng trong native query → pageable chỉ dùng cho limit/offset (unsorted).
+        Pageable pageable = PageRequest.of(page, size);
         // Pattern đã lowercase + bọc %...% để khớp với LIKE :search trong query.
-        // Không nhúng param vào CONCAT/LOWER vì param null sẽ bị PostgreSQL suy ra kiểu bytea → lỗi lower(bytea).
         String searchPattern = (search != null && !search.isBlank())
                 ? "%" + search.trim().toLowerCase() + "%"
                 : null;
-
         // Chuẩn hóa chuỗi JSON tiêu chí lọc; null nếu rỗng/không hợp lệ (→ bỏ lọc tiêu chí).
         String thongSoJson = normalizeThongSo(thongSo);
+        String sort = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy;
 
-        Page<SanPham> result = sanPhamRepo.findWithFilters(
-                phanLoaiId, searchPattern, minPrice, maxPrice, thongSoJson, pageable);
-        List<SanPhamCardResponse> items = result.getContent().stream()
-                .map(this::toCardResponse)
-                .toList();
+        Page<BienTheSanPham> result = bienTheRepo.findBienTheCards(
+                phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai, thongSoJson, sort, pageable);
+        List<BienTheCardResponse> items = result.getContent().stream()
+                .map(this::toBienTheCardResponse)
+                .collect(Collectors.toCollection(ArrayList::new));
 
         return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);
+    }
+
+    // Map 1 biến thể → card (1 biến thể = 1 card). Lazy-load sanPham/anhs/nhans trong transaction.
+    private BienTheCardResponse toBienTheCardResponse(BienTheSanPham bt) {
+        SanPham sp = bt.getSanPham();
+        BigDecimal gia = bt.getGia();
+        BigDecimal giaBan = bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : gia;
+        int phanTram = 0;
+        if (gia != null && gia.signum() > 0 && giaBan.compareTo(gia) < 0) {
+            phanTram = gia.subtract(giaBan)
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(gia, 0, java.math.RoundingMode.HALF_UP)
+                    .intValue();
+        }
+
+        String anhChinh = bt.getAnhs().stream()
+                .filter(AnhSanPham::isLaAnhChinh)
+                .map(AnhSanPham::getUrlAnh)
+                .findFirst()
+                .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null));
+
+        List<NhanResponse> nhans = bt.getNhans().stream()
+                .map(n -> NhanResponse.builder()
+                        .id(n.getId()).tenNhan(n.getTenNhan()).mauSac(n.getMauSac()).build())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return BienTheCardResponse.builder()
+                .bienTheId(bt.getId())
+                .sanPhamId(sp.getId())
+                .slug(sp.getSlug())
+                .tenSanPham(sp.getTenSanPham())
+                .tenBienThe(null) // cột ten_bien_the (V7) chưa map trong entity → FE tự ghép từ thông số
+                .thongSoBienThe(bt.getThongSoBienThe())
+                .anhChinh(anhChinh)
+                .gia(gia)
+                .giaBan(giaBan)
+                .phanTramGiam(phanTram)
+                .diemDanhGiaTb(sp.getDiemDanhGiaTb())
+                .soLuotDanhGia(sp.getSoLuotDanhGia())
+                .nhans(nhans)
+                .build();
     }
 
     /**
@@ -253,13 +293,4 @@ public class SanPhamService {
                 .orElse(null);
     }
 
-    private Pageable buildPageable(String sortBy, int page, int size) {
-        // Native query → sort theo TÊN CỘT thật (không phải tên field entity).
-        Sort sort = switch (sortBy == null ? "" : sortBy) {
-            case "rating" -> Sort.by("diem_danh_gia_tb").descending();
-            case "sold"   -> Sort.by("so_luot_ban").descending();
-            default       -> Sort.by("ngay_tao").descending();
-        };
-        return PageRequest.of(page, size, sort);
-    }
 }

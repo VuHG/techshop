@@ -106,6 +106,23 @@ export interface Suggest {
   giaThap: number | null;
 }
 
+// Card theo BIẾN THỂ (1 biến thể = 1 card) — khớp BienTheCardResponse backend.
+export interface BienTheCard {
+  bienTheId: number;
+  sanPhamId: number;
+  slug: string;
+  tenSanPham: string;
+  tenBienThe: string | null;
+  thongSoBienThe: Record<string, unknown>;
+  anhChinh: string | null;
+  gia: number;        // niêm yết
+  giaBan: number;     // bán (≤ gia)
+  phanTramGiam: number;
+  diemDanhGiaTb: number;
+  soLuotDanhGia: number;
+  nhans: Nhan[];
+}
+
 // Flash sale (card theo biến thể) — khớp FlashSaleItemResponse backend.
 export interface FlashSaleItem {
   flashSaleId: number;

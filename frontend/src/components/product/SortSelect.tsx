@@ -2,7 +2,7 @@
 
 import { SORT_OPTIONS } from '@/lib/constants';
 
-export type SortValue = 'newest' | 'rating' | 'sold';
+export type SortValue = 'newest' | 'rating' | 'sold' | 'price_asc' | 'price_desc';
 
 export function SortSelect({
   value,

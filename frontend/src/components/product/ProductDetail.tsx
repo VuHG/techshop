@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -31,6 +31,12 @@ export function ProductDetail({ slug }: { slug: string }) {
   const setSoLuong = useCartStore((s) => s.setSoLuong);
   const [variantId, setVariantId] = useState<number | null>(null);
   const [dangThem, setDangThem] = useState(false);
+
+  // Chọn sẵn biến thể theo ?bienThe trên URL (khi tới từ card biến thể / flash sale).
+  useEffect(() => {
+    const bt = new URLSearchParams(window.location.search).get('bienThe');
+    if (bt) setVariantId(Number(bt));
+  }, []);
 
   if (isLoading) {
     return (

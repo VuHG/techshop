@@ -14,11 +14,13 @@ interface ProductListingProps {
   title: string;
   danhMucSlug?: string;
   search?: string;
+  /** true = trang khuyến mãi: chỉ biến thể có giá bán < giá niêm yết. */
+  khuyenMai?: boolean;
 }
 
 const PAGE_SIZE = 12;
 
-export function ProductListing({ title, danhMucSlug, search }: ProductListingProps) {
+export function ProductListing({ title, danhMucSlug, search, khuyenMai }: ProductListingProps) {
   const router = useRouter();
   const [phanLoaiId, setPhanLoaiId] = useState<number | undefined>();
   const [minPrice, setMinPrice] = useState<number | undefined>();
@@ -60,7 +62,7 @@ export function ProductListing({ title, danhMucSlug, search }: ProductListingPro
     Object.keys(thongSo).length > 0 ? JSON.stringify(thongSo) : undefined;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['san-pham', { phanLoaiId, search, minPrice, maxPrice, sortBy, thongSoParam, page }],
+    queryKey: ['san-pham', { phanLoaiId, search, minPrice, maxPrice, sortBy, thongSoParam, khuyenMai, page }],
     queryFn: () =>
       productService.getSanPham({
         phanLoaiId,
@@ -69,6 +71,7 @@ export function ProductListing({ title, danhMucSlug, search }: ProductListingPro
         maxPrice,
         sortBy,
         thongSo: thongSoParam,
+        khuyenMai,
         page,
         size: PAGE_SIZE,
       }),
