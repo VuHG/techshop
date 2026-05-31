@@ -31,25 +31,54 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
             """)
     int capNhatDiemDanhGia(@Param("id") Long id, @Param("diem") int diem);
 
-    @Query("""
-            SELECT DISTINCT s FROM SanPham s
-            WHERE s.trangThai = 'CON_HANG'
-            AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
-            AND (:search IS NULL OR LOWER(s.tenSanPham) LIKE :search)
+    // Native query: thêm lọc tiêu chí JSONB (@>) trên thong_so_bien_the, tận dụng GIN index.
+    // :thongSo là chuỗi JSON ({"ram":"16GB",...}) hoặc null. CAST(:thongSo AS text) IS NULL để
+    // PostgreSQL suy được kiểu tham số khi null → tránh "could not determine data type".
+    @Query(value = """
+            SELECT s.* FROM san_pham s
+            WHERE s.trang_thai = 'CON_HANG'
+            AND (:phanLoaiId IS NULL OR s.phan_loai_id = :phanLoaiId)
+            AND (:search IS NULL OR LOWER(s.ten_san_pham) LIKE :search)
             AND (:minPrice IS NULL OR EXISTS (
-                SELECT bt FROM BienTheSanPham bt WHERE bt.sanPham = s
-                AND bt.trangThai = 'CON_HANG'
-                AND COALESCE(bt.giaKhuyenMai, bt.gia) >= :minPrice))
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice))
             AND (:maxPrice IS NULL OR EXISTS (
-                SELECT bt FROM BienTheSanPham bt WHERE bt.sanPham = s
-                AND bt.trangThai = 'CON_HANG'
-                AND COALESCE(bt.giaKhuyenMai, bt.gia) <= :maxPrice))
-            """)
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice))
+            AND (CAST(:thongSo AS text) IS NULL OR EXISTS (
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND (COALESCE(s.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
+                    @> CAST(:thongSo AS jsonb)))
+            """,
+            countQuery = """
+            SELECT COUNT(*) FROM san_pham s
+            WHERE s.trang_thai = 'CON_HANG'
+            AND (:phanLoaiId IS NULL OR s.phan_loai_id = :phanLoaiId)
+            AND (:search IS NULL OR LOWER(s.ten_san_pham) LIKE :search)
+            AND (:minPrice IS NULL OR EXISTS (
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice))
+            AND (:maxPrice IS NULL OR EXISTS (
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice))
+            AND (CAST(:thongSo AS text) IS NULL OR EXISTS (
+                SELECT 1 FROM bien_the_san_pham bt WHERE bt.san_pham_id = s.id
+                AND bt.trang_thai = 'CON_HANG'
+                AND (COALESCE(s.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
+                    @> CAST(:thongSo AS jsonb)))
+            """,
+            nativeQuery = true)
     Page<SanPham> findWithFilters(
             @Param("phanLoaiId") Long phanLoaiId,
             @Param("search") String search,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
+            @Param("thongSo") String thongSo,
             Pageable pageable
     );
 

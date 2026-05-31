@@ -19,7 +19,8 @@ public class SanPhamController {
 
     /**
      * GET /api/san-pham
-     * Query: page, size, phanLoaiId, search, minPrice, maxPrice, sortBy
+     * Query: page, size, phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo
+     * thongSo: chuỗi JSON tiêu chí lọc JSONB, vd {"ram":"16GB","cpu":"Intel Core i7"}
      */
     @GetMapping
     public ApiResponse<PageResponse<SanPhamCardResponse>> getSanPham(
@@ -28,10 +29,12 @@ public class SanPhamController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "newest") String sortBy,
+            @RequestParam(required = false) String thongSo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        return ApiResponse.ok(sanPhamService.getSanPham(phanLoaiId, search, minPrice, maxPrice, sortBy, page, size));
+        return ApiResponse.ok(
+                sanPhamService.getSanPham(phanLoaiId, search, minPrice, maxPrice, sortBy, thongSo, page, size));
     }
 
     /**

@@ -72,7 +72,6 @@ export const ACCOUNT_MENU = [
   { id: 'don-hang', ten: 'Lịch sử mua hàng', icon: 'ShoppingBag', href: '/lich-su-mua-hang' },
   { id: 'tu-van-ai', ten: 'Lịch sử tư vấn AI', icon: 'MessageSquare', href: '/sap-co', stub: true },
   { id: 'danh-gia', ten: 'Đánh giá sản phẩm', icon: 'Star', href: '/danh-gia' },
-  { id: 'thong-bao', ten: 'Thông báo', icon: 'Bell', href: '/thong-bao' },
 ] as const;
 
 /** Tra tên hiển thị danh mục theo slug (tìm cả cấp con). */

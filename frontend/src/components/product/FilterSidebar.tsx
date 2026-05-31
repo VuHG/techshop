@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
-import type { FilterSchema, PhanLoai } from '@/types';
+import type { DanhMuc, FilterSchema, PhanLoai } from '@/types';
 import { SortSelect, type SortValue } from './SortSelect';
 
 interface FilterSidebarProps {
+  danhMucList: DanhMuc[];
+  danhMucSlug?: string;
+  onChonDanhMuc: (slug: string) => void;
   phanLoaiList: PhanLoai[];
   phanLoaiId?: number;
   onChonPhanLoai: (id: number) => void;
@@ -16,6 +19,8 @@ interface FilterSidebarProps {
   sortBy: SortValue;
   onSort: (s: SortValue) => void;
   schema?: FilterSchema;
+  thongSo: Record<string, string>;
+  onChonTieuChi: (key: string, value: string) => void;
   onXoaTatCa: () => void;
 }
 
@@ -25,7 +30,22 @@ interface TieuChi {
   values?: string[];
 }
 
+// Dàn phẳng cây danh mục: cha (level 0) + con (level 1) để hiển thị danh sách chọn.
+function flattenDanhMuc(list: DanhMuc[]): { slug: string; ten: string; level: number }[] {
+  const out: { slug: string; ten: string; level: number }[] = [];
+  for (const dm of list) {
+    out.push({ slug: dm.slug, ten: dm.tenDanhMuc, level: 0 });
+    for (const con of dm.danhMucCon ?? []) {
+      out.push({ slug: con.slug, ten: con.tenDanhMuc, level: 1 });
+    }
+  }
+  return out;
+}
+
 export function FilterSidebar({
+  danhMucList,
+  danhMucSlug,
+  onChonDanhMuc,
   phanLoaiList,
   phanLoaiId,
   onChonPhanLoai,
@@ -35,6 +55,8 @@ export function FilterSidebar({
   sortBy,
   onSort,
   schema,
+  thongSo,
+  onChonTieuChi,
   onXoaTatCa,
 }: FilterSidebarProps) {
   const [tuGia, setTuGia] = useState('');
@@ -46,15 +68,43 @@ export function FilterSidebar({
     onApplyGia(mn, mx);
   };
 
+  const dmFlat = flattenDanhMuc(danhMucList);
   const tieuChiList = schema ? Object.entries(schema) : [];
-  const coDangLoc = minPrice != null || maxPrice != null;
+  const tieuChiDangChon = Object.entries(thongSo);
+  const coDangLoc = minPrice != null || maxPrice != null || tieuChiDangChon.length > 0;
 
   return (
-    <aside className="hidden w-64 shrink-0 rounded-xl border border-gray-100 bg-white p-4 lg:block">
-      {/* Phân loại */}
+    <aside className="hidden w-56 shrink-0 rounded-xl border border-gray-100 bg-white p-4 lg:block">
+      {/* 1. Lọc danh mục — toàn bộ danh mục từ DB */}
+      {dmFlat.length > 0 && (
+        <div className="mb-5">
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">Lọc danh mục</h3>
+          <ul className="space-y-0.5">
+            {dmFlat.map((dm) => (
+              <li key={dm.slug}>
+                <button
+                  type="button"
+                  onClick={() => onChonDanhMuc(dm.slug)}
+                  className={cn(
+                    'block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-primary-50 hover:text-primary',
+                    dm.level === 1 && 'pl-5',
+                    dm.slug === danhMucSlug
+                      ? 'bg-primary-50 font-medium text-primary'
+                      : 'text-gray-700',
+                  )}
+                >
+                  {dm.ten}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 2. Chọn sản phẩm — phân loại trong danh mục đang xem */}
       {phanLoaiList.length > 0 && (
         <div className="mb-5">
-          <h3 className="mb-2 text-sm font-semibold text-gray-700">Chọn phân loại</h3>
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">Chọn sản phẩm</h3>
           <div className="flex flex-wrap gap-2">
             {phanLoaiList.map((pl) => (
               <button
@@ -75,7 +125,34 @@ export function FilterSidebar({
         </div>
       )}
 
-      {/* Khoảng giá */}
+      {/* 3. Lọc theo tiêu chí — lấy động từ filter-schema của phân loại */}
+      {tieuChiList.length > 0 && (
+        <div className="mb-5">
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">Lọc theo tiêu chí</h3>
+          <div className="space-y-2">
+            {tieuChiList.map(([key, value]) => {
+              const tc = value as TieuChi;
+              return (
+                <select
+                  key={key}
+                  value={thongSo[key] ?? ''}
+                  onChange={(e) => onChonTieuChi(key, e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+                >
+                  <option value="">{tc.label ?? key}: Tất cả</option>
+                  {(tc.values ?? []).map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Khoảng giá */}
       <div className="mb-5">
         <h3 className="mb-2 text-sm font-semibold text-gray-700">Khoảng giá</h3>
         <div className="flex items-center gap-2">
@@ -104,29 +181,7 @@ export function FilterSidebar({
         </button>
       </div>
 
-      {/* Lọc nâng cao theo thuộc tính (JSONB) — backend chưa hỗ trợ → hiển thị, disabled */}
-      {tieuChiList.length > 0 && (
-        <div className="mb-5">
-          <h3 className="mb-2 text-sm font-semibold text-gray-700">Lọc theo tiêu chí</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {tieuChiList.map(([key, value]) => {
-              const tc = value as TieuChi;
-              return (
-                <select
-                  key={key}
-                  disabled
-                  className="cursor-not-allowed rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-gray-400"
-                >
-                  <option>{tc.label ?? key}</option>
-                </select>
-              );
-            })}
-          </div>
-          <p className="mt-1 text-[11px] italic text-gray-400">Lọc nâng cao đang phát triển</p>
-        </div>
-      )}
-
-      {/* Đang lọc theo */}
+      {/* Đang lọc theo — gồm giá + các tiêu chí đã chọn */}
       {coDangLoc && (
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between">
@@ -143,24 +198,39 @@ export function FilterSidebar({
               Xóa tất cả
             </button>
           </div>
-          <span className="inline-flex items-center gap-1 rounded bg-primary-50 px-2 py-1 text-xs text-primary">
-            Giá: {minPrice != null ? formatPrice(minPrice) : '0'} –{' '}
-            {maxPrice != null ? formatPrice(maxPrice) : '∞'}
-            <button
-              type="button"
-              onClick={() => {
-                setTuGia('');
-                setDenGia('');
-                onApplyGia(undefined, undefined);
-              }}
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {(minPrice != null || maxPrice != null) && (
+              <span className="inline-flex items-center gap-1 rounded bg-primary-50 px-2 py-1 text-xs text-primary">
+                Giá: {minPrice != null ? formatPrice(minPrice) : '0'} –{' '}
+                {maxPrice != null ? formatPrice(maxPrice) : '∞'}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTuGia('');
+                    setDenGia('');
+                    onApplyGia(undefined, undefined);
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {tieuChiDangChon.map(([key, val]) => (
+              <span
+                key={key}
+                className="inline-flex items-center gap-1 rounded bg-primary-50 px-2 py-1 text-xs text-primary"
+              >
+                {val}
+                <button type="button" onClick={() => onChonTieuChi(key, '')}>
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Sắp xếp */}
+      {/* 5. Sắp xếp theo */}
       <div>
         <h3 className="mb-2 text-sm font-semibold text-gray-700">Sắp xếp theo</h3>
         <SortSelect value={sortBy} onChange={onSort} />

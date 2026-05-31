@@ -2,16 +2,28 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { DANH_MUC_NAV } from '@/lib/constants';
-import type { DanhMucNav } from '@/types';
+import { productService } from '@/services/productService';
 import { cn } from '@/lib/utils';
+
+// Class dùng CHUNG cho mục danh mục cha và con → font/màu giống hệt nhau.
+const MUC_CLASS = 'flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary';
 
 export function CategoryMenu() {
   const [moPanel, setMoPanel] = useState(false);
-  const [activeId, setActiveId] = useState<string>(DANH_MUC_NAV[0].id);
+  const [activeId, setActiveId] = useState<number | null>(null);
 
-  const active = DANH_MUC_NAV.find((d) => d.id === activeId);
+  // Lấy cây danh mục động từ DB (GET /api/danh-muc).
+  const { data: danhMucList } = useQuery({
+    queryKey: ['cay-danh-muc'],
+    queryFn: productService.getCayDanhMuc,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const list = danhMucList ?? [];
+  const active = list.find((d) => d.id === activeId) ?? list[0];
+  const activeCon = active?.danhMucCon ?? [];
 
   return (
     <div
@@ -27,63 +39,40 @@ export function CategoryMenu() {
         <ChevronDown className="h-4 w-4" />
       </button>
 
-      {moPanel && (
+      {moPanel && list.length > 0 && (
         <div className="absolute left-0 top-full z-50 flex animate-fade-in rounded-lg border border-gray-100 bg-white shadow-xl">
-          {/* Cột cấp 1 */}
-          <ul className="w-52 py-2">
-            {DANH_MUC_NAV.map((dm) => (
-              <li key={dm.id}>
-                <Link
-                  href={`/danh-muc/${dm.id}`}
-                  onMouseEnter={() => setActiveId(dm.id)}
-                  className={cn(
-                    'flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary',
-                    activeId === dm.id && 'bg-primary-50 text-primary',
-                  )}
-                >
-                  {dm.ten}
-                  {dm.children && <ChevronRight className="h-4 w-4" />}
-                </Link>
-              </li>
-            ))}
+          {/* Cột danh mục cha */}
+          <ul className="w-56 py-2">
+            {list.map((dm) => {
+              const coCon = dm.danhMucCon && dm.danhMucCon.length > 0;
+              return (
+                <li key={dm.id}>
+                  <Link
+                    href={`/danh-muc/${dm.slug}`}
+                    onMouseEnter={() => setActiveId(dm.id)}
+                    className={cn(MUC_CLASS, coCon && active?.id === dm.id && 'bg-primary-50 text-primary')}
+                  >
+                    {dm.tenDanhMuc}
+                    {coCon && <ChevronRight className="h-4 w-4" />}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
-          {/* Panel con cấp 2/3 */}
-          {active?.children && (
-            <div className="w-72 border-l border-gray-100 p-4">
-              {active.children.map((con) => (
-                <PanelCon key={con.id} muc={con} />
+          {/* Panel danh mục con — font/màu GIỐNG HỆT danh mục cha (cùng MUC_CLASS) */}
+          {activeCon.length > 0 && (
+            <ul className="w-64 border-l border-gray-100 py-2">
+              {activeCon.map((con) => (
+                <li key={con.id}>
+                  <Link href={`/danh-muc/${con.slug}`} className={MUC_CLASS}>
+                    {con.tenDanhMuc}
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
-      )}
-    </div>
-  );
-}
-
-function PanelCon({ muc }: { muc: DanhMucNav }) {
-  return (
-    <div className="mb-4 last:mb-0">
-      <Link
-        href={`/danh-muc/${muc.id}`}
-        className="mb-2 block text-sm font-semibold uppercase text-sale"
-      >
-        {muc.ten}
-      </Link>
-      {muc.children && (
-        <ul className="grid grid-cols-1 gap-1">
-          {muc.children.map((g) => (
-            <li key={g.id}>
-              <Link
-                href={`/danh-muc/${g.id}`}
-                className="block py-1 text-sm text-gray-600 hover:text-primary"
-              >
-                {g.ten}
-              </Link>
-            </li>
-          ))}
-        </ul>
       )}
     </div>
   );

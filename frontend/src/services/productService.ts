@@ -16,6 +16,8 @@ export interface SanPhamQuery {
   minPrice?: number;
   maxPrice?: number;
   sortBy?: 'newest' | 'rating' | 'sold';
+  /** Chuỗi JSON tiêu chí lọc JSONB, vd '{"ram":"16GB","cpu":"Intel Core i7"}'. */
+  thongSo?: string;
   page?: number;
   size?: number;
 }

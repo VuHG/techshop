@@ -11,7 +11,6 @@ import {
   ShoppingBag,
   MessageSquare,
   Star,
-  Bell,
   type LucideIcon,
 } from 'lucide-react';
 import { ACCOUNT_MENU } from '@/lib/constants';
@@ -19,7 +18,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
 import { authService } from '@/services/authService';
 
-const ICONS: Record<string, LucideIcon> = { User, MapPin, ShoppingBag, MessageSquare, Star, Bell };
+const ICONS: Record<string, LucideIcon> = { User, MapPin, ShoppingBag, MessageSquare, Star };
 
 export function UserMenu() {
   const router = useRouter();

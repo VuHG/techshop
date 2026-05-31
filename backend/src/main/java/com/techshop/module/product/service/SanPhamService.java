@@ -33,27 +33,47 @@ public class SanPhamService {
 
     private final SanPhamRepository sanPhamRepo;
     private final BienTheSanPhamRepository bienTheRepo;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // ─── Danh sách sản phẩm ───────────────────────────────────────────────
 
     public PageResponse<SanPhamCardResponse> getSanPham(
             Long phanLoaiId, String search,
             BigDecimal minPrice, BigDecimal maxPrice,
-            String sortBy, int page, int size) {
+            String sortBy, String thongSo, int page, int size) {
 
         Pageable pageable = buildPageable(sortBy, page, size);
-        // Pattern đã lowercase + bọc %...% để khớp với LIKE :search trong JPQL.
+        // Pattern đã lowercase + bọc %...% để khớp với LIKE :search trong query.
         // Không nhúng param vào CONCAT/LOWER vì param null sẽ bị PostgreSQL suy ra kiểu bytea → lỗi lower(bytea).
         String searchPattern = (search != null && !search.isBlank())
                 ? "%" + search.trim().toLowerCase() + "%"
                 : null;
 
-        Page<SanPham> result = sanPhamRepo.findWithFilters(phanLoaiId, searchPattern, minPrice, maxPrice, pageable);
+        // Chuẩn hóa chuỗi JSON tiêu chí lọc; null nếu rỗng/không hợp lệ (→ bỏ lọc tiêu chí).
+        String thongSoJson = normalizeThongSo(thongSo);
+
+        Page<SanPham> result = sanPhamRepo.findWithFilters(
+                phanLoaiId, searchPattern, minPrice, maxPrice, thongSoJson, pageable);
         List<SanPhamCardResponse> items = result.getContent().stream()
                 .map(this::toCardResponse)
                 .toList();
 
         return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);
+    }
+
+    /**
+     * Validate + chuẩn hóa chuỗi JSON tiêu chí (vd {"ram":"16GB"}). Trả null nếu rỗng,
+     * không phải object, hoặc JSON sai → khi đó query bỏ qua điều kiện lọc tiêu chí.
+     */
+    private String normalizeThongSo(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(json);
+            if (!node.isObject() || node.isEmpty()) return null;
+            return objectMapper.writeValueAsString(node);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // ─── Chi tiết sản phẩm ───────────────────────────────────────────────
@@ -234,11 +254,11 @@ public class SanPhamService {
     }
 
     private Pageable buildPageable(String sortBy, int page, int size) {
-        // price_asc/price_desc requires subquery sort — use ngayTao as fallback for Phase 3
+        // Native query → sort theo TÊN CỘT thật (không phải tên field entity).
         Sort sort = switch (sortBy == null ? "" : sortBy) {
-            case "rating" -> Sort.by("diemDanhGiaTb").descending();
-            case "sold"   -> Sort.by("soLuotBan").descending();
-            default       -> Sort.by("ngayTao").descending();
+            case "rating" -> Sort.by("diem_danh_gia_tb").descending();
+            case "sold"   -> Sort.by("so_luot_ban").descending();
+            default       -> Sort.by("ngay_tao").descending();
         };
         return PageRequest.of(page, size, sort);
     }
