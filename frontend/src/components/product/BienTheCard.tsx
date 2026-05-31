@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Zap } from 'lucide-react';
 import type { BienTheCard as BienTheCardType } from '@/types';
 import { cn, formatPrice } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -21,6 +21,7 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
   const { slug, bienTheId, tenSanPham, thongSoBienThe, anhChinh, gia, giaBan, phanTramGiam } = item;
   const href = `/san-pham/${slug}?bienThe=${bienTheId}`;
   const coGiam = phanTramGiam > 0 && giaBan < gia;
+  const isFlash = item.flashSale; // → dùng màu Flash Sale (đỏ/sale + gradient) giống mục Flash Sale
   const nhanBt = nhanBienThe(thongSoBienThe);
 
   return (
@@ -31,9 +32,15 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
           {item.nhans[0].tenNhan}
         </span>
       )}
-      {coGiam && (
-        <span className="absolute left-2 top-2 z-10 rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white">
-          -{phanTramGiam}%
+      {/* Badge % giảm — flash sale dùng màu sale + tia chớp, ngược lại màu primary */}
+      {(coGiam || isFlash) && (
+        <span
+          className={cn(
+            'absolute left-2 top-2 z-10 flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-white',
+            isFlash ? 'bg-sale' : 'bg-primary',
+          )}
+        >
+          {isFlash && <Zap className="h-3 w-3" />}-{phanTramGiam}%
         </span>
       )}
 
@@ -57,26 +64,31 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
         </div>
 
         <div className="mt-1 flex flex-wrap items-baseline gap-x-1.5">
-          <span className="text-base font-bold text-primary">{formatPrice(giaBan)}</span>
-          {coGiam && (
-            <span className="text-xs text-gray-400 line-through">{formatPrice(gia)}</span>
-          )}
+          <span className={cn('text-base font-bold', isFlash ? 'text-sale' : 'text-primary')}>
+            {formatPrice(giaBan)}
+          </span>
+          {coGiam && <span className="text-xs text-gray-400 line-through">{formatPrice(gia)}</span>}
         </div>
 
         <div className="mt-3 flex items-stretch gap-2">
           <button
             type="button"
             onClick={() => router.push(href)}
-            className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary py-2 text-sm font-semibold text-white transition hover:bg-primary-dark"
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm font-semibold text-white transition',
+              isFlash ? 'bg-flash-gradient hover:opacity-90' : 'bg-primary hover:bg-primary-dark',
+            )}
           >
-            Mua ngay
+            {isFlash && <Zap className="h-4 w-4" />}
+            {isFlash ? 'MUA NGAY' : 'Mua ngay'}
           </button>
           <button
             type="button"
             aria-label="Xem sản phẩm"
             onClick={() => router.push(href)}
             className={cn(
-              'flex items-center justify-center rounded-lg bg-primary px-3 text-white transition hover:bg-primary-dark',
+              'flex items-center justify-center rounded-lg px-3 text-white transition',
+              isFlash ? 'bg-sale hover:bg-sale-dark' : 'bg-primary hover:bg-primary-dark',
             )}
           >
             <ShoppingCart className="h-4 w-4" />

@@ -118,6 +118,7 @@ export interface BienTheCard {
   gia: number;        // niêm yết
   giaBan: number;     // bán (≤ gia)
   phanTramGiam: number;
+  flashSale: boolean; // true nếu đang trong flash sale → hiển thị màu Flash Sale
   diemDanhGiaTb: number;
   soLuotDanhGia: number;
   nhans: Nhan[];

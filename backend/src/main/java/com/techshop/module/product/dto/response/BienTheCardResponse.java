@@ -22,8 +22,9 @@ public class BienTheCardResponse {
     private Map<String, Object> thongSoBienThe;
     private String anhChinh;
     private BigDecimal gia;        // giá niêm yết
-    private BigDecimal giaBan;     // giá bán hiệu lực (≤ gia)
+    private BigDecimal giaBan;     // giá bán hiệu lực (= giá flash nếu đang flash sale, ngược lại giaKhuyenMai ?? gia)
     private Integer phanTramGiam;  // % giảm so với gia (0 nếu không giảm)
+    private boolean flashSale;     // true nếu biến thể đang trong flash sale còn hiệu lực
     private BigDecimal diemDanhGiaTb;
     private Integer soLuotDanhGia;
     private List<NhanResponse> nhans;

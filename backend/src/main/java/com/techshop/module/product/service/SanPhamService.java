@@ -32,6 +32,7 @@ public class SanPhamService {
 
     private final SanPhamRepository sanPhamRepo;
     private final BienTheSanPhamRepository bienTheRepo;
+    private final com.techshop.module.flashsale.service.FlashSaleQueryService flashSaleQueryService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // ─── Danh sách sản phẩm ───────────────────────────────────────────────
@@ -64,7 +65,10 @@ public class SanPhamService {
     private BienTheCardResponse toBienTheCardResponse(BienTheSanPham bt) {
         SanPham sp = bt.getSanPham();
         BigDecimal gia = bt.getGia();
-        BigDecimal giaBan = bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : gia;
+        // Giá bán = giá flash nếu biến thể đang flash sale, ngược lại giaKhuyenMai ?? gia.
+        java.util.Optional<BigDecimal> giaFlash = flashSaleQueryService.giaFlashSaleConHieuLuc(bt.getId());
+        boolean laFlashSale = giaFlash.isPresent();
+        BigDecimal giaBan = giaFlash.orElseGet(() -> bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : gia);
         int phanTram = 0;
         if (gia != null && gia.signum() > 0 && giaBan.compareTo(gia) < 0) {
             phanTram = gia.subtract(giaBan)
@@ -95,6 +99,7 @@ public class SanPhamService {
                 .gia(gia)
                 .giaBan(giaBan)
                 .phanTramGiam(phanTram)
+                .flashSale(laFlashSale)
                 .diemDanhGiaTb(sp.getDiemDanhGiaTb())
                 .soLuotDanhGia(sp.getSoLuotDanhGia())
                 .nhans(nhans)
