@@ -106,6 +106,23 @@ export interface Suggest {
   giaThap: number | null;
 }
 
+// Flash sale (card theo biến thể) — khớp FlashSaleItemResponse backend.
+export interface FlashSaleItem {
+  flashSaleId: number;
+  bienTheId: number;
+  sanPhamId: number;
+  slug: string;
+  tenSanPham: string;
+  thongSoBienThe: Record<string, unknown>;
+  anhChinh: string | null;
+  giaGoc: number | null;
+  giaFlashSale: number;
+  phanTramGiam: number;
+  soLuongGioiHan: number | null;
+  soLuongDaBan: number;
+  thoiGianKetThuc: string; // ISO
+}
+
 export interface DanhMuc {
   id: number;
   tenDanhMuc: string;

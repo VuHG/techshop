@@ -6,6 +6,7 @@ import com.techshop.module.cart.dto.response.GioHangItemResponse;
 import com.techshop.module.cart.dto.response.GioHangResponse;
 import com.techshop.module.cart.entity.GioHang;
 import com.techshop.module.cart.repository.GioHangRepository;
+import com.techshop.module.flashsale.service.FlashSaleQueryService;
 import com.techshop.module.product.dto.BienTheInfo;
 import com.techshop.module.product.service.ProductQueryService;
 import com.techshop.shared.exception.AppException;
@@ -24,6 +25,7 @@ public class GioHangServiceImpl implements GioHangService {
 
     private final GioHangRepository gioHangRepo;
     private final ProductQueryService productQueryService;
+    private final FlashSaleQueryService flashSaleQueryService;
 
     @Override
     @Transactional(readOnly = true)
@@ -136,7 +138,10 @@ public class GioHangServiceImpl implements GioHangService {
 
     private GioHangItemResponse toItemResponse(GioHang line) {
         BienTheInfo info = productQueryService.layThongTinBienThe(line.getBienTheId());
-        BigDecimal gia = info.getGiaHienThi();
+        // Giá hiệu lực = giá flash sale nếu biến thể đang trong flash sale còn hiệu lực,
+        // ngược lại là giá hiển thị thường (giaKhuyenMai ?? gia). Giỏ + đơn dùng chung giá này.
+        BigDecimal gia = flashSaleQueryService.giaFlashSaleConHieuLuc(line.getBienTheId())
+                .orElse(info.getGiaHienThi());
         BigDecimal thanhTien = gia.multiply(BigDecimal.valueOf(line.getSoLuong()));
         boolean conHang = info.isConHang() && info.getSoLuongTon() >= line.getSoLuong();
 

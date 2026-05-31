@@ -42,7 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/danh-muc/**",
                                 "/api/phan-loai/**",
-                                "/api/san-pham/**").permitAll()
+                                "/api/san-pham/**",
+                                "/api/flash-sale/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
