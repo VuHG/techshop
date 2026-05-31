@@ -225,7 +225,7 @@ function GioHangContent() {
                     </span>
                   ))}
                 </div>
-                <p className="mt-1 font-semibold text-sale">{formatPrice(item.gia)}</p>
+                <p className="mt-1 font-semibold text-primary">{formatPrice(item.gia)}</p>
                 {!item.conHang && <p className="text-xs text-sale">Hết hàng / không đủ tồn</p>}
 
                 <div className="mt-2 flex items-center justify-between">

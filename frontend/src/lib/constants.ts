@@ -69,13 +69,24 @@ export function timTenDanhMuc(slug: string): string {
   return 'Sản phẩm';
 }
 
+/** Link footer — `href` trỏ trang CÓ THẬT; trang thông tin chưa làm → /sap-co. */
 export const FOOTER_LINKS = {
-  veTechShop: {
-    tieuDe: 'Về TechShop',
-    links: ['Giới thiệu', 'Tuyển dụng', 'Chính sách bảo mật', 'Liên hệ'],
+  danhMuc: {
+    tieuDe: 'Danh mục',
+    links: [
+      { ten: 'Laptop', href: '/danh-muc/laptop' },
+      { ten: 'PC Gaming', href: '/danh-muc/pc-gaming' },
+      { ten: 'Màn hình', href: '/danh-muc/man-hinh' },
+      { ten: 'Khuyến mãi', href: '/khuyen-mai' },
+    ],
   },
   hoTro: {
     tieuDe: 'Hỗ trợ khách hàng',
-    links: ['Hướng dẫn mua hàng', 'Phương thức thanh toán', 'Chính sách bảo hành', 'Câu hỏi thường gặp'],
+    links: [
+      { ten: 'Hướng dẫn mua hàng', href: '/sap-co' },
+      { ten: 'Phương thức thanh toán', href: '/sap-co' },
+      { ten: 'Chính sách bảo hành', href: '/sap-co' },
+      { ten: 'Câu hỏi thường gặp', href: '/sap-co' },
+    ],
   },
 };

@@ -18,8 +18,8 @@ export function Footer() {
           </p>
         </div>
 
-        {/* Về TechShop */}
-        <FooterCol tieuDe={FOOTER_LINKS.veTechShop.tieuDe} links={FOOTER_LINKS.veTechShop.links} />
+        {/* Danh mục */}
+        <FooterCol tieuDe={FOOTER_LINKS.danhMuc.tieuDe} links={FOOTER_LINKS.danhMuc.links} />
 
         {/* Hỗ trợ khách hàng */}
         <FooterCol tieuDe={FOOTER_LINKS.hoTro.tieuDe} links={FOOTER_LINKS.hoTro.links} />
@@ -51,15 +51,21 @@ export function Footer() {
   );
 }
 
-function FooterCol({ tieuDe, links }: { tieuDe: string; links: string[] }) {
+function FooterCol({
+  tieuDe,
+  links,
+}: {
+  tieuDe: string;
+  links: { ten: string; href: string }[];
+}) {
   return (
     <div>
       <h3 className="mb-3 font-semibold text-white">{tieuDe}</h3>
       <ul className="space-y-2 text-sm">
         {links.map((l) => (
-          <li key={l}>
-            <Link href="#" className="text-gray-400 transition hover:text-white">
-              {l}
+          <li key={l.ten}>
+            <Link href={l.href} className="text-gray-400 transition hover:text-white">
+              {l.ten}
             </Link>
           </li>
         ))}
