@@ -205,9 +205,13 @@ public class SanPhamService {
     public List<SanPhamCardResponse> getUngCuSoSanh(Long phanLoaiId, List<Long> loaiTruIds, String search) {
         List<Long> exclude = (loaiTruIds == null || loaiTruIds.isEmpty())
                 ? List.of(-1L) : loaiTruIds;
-        String tuKhoa = (search == null || search.isBlank()) ? null : search.trim();
-        List<SanPham> candidates = sanPhamRepo.findCompareCandidates(
-                phanLoaiId, exclude, tuKhoa, PageRequest.of(0, 20));
+        // "" = khớp tất cả; tránh truyền tham số null vào LIKE (PostgreSQL không suy được kiểu).
+        String tuKhoa = (search == null) ? "" : search.trim();
+        PageRequest top20 = PageRequest.of(0, 20);
+        // phanLoaiId null = lượt chọn đầu tiên (toàn bộ cửa hàng); có = chỉ SP tương quan cùng phân loại.
+        List<SanPham> candidates = (phanLoaiId == null)
+                ? sanPhamRepo.findCompareCandidatesAll(exclude, tuKhoa, top20)
+                : sanPhamRepo.findCompareCandidates(phanLoaiId, exclude, tuKhoa, top20);
         return candidates.stream().map(this::toCardResponse).toList();
     }
 

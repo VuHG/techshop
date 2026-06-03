@@ -53,18 +53,32 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
     @Query("SELECT s FROM SanPham s WHERE s.id IN :ids AND s.trangThai = 'CON_HANG'")
     List<SanPham> findByIds(@Param("ids") List<Long> ids);
 
-    // phanLoaiId = null → lượt chọn ĐẦU TIÊN: toàn bộ cửa hàng.
-    // phanLoaiId != null → các lượt sau: chỉ sản phẩm tương quan (cùng phân loại mốc).
+    // Các lượt sau: chỉ sản phẩm tương quan (cùng phân loại mốc).
+    // search = "" → LIKE '%%' khớp tất cả (tránh tham số null gây lỗi suy kiểu của PostgreSQL).
     @Query("""
             SELECT s FROM SanPham s
             WHERE s.trangThai = 'CON_HANG'
-            AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
+            AND s.phanLoaiId = :phanLoaiId
             AND s.id NOT IN :excludeIds
-            AND (:search IS NULL OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
+            AND LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%'))
             ORDER BY s.soLuotBan DESC
             """)
     List<SanPham> findCompareCandidates(
             @Param("phanLoaiId") Long phanLoaiId,
+            @Param("excludeIds") List<Long> excludeIds,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
+    // Lượt chọn ĐẦU TIÊN: toàn bộ cửa hàng (không lọc phân loại).
+    @Query("""
+            SELECT s FROM SanPham s
+            WHERE s.trangThai = 'CON_HANG'
+            AND s.id NOT IN :excludeIds
+            AND LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%'))
+            ORDER BY s.soLuotBan DESC
+            """)
+    List<SanPham> findCompareCandidatesAll(
             @Param("excludeIds") List<Long> excludeIds,
             @Param("search") String search,
             Pageable pageable
