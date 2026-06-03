@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { notificationService } from '@/services/notificationService';
 import { cn, formatNgay } from '@/lib/utils';
+import type { PageResult, ThongBao } from '@/types';
 
 export function NotificationBell() {
   const qc = useQueryClient();
@@ -47,6 +48,22 @@ export function NotificationBell() {
     else router.push('/thong-bao');
   };
 
+  // Rê chuột qua = coi như đã xem (không cần click). Cập nhật tại chỗ để dropdown không nhảy.
+  const daXemKhiRe = async (n: ThongBao) => {
+    if (n.daDoc) return;
+    try {
+      await notificationService.danhDaDoc(n.id);
+    } catch {
+      return;
+    }
+    qc.setQueryData<PageResult<ThongBao>>(['noti-list'], (old) =>
+      old
+        ? { ...old, items: old.items.map((it) => (it.id === n.id ? { ...it, daDoc: true } : it)) }
+        : old,
+    );
+    qc.invalidateQueries({ queryKey: ['noti-count'] });
+  };
+
   const items = list?.items ?? [];
 
   return (
@@ -79,6 +96,7 @@ export function NotificationBell() {
                   key={n.id}
                   type="button"
                   onClick={() => moThongBao(n.id, n.loaiThongBao)}
+                  onMouseEnter={() => daXemKhiRe(n)}
                   className={cn(
                     'block w-full px-4 py-2.5 text-left hover:bg-gray-50',
                     !n.daDoc && 'bg-primary-50/50',

@@ -7,6 +7,7 @@ import { Bell } from 'lucide-react';
 import { notificationService } from '@/services/notificationService';
 import { AccountShell } from '@/components/account/AccountShell';
 import { cn, formatNgay } from '@/lib/utils';
+import type { PageResult, ThongBao } from '@/types';
 
 export default function ThongBaoPage() {
   return (
@@ -40,6 +41,23 @@ function ThongBaoContent() {
     }
     lamMoi();
     if (loai === 'DON_HANG') router.push('/lich-su-mua-hang');
+  };
+
+  // Rê chuột qua = coi như đã xem. Cập nhật tại chỗ để danh sách không nhảy.
+  const daXemKhiRe = async (n: ThongBao) => {
+    if (n.daDoc) return;
+    try {
+      await notificationService.danhDaDoc(n.id);
+    } catch {
+      return;
+    }
+    qc.setQueryData<PageResult<ThongBao>>(['noti-page'], (old) =>
+      old
+        ? { ...old, items: old.items.map((it) => (it.id === n.id ? { ...it, daDoc: true } : it)) }
+        : old,
+    );
+    qc.invalidateQueries({ queryKey: ['noti-count'] });
+    qc.invalidateQueries({ queryKey: ['noti-list'] });
   };
 
   const docTatCa = async () => {
@@ -77,6 +95,7 @@ function ThongBaoContent() {
               <button
                 type="button"
                 onClick={() => mo(n.id, n.loaiThongBao)}
+                onMouseEnter={() => daXemKhiRe(n)}
                 className={cn('block w-full py-3 text-left', !n.daDoc && 'rounded-lg bg-primary-50/50 px-2')}
               >
                 <div className="flex items-center justify-between">

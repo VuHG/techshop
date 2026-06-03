@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,9 +53,11 @@ public class DanhMucService {
     public Map<String, Object> getFilterSchema(Long phanLoaiId) {
         // Phân loại CHƯA có tiêu chí lọc (chưa auto-sync) là hợp lệ → trả schema rỗng,
         // KHÔNG ném PROD_001 (tránh frontend toast nhầm "Sản phẩm không tồn tại").
+        // Dùng HashMap (KHÔNG Map.of) vì GenericJackson2JsonRedisSerializer không serialize
+        // được immutable map rỗng khi cache → gây lỗi 500.
         return filterLocRepo.findByPhanLoaiId(phanLoaiId)
                 .map(ChiTietThuocTinhLoc::getThongSoLoc)
-                .orElseGet(Map::of);
+                .orElseGet(HashMap::new);
     }
 
     private DanhMucResponse toDanhMucResponse(DanhMuc dm) {
