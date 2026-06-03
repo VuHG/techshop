@@ -50,9 +50,11 @@ public class DanhMucService {
 
     @Cacheable(value = "filter-schema", key = "#phanLoaiId")
     public Map<String, Object> getFilterSchema(Long phanLoaiId) {
-        ChiTietThuocTinhLoc loc = filterLocRepo.findByPhanLoaiId(phanLoaiId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROD_001));
-        return loc.getThongSoLoc();
+        // Phân loại CHƯA có tiêu chí lọc (chưa auto-sync) là hợp lệ → trả schema rỗng,
+        // KHÔNG ném PROD_001 (tránh frontend toast nhầm "Sản phẩm không tồn tại").
+        return filterLocRepo.findByPhanLoaiId(phanLoaiId)
+                .map(ChiTietThuocTinhLoc::getThongSoLoc)
+                .orElseGet(Map::of);
     }
 
     private DanhMucResponse toDanhMucResponse(DanhMuc dm) {
