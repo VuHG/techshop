@@ -58,6 +58,7 @@ export function ProductDetail({ slug }: { slug: string }) {
   const themVaoSoSanh = () => {
     const card: SanPhamCard = {
       id: sp.id,
+      phanLoaiId: sp.phanLoaiId,
       slug: sp.slug,
       tenSanPham: sp.tenSanPham,
       moTaNgan: sp.moTaNgan,

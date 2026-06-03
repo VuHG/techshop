@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SanPhamCardResponse {
     private Long id;
+    private Long phanLoaiId;
     private String slug;
     private String tenSanPham;
     private String moTaNgan;

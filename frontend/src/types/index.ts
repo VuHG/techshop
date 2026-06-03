@@ -58,6 +58,8 @@ export interface Anh {
 
 export interface SanPhamCard {
   id: number;
+  /** Phân loại của sản phẩm — dùng làm "mốc" để lọc sản phẩm tương quan khi so sánh. */
+  phanLoaiId: number;
   slug: string;
   tenSanPham: string;
   moTaNgan: string | null;

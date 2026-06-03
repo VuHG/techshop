@@ -202,11 +202,12 @@ public class SanPhamService {
 
     // ─── Ứng cử viên so sánh ─────────────────────────────────────────────
 
-    public List<SanPhamCardResponse> getUngCuSoSanh(Long phanLoaiId, List<Long> loaiTruIds) {
+    public List<SanPhamCardResponse> getUngCuSoSanh(Long phanLoaiId, List<Long> loaiTruIds, String search) {
         List<Long> exclude = (loaiTruIds == null || loaiTruIds.isEmpty())
                 ? List.of(-1L) : loaiTruIds;
+        String tuKhoa = (search == null || search.isBlank()) ? null : search.trim();
         List<SanPham> candidates = sanPhamRepo.findCompareCandidates(
-                phanLoaiId, exclude, PageRequest.of(0, 20));
+                phanLoaiId, exclude, tuKhoa, PageRequest.of(0, 20));
         return candidates.stream().map(this::toCardResponse).toList();
     }
 
@@ -243,6 +244,7 @@ public class SanPhamService {
 
         return SanPhamCardResponse.builder()
                 .id(sp.getId())
+                .phanLoaiId(sp.getPhanLoaiId())
                 .slug(sp.getSlug())
                 .tenSanPham(sp.getTenSanPham())
                 .moTaNgan(sp.getMoTaNgan())

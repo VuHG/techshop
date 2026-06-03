@@ -52,9 +52,21 @@ export const productService = {
     return res.data.data;
   },
 
-  async getUngCuSoSanh(phanLoaiId: number, loaiTruIds: number[]): Promise<SanPhamCard[]> {
+  /**
+   * Ứng cử viên so sánh.
+   * @param phanLoaiId undefined = lượt chọn đầu tiên (toàn bộ cửa hàng); có giá trị = chỉ SP tương quan cùng phân loại mốc.
+   */
+  async getUngCuSoSanh(
+    phanLoaiId: number | undefined,
+    loaiTruIds: number[],
+    search?: string,
+  ): Promise<SanPhamCard[]> {
     const res = await api.get<ApiResponse<SanPhamCard[]>>('/san-pham/ung-cu-so-sanh', {
-      params: { phanLoaiId, loaiTruIds: loaiTruIds.length ? loaiTruIds.join(',') : undefined },
+      params: {
+        phanLoaiId,
+        loaiTruIds: loaiTruIds.length ? loaiTruIds.join(',') : undefined,
+        search: search && search.trim() ? search.trim() : undefined,
+      },
     });
     return res.data.data;
   },

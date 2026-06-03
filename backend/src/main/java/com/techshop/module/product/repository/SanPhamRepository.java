@@ -53,16 +53,20 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
     @Query("SELECT s FROM SanPham s WHERE s.id IN :ids AND s.trangThai = 'CON_HANG'")
     List<SanPham> findByIds(@Param("ids") List<Long> ids);
 
+    // phanLoaiId = null → lượt chọn ĐẦU TIÊN: toàn bộ cửa hàng.
+    // phanLoaiId != null → các lượt sau: chỉ sản phẩm tương quan (cùng phân loại mốc).
     @Query("""
             SELECT s FROM SanPham s
-            WHERE s.phanLoaiId = :phanLoaiId
-            AND s.trangThai = 'CON_HANG'
+            WHERE s.trangThai = 'CON_HANG'
+            AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
             AND s.id NOT IN :excludeIds
+            AND (:search IS NULL OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
             ORDER BY s.soLuotBan DESC
             """)
     List<SanPham> findCompareCandidates(
             @Param("phanLoaiId") Long phanLoaiId,
             @Param("excludeIds") List<Long> excludeIds,
+            @Param("search") String search,
             Pageable pageable
     );
 }

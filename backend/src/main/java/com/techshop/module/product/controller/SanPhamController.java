@@ -61,14 +61,16 @@ public class SanPhamController {
     }
 
     /**
-     * GET /api/san-pham/ung-cu-so-sanh?phanLoaiId=1&loaiTruIds=2,3
-     * Danh sách ứng cử viên để chọn so sánh
+     * GET /api/san-pham/ung-cu-so-sanh?phanLoaiId=1&loaiTruIds=2,3&search=...
+     * Danh sách ứng cử viên để chọn so sánh.
+     * phanLoaiId rỗng = lượt chọn ĐẦU TIÊN (toàn bộ cửa hàng); có = chỉ sản phẩm tương quan cùng phân loại.
      */
     @GetMapping("/ung-cu-so-sanh")
     public ApiResponse<List<SanPhamCardResponse>> getUngCuSoSanh(
-            @RequestParam Long phanLoaiId,
-            @RequestParam(required = false) List<Long> loaiTruIds) {
-        return ApiResponse.ok(sanPhamService.getUngCuSoSanh(phanLoaiId, loaiTruIds));
+            @RequestParam(required = false) Long phanLoaiId,
+            @RequestParam(required = false) List<Long> loaiTruIds,
+            @RequestParam(required = false) String search) {
+        return ApiResponse.ok(sanPhamService.getUngCuSoSanh(phanLoaiId, loaiTruIds, search));
     }
 
     /**
