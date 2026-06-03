@@ -4,9 +4,12 @@ import type { SanPhamCard } from '@/types';
 
 const MAX_SO_SANH = 3;
 
+/** Kết quả thêm vào so sánh — để caller hiển thị đúng thông báo. */
+export type ThemKetQua = 'ok' | 'day' | 'trung' | 'khac-loai';
+
 interface CompareState {
   items: SanPhamCard[];
-  them: (sp: SanPhamCard) => boolean; // false nếu đã đầy hoặc trùng
+  them: (sp: SanPhamCard) => ThemKetQua;
   xoa: (id: number) => void;
   xoaTatCa: () => void;
   coTrong: (id: number) => boolean;
@@ -18,9 +21,12 @@ export const useCompareStore = create<CompareState>()(
       items: [],
       them: (sp) => {
         const { items } = get();
-        if (items.length >= MAX_SO_SANH || items.some((i) => i.id === sp.id)) return false;
+        if (items.some((i) => i.id === sp.id)) return 'trung';
+        if (items.length >= MAX_SO_SANH) return 'day';
+        // Mốc = items[0]. Sản phẩm 2,3 phải tương quan (cùng phân loại) với mốc.
+        if (items.length > 0 && items[0].phanLoaiId !== sp.phanLoaiId) return 'khac-loai';
         set({ items: [...items, sp] });
-        return true;
+        return 'ok';
       },
       xoa: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
       xoaTatCa: () => set({ items: [] }),

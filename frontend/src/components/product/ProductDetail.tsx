@@ -70,9 +70,11 @@ export function ProductDetail({ slug }: { slug: string }) {
       anhChinh: selected?.anhs?.[0]?.urlAnh ?? null,
       nhans: [],
     };
-    const ok = themSoSanh(card);
-    if (ok) toast.success('Đã thêm vào danh sách so sánh');
-    else toast.error('Đã đủ 3 sản phẩm hoặc sản phẩm đã có trong danh sách');
+    const kq = themSoSanh(card);
+    if (kq === 'ok') toast.success('Đã thêm vào danh sách so sánh');
+    else if (kq === 'trung') toast.error('Sản phẩm đã có trong danh sách so sánh');
+    else if (kq === 'day') toast.error('Chỉ so sánh tối đa 3 sản phẩm');
+    else toast.error('Chỉ so sánh được sản phẩm tương quan (cùng loại với sản phẩm đầu tiên)');
   };
 
   const themGio = async (muaNgay: boolean) => {

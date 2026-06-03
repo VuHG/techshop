@@ -6,6 +6,7 @@ import { X, Plus } from 'lucide-react';
 import { useCompareStore, MAX_SO_SANH } from '@/stores/compareStore';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { Container } from '@/components/ui/Container';
+import { CompareModal } from './CompareModal';
 import { cn } from '@/lib/utils';
 
 /** Thanh so sánh nổi ở đáy — hiện khi có ≥1 sản phẩm trong danh sách. */
@@ -14,6 +15,7 @@ export function CompareBar() {
   const xoa = useCompareStore((s) => s.xoa);
   const xoaTatCa = useCompareStore((s) => s.xoaTatCa);
   const [mounted, setMounted] = useState(false);
+  const [moModal, setMoModal] = useState(false);
   useEffect(() => setMounted(true), []);
 
   if (!mounted || items.length === 0) return null;
@@ -42,12 +44,14 @@ export function CompareBar() {
                 </button>
               </div>
             ) : (
-              <div
+              <button
                 key={`empty-${i}`}
-                className="flex h-14 w-36 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400"
+                type="button"
+                onClick={() => setMoModal(true)}
+                className="flex h-14 w-36 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400 transition hover:border-primary hover:text-primary"
               >
                 <Plus className="h-5 w-5" />
-              </div>
+              </button>
             ),
           )}
         </div>
@@ -71,6 +75,15 @@ export function CompareBar() {
           </button>
         </div>
       </Container>
+
+      {/* Mốc = items[0]; modal chỉ hiện sản phẩm tương quan cùng phân loại. */}
+      {moModal && (
+        <CompareModal
+          phanLoaiId={items[0]?.phanLoaiId}
+          excludeIds={items.map((i) => i.id)}
+          onClose={() => setMoModal(false)}
+        />
+      )}
     </div>
   );
 }

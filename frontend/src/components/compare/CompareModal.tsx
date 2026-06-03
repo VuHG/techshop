@@ -38,12 +38,16 @@ export function CompareModal({
   const list = data ?? [];
 
   const chon = (sp: SanPhamCard) => {
-    const ok = them(sp);
-    if (ok) {
+    const kq = them(sp);
+    if (kq === 'ok') {
       toast.success('Đã thêm vào so sánh');
       onClose();
+    } else if (kq === 'trung') {
+      toast.error('Sản phẩm đã có trong danh sách');
+    } else if (kq === 'day') {
+      toast.error('Đã đủ 3 sản phẩm');
     } else {
-      toast.error('Đã đủ 3 sản phẩm hoặc đã có trong danh sách');
+      toast.error('Sản phẩm không tương quan với sản phẩm mốc');
     }
   };
 
