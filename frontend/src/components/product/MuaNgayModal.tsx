@@ -15,18 +15,23 @@ import { VariantSelector } from './VariantSelector';
 import { formatPrice, giaBienThe } from '@/lib/utils';
 
 /**
- * Form "Mua ngay" mở từ card: chọn biến thể (mặc định = biến thể đã bấm) + số lượng.
- * "Mua hàng" → thêm vào giỏ rồi sang /thanh-toan. "Quay lại" → đóng form.
+ * Form mở từ card: chọn biến thể (mặc định = biến thể đã bấm) + số lượng.
+ * - mode='mua-ngay': "Mua hàng" → thêm vào giỏ rồi sang /thanh-toan.
+ * - mode='them-gio': "Thêm vào giỏ hàng" → thêm vào giỏ rồi đóng form.
+ * "Quay lại" → đóng form.
  */
 export function MuaNgayModal({
   slug,
   bienTheIdMacDinh,
+  mode = 'mua-ngay',
   onClose,
 }: {
   slug: string;
   bienTheIdMacDinh?: number;
+  mode?: 'mua-ngay' | 'them-gio';
   onClose: () => void;
 }) {
+  const laThemGio = mode === 'them-gio';
   const router = useRouter();
   const qc = useQueryClient();
   const isAuth = useAuthStore((s) => s.isAuthenticated);
@@ -65,7 +70,7 @@ export function MuaNgayModal({
     setSoLuong((sl) => Math.min(Math.max(1, sl + delta), Math.max(1, tonKho)));
   };
 
-  const muaHang = async () => {
+  const xuLy = async () => {
     if (!selected) return;
     if (!isAuth) {
       toast.error('Vui lòng đăng nhập để mua hàng');
@@ -81,7 +86,15 @@ export function MuaNgayModal({
       const gioMoi = await cartService.themVaoGio(selected.id, soLuong);
       setSoLuongGio(gioMoi.tongSoLuong);
       qc.setQueryData(['gio-hang'], gioMoi);
-      // Lấy dòng giỏ vừa thêm để chuyển sang thanh toán đúng sản phẩm này.
+
+      if (laThemGio) {
+        // Chỉ thêm vào giỏ rồi đóng form.
+        toast.success('Đã thêm vào giỏ hàng');
+        onClose();
+        return;
+      }
+
+      // Mua ngay: lấy dòng giỏ vừa thêm để chuyển sang thanh toán đúng sản phẩm này.
       const line = gioMoi.items.find((it) => it.bienTheId === selected.id);
       if (!line) {
         toast.error('Không thêm được sản phẩm, vui lòng thử lại');
@@ -103,7 +116,7 @@ export function MuaNgayModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-bold text-gray-800">Mua ngay</h3>
+          <h3 className="font-bold text-gray-800">{laThemGio ? 'Thêm vào giỏ hàng' : 'Mua ngay'}</h3>
           <button type="button" aria-label="Đóng" onClick={onClose}>
             <X className="h-5 w-5 text-gray-500" />
           </button>
@@ -176,11 +189,11 @@ export function MuaNgayModal({
               </button>
               <button
                 type="button"
-                onClick={muaHang}
+                onClick={xuLy}
                 disabled={dangMua || tonKho <= 0}
                 className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60"
               >
-                {dangMua ? 'Đang xử lý...' : 'Mua hàng'}
+                {dangMua ? 'Đang xử lý...' : laThemGio ? 'Thêm vào giỏ hàng' : 'Mua hàng'}
               </button>
             </div>
           </>

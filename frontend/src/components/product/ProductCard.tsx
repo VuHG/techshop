@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ShoppingCart, Zap } from 'lucide-react';
 import type { SanPhamCard } from '@/types';
 import { cn, formatPrice } from '@/lib/utils';
@@ -16,8 +15,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) {
-  const router = useRouter();
-  const [moMuaNgay, setMoMuaNgay] = useState(false);
+  const [modalMode, setModalMode] = useState<null | 'mua-ngay' | 'them-gio'>(null);
   const { slug, tenSanPham, giaThap, giaCao, diemDanhGiaTb, soLuotDanhGia, anhChinh, nhans } =
     sanPham;
   const isFlash = variant === 'flash';
@@ -62,7 +60,7 @@ export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) 
         <div className="mt-3 flex items-stretch gap-2">
           <button
             type="button"
-            onClick={() => setMoMuaNgay(true)}
+            onClick={() => setModalMode('mua-ngay')}
             className={cn(
               'flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm font-semibold text-white transition',
               isFlash ? 'bg-flash-gradient hover:opacity-90' : 'bg-primary hover:bg-primary-dark',
@@ -73,8 +71,8 @@ export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) 
           </button>
           <button
             type="button"
-            aria-label="Xem sản phẩm"
-            onClick={() => router.push(`/san-pham/${slug}`)}
+            aria-label="Thêm vào giỏ hàng"
+            onClick={() => setModalMode('them-gio')}
             className={cn(
               'flex items-center justify-center rounded-lg px-3 text-white transition',
               isFlash ? 'bg-sale hover:bg-sale-dark' : 'bg-primary hover:bg-primary-dark',
@@ -85,7 +83,9 @@ export function ProductCard({ sanPham, variant = 'default' }: ProductCardProps) 
         </div>
       </div>
 
-      {moMuaNgay && <MuaNgayModal slug={slug} onClose={() => setMoMuaNgay(false)} />}
+      {modalMode && (
+        <MuaNgayModal slug={slug} mode={modalMode} onClose={() => setModalMode(null)} />
+      )}
     </div>
   );
 }
