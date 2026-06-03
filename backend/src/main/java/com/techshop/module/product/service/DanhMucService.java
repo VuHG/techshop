@@ -49,7 +49,8 @@ public class DanhMucService {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    @Cacheable(value = "filter-schema", key = "#phanLoaiId")
+    // unless: KHÔNG cache map rỗng — vừa thừa, vừa tránh serialize map rỗng vào Redis.
+    @Cacheable(value = "filter-schema", key = "#phanLoaiId", unless = "#result == null || #result.isEmpty()")
     public Map<String, Object> getFilterSchema(Long phanLoaiId) {
         // Phân loại CHƯA có tiêu chí lọc (chưa auto-sync) là hợp lệ → trả schema rỗng,
         // KHÔNG ném PROD_001 (tránh frontend toast nhầm "Sản phẩm không tồn tại").
