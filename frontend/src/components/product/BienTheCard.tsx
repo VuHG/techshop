@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, Zap } from 'lucide-react';
@@ -7,6 +8,7 @@ import type { BienTheCard as BienTheCardType } from '@/types';
 import { cn, formatPrice } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { StarRating } from '@/components/ui/StarRating';
+import { MuaNgayModal } from './MuaNgayModal';
 
 /** Nhãn biến thể từ thông số (vd "16GB / Đen / 512GB"), tối đa 3 giá trị. */
 function nhanBienThe(thongSo: Record<string, unknown>): string {
@@ -27,6 +29,7 @@ const TAG_CLASS: Record<string, string> = {
 
 export function BienTheCard({ item }: { item: BienTheCardType }) {
   const router = useRouter();
+  const [moMuaNgay, setMoMuaNgay] = useState(false);
   const { slug, bienTheId, tenSanPham, thongSoBienThe, anhChinh, gia, giaBan, phanTramGiam } = item;
   const href = `/san-pham/${slug}?bienThe=${bienTheId}`;
   const coGiam = phanTramGiam > 0 && giaBan < gia;
@@ -88,7 +91,7 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
         <div className="mt-3 flex items-stretch gap-2">
           <button
             type="button"
-            onClick={() => router.push(href)}
+            onClick={() => setMoMuaNgay(true)}
             className={cn(
               'flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm font-semibold text-white transition',
               isFlash ? 'bg-flash-gradient hover:opacity-90' : 'bg-primary hover:bg-primary-dark',
@@ -110,6 +113,10 @@ export function BienTheCard({ item }: { item: BienTheCardType }) {
           </button>
         </div>
       </div>
+
+      {moMuaNgay && (
+        <MuaNgayModal slug={slug} bienTheIdMacDinh={bienTheId} onClose={() => setMoMuaNgay(false)} />
+      )}
     </div>
   );
 }
