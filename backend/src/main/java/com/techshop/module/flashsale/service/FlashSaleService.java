@@ -14,7 +14,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -30,6 +32,17 @@ public class FlashSaleService implements FlashSaleQueryService {
     public Optional<BigDecimal> giaFlashSaleConHieuLuc(Long bienTheId) {
         return flashSaleRepo.findConHieuLucDau(bienTheId, OffsetDateTime.now())
                 .map(FlashSale::getGiaFlashSale);
+    }
+
+    @Override
+    public Map<Long, BigDecimal> giaFlashSaleConHieuLuc(List<Long> bienTheIds) {
+        if (bienTheIds == null || bienTheIds.isEmpty()) return Map.of();
+        Map<Long, BigDecimal> map = new HashMap<>();
+        // ORDER BY thoi_gian_ket_thuc ASC → flash kết thúc sớm nhất thắng (putIfAbsent giữ cái đầu).
+        for (FlashSale f : flashSaleRepo.findConHieuLucNhieu(bienTheIds, OffsetDateTime.now())) {
+            map.putIfAbsent(f.getBienTheId(), f.getGiaFlashSale());
+        }
+        return map;
     }
 
     /** Danh sách flash sale đang diễn ra (cho trang chủ). Bỏ qua biến thể đã ẩn/xóa. */

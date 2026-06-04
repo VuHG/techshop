@@ -1,6 +1,8 @@
 package com.techshop.module.flashsale.service;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -11,4 +13,7 @@ public interface FlashSaleQueryService {
 
     /** Trả giá flash sale còn hiệu lực của biến thể, rỗng nếu không có. */
     Optional<BigDecimal> giaFlashSaleConHieuLuc(Long bienTheId);
+
+    /** Bản batch: map bienTheId → giá flash sale còn hiệu lực (chỉ chứa biến thể có flash). */
+    Map<Long, BigDecimal> giaFlashSaleConHieuLuc(List<Long> bienTheIds);
 }

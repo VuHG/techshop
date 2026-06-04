@@ -3,6 +3,7 @@ package com.techshop.module.product.service;
 import com.techshop.module.product.repository.ChiTietThuocTinhLocRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,14 @@ public class TieuChiSyncService {
     private final ChiTietThuocTinhLocRepository locRepo;
 
     @Transactional
+    @CacheEvict(value = "filter-schema", key = "#phanLoaiId")
     public void dongBoMot(Long phanLoaiId) {
         locRepo.rebuildThongSoLoc(phanLoaiId);
         log.info("Đồng bộ thong_so_loc cho phân loại {}", phanLoaiId);
     }
 
     @Transactional
+    @CacheEvict(value = "filter-schema", allEntries = true)
     public int dongBoTatCa() {
         List<Long> ids = locRepo.findPhanLoaiIdsCoThuocTinh();
         ids.forEach(locRepo::rebuildThongSoLoc);

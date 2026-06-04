@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,21 +56,27 @@ public class SanPhamService {
 
         Page<BienTheSanPham> result = bienTheRepo.findBienTheCards(
                 phanLoaiId, searchPattern, minPrice, maxPrice, khuyenMai ? 1 : 0, thongSoJson, nhan, sort, pageable);
-        List<BienTheCardResponse> items = result.getContent().stream()
-                .map(this::toBienTheCardResponse)
+
+        // Batch giá flash sale cho cả trang trong 1 truy vấn (tránh N+1 mỗi card 1 query).
+        List<BienTheSanPham> content = result.getContent();
+        Map<Long, BigDecimal> flashMap = flashSaleQueryService.giaFlashSaleConHieuLuc(
+                content.stream().map(BienTheSanPham::getId).toList());
+
+        List<BienTheCardResponse> items = content.stream()
+                .map(bt -> toBienTheCardResponse(bt, flashMap))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);
     }
 
     // Map 1 biến thể → card (1 biến thể = 1 card). Lazy-load sanPham/anhs/nhans trong transaction.
-    private BienTheCardResponse toBienTheCardResponse(BienTheSanPham bt) {
+    private BienTheCardResponse toBienTheCardResponse(BienTheSanPham bt, Map<Long, BigDecimal> flashMap) {
         SanPham sp = bt.getSanPham();
         BigDecimal gia = bt.getGia();
         // Giá bán = giá flash nếu biến thể đang flash sale, ngược lại giaKhuyenMai ?? gia.
-        java.util.Optional<BigDecimal> giaFlash = flashSaleQueryService.giaFlashSaleConHieuLuc(bt.getId());
-        boolean laFlashSale = giaFlash.isPresent();
-        BigDecimal giaBan = giaFlash.orElseGet(() -> bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : gia);
+        BigDecimal giaFlash = flashMap.get(bt.getId());
+        boolean laFlashSale = giaFlash != null;
+        BigDecimal giaBan = laFlashSale ? giaFlash : (bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : gia);
         int phanTram = 0;
         if (gia != null && gia.signum() > 0 && giaBan.compareTo(gia) < 0) {
             phanTram = gia.subtract(giaBan)

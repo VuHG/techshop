@@ -26,6 +26,17 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Long> {
         return findConHieuLuc(bienTheId, now).stream().findFirst();
     }
 
+    /** Flash sale còn hiệu lực cho NHIỀU biến thể trong 1 truy vấn (tránh N+1 ở listing). */
+    @Query("""
+            SELECT f FROM FlashSale f
+            WHERE f.bienTheId IN :bienTheIds
+            AND f.trangThai = 'HOAT_DONG'
+            AND :now BETWEEN f.thoiGianBatDau AND f.thoiGianKetThuc
+            ORDER BY f.thoiGianKetThuc ASC
+            """)
+    List<FlashSale> findConHieuLucNhieu(@Param("bienTheIds") List<Long> bienTheIds,
+                                        @Param("now") OffsetDateTime now);
+
     /** Tất cả flash sale đang diễn ra (cho trang chủ). */
     @Query("""
             SELECT f FROM FlashSale f
