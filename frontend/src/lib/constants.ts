@@ -6,8 +6,7 @@ import type { DanhMucNav } from '@/types';
  */
 export const DANH_MUC_NAV: DanhMucNav[] = [
   { id: 'laptop', ten: 'Laptop' },
-  { id: 'pc-gaming', ten: 'PC Gaming' },
-  { id: 'man-hinh', ten: 'Màn hình' },
+  { id: 'pc-gaming', ten: 'PC' },
   { id: 'linh-kien', ten: 'Linh kiện' },
   { id: 'phu-kien', ten: 'Phụ kiện' },
 ];
@@ -15,8 +14,7 @@ export const DANH_MUC_NAV: DanhMucNav[] = [
 /** Danh mục nhanh ở sidebar trang chủ (icon tròn). */
 export const DANH_MUC_SIDEBAR = [
   { id: 'laptop', ten: 'Laptop', icon: 'Laptop' },
-  { id: 'pc-gaming', ten: 'PC Gaming', icon: 'Gamepad2' },
-  { id: 'man-hinh', ten: 'Màn hình', icon: 'Monitor' },
+  { id: 'pc-gaming', ten: 'PC', icon: 'Gamepad2' },
   { id: 'linh-kien', ten: 'Linh kiện', icon: 'Cpu' },
   { id: 'phu-kien', ten: 'Phụ kiện', icon: 'Mouse' },
 ] as const;
@@ -75,8 +73,8 @@ export const FOOTER_LINKS = {
     tieuDe: 'Danh mục',
     links: [
       { ten: 'Laptop', href: '/danh-muc/laptop' },
-      { ten: 'PC Gaming', href: '/danh-muc/pc-gaming' },
-      { ten: 'Màn hình', href: '/danh-muc/man-hinh' },
+      { ten: 'PC', href: '/danh-muc/pc-gaming' },
+      { ten: 'Linh kiện', href: '/danh-muc/linh-kien' },
       { ten: 'Khuyến mãi', href: '/khuyen-mai' },
     ],
   },

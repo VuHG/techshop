@@ -22,9 +22,9 @@ export const HERO_SLIDES: HeroSlide[] = [
   },
   {
     id: 2,
-    tieuDe: 'PC Gaming cấu hình khủng',
+    tieuDe: 'PC cấu hình khủng',
     moTa: 'Build sẵn, hiệu năng cao cho game thủ và sáng tạo nội dung',
-    cta: 'Xem PC Gaming',
+    cta: 'Xem PC',
     href: '/danh-muc/pc-gaming',
     mauNen: 'from-slate-800 to-slate-600',
   },
