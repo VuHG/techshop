@@ -14,6 +14,8 @@ function required(name) {
 export const config = {
   port: Number(process.env.PORT) || 3001,
   geminiApiKey: required('GEMINI_API_KEY'),
+  // URL gốc API backend để lấy danh sách sản phẩm (server-to-server, cùng host).
+  backendUrl: process.env.BACKEND_URL || 'http://localhost:8080/api',
   // Tên model Gemini có thể thay đổi theo thời gian — để env hóa, đổi không cần sửa code.
   geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000')

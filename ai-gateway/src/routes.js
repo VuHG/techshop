@@ -1,8 +1,29 @@
 import { Router } from 'express';
 import { config } from './config.js';
 import { chat } from './geminiService.js';
+import { getCatalog } from './productCatalog.js';
 
 export const router = Router();
+
+// Tách dòng marker [[SP: slug-a, slug-b]] khỏi câu trả lời → map sang card sản phẩm.
+function taySanPham(rawReply, catalog) {
+  const m = rawReply.match(/\[\[SP:\s*([^\]]+)\]\]/i);
+  if (!m) return { reply: rawReply.trim(), products: [] };
+
+  const reply = rawReply.replace(m[0], '').trim();
+  const seen = new Set();
+  const products = [];
+  for (const slug of m[1].split(',').map((s) => s.trim()).filter(Boolean)) {
+    if (seen.has(slug)) continue;
+    const p = catalog.find((c) => c.slug === slug);
+    if (p) {
+      seen.add(slug);
+      products.push(p);
+    }
+    if (products.length >= 4) break;
+  }
+  return { reply, products };
+}
 
 router.get('/health', (req, res) => {
   res.json({ status: 'OK', model: config.geminiModel });
@@ -34,8 +55,10 @@ router.post('/chat', async (req, res) => {
     : [];
 
   try {
-    const reply = await chat(message.trim(), safeHistory);
-    return res.json({ success: true, reply, sessionId: sessionId ?? null });
+    const catalog = await getCatalog();
+    const rawReply = await chat(message.trim(), safeHistory, catalog);
+    const { reply, products } = taySanPham(rawReply, catalog);
+    return res.json({ success: true, reply, products, sessionId: sessionId ?? null });
   } catch (err) {
     const isTimeout =
       err?.name === 'TimeoutError' ||

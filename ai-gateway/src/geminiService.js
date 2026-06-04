@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { config } from './config.js';
-import { SYSTEM_PROMPT } from './systemPrompt.js';
+import { buildSystemInstruction } from './systemPrompt.js';
 
 const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
 
@@ -21,9 +21,10 @@ function withTimeout(promise, ms) {
  * Gọi Gemini để sinh câu trả lời tư vấn.
  * @param {string} message  câu hỏi của khách (đã validate, đã trim)
  * @param {{role:'user'|'assistant', content:string}[]} history  lịch sử (đã lọc)
- * @returns {Promise<string>} nội dung trả lời
+ * @param {Array} catalog  danh sách sản phẩm thật để AI gợi ý (có thể rỗng)
+ * @returns {Promise<string>} nội dung trả lời (có thể kèm dòng marker [[SP: ...]])
  */
-export async function chat(message, history = []) {
+export async function chat(message, history = [], catalog = []) {
   // Gemini dùng role 'user' | 'model' và cấu trúc parts[].
   const contents = [
     ...history.slice(-config.maxHistory).map((m) => ({
@@ -37,7 +38,7 @@ export async function chat(message, history = []) {
     model: config.geminiModel,
     contents,
     config: {
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: buildSystemInstruction(catalog),
       maxOutputTokens: 1500,
       temperature: 0.7,
       // Tắt "thinking" để tiết kiệm token + giảm độ trễ (chỉ áp với 2.5-flash trở lên,

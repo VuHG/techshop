@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { aiService, type ChatMessage } from '@/services/aiService';
-import { cn } from '@/lib/utils';
+import { ProductImage } from '@/components/ui/ProductImage';
+import { cn, formatPrice } from '@/lib/utils';
 
 const QUICK_REPLIES = [
   'Tư vấn laptop lập trình dưới 20 triệu',
@@ -30,8 +32,8 @@ export function ChatbotWidget() {
     setInput('');
     setDangGui(true);
     try {
-      const reply = await aiService.chat(msg, lichSu);
-      setMessages((m) => [...m, { role: 'assistant', content: reply }]);
+      const { reply, products } = await aiService.chat(msg, lichSu);
+      setMessages((m) => [...m, { role: 'assistant', content: reply, products }]);
     } catch {
       setMessages((m) => [
         ...m,
@@ -85,7 +87,10 @@ export function ChatbotWidget() {
             )}
 
             {messages.map((m, i) => (
-              <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+              <div
+                key={i}
+                className={cn('flex flex-col', m.role === 'user' ? 'items-end' : 'items-start')}
+              >
                 <div
                   className={cn(
                     'max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm',
@@ -94,6 +99,33 @@ export function ChatbotWidget() {
                 >
                   {m.content}
                 </div>
+
+                {/* Card sản phẩm AI gợi ý */}
+                {m.role === 'assistant' && m.products && m.products.length > 0 && (
+                  <div className="mt-2 w-[90%] space-y-2">
+                    {m.products.map((p) => (
+                      <Link
+                        key={p.slug}
+                        href={`/san-pham/${p.slug}?bienThe=${p.bienTheId}`}
+                        className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-sm transition hover:border-primary"
+                      >
+                        <ProductImage
+                          src={p.anhChinh}
+                          alt={p.tenSanPham}
+                          className="h-12 w-12 shrink-0 rounded"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-xs font-medium text-gray-800">
+                            {p.tenSanPham}
+                          </p>
+                          <p className="mt-0.5 text-xs font-bold text-sale">
+                            {formatPrice(p.giaBan)}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
