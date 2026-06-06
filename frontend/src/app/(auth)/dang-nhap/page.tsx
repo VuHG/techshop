@@ -25,7 +25,7 @@ export default function DangNhapPage() {
       const res = await authService.dangNhap(data.soDienThoai, data.matKhau);
       setAuth(res.nguoiDung, res.accessToken, res.refreshToken);
       toast.success('Đăng nhập thành công');
-      router.push('/');
+      router.push(res.nguoiDung.vaiTro === 'ADMIN' ? '/admin' : '/');
     } catch {
       // Lỗi đã được toast ở interceptor.
     }

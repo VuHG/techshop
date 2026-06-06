@@ -240,6 +240,10 @@ export interface DonHangSummary {
   tenSanPhamDau: string;
   anhDaiDien: string | null;
   ngayTao: string;
+  // Chỉ có ở danh sách admin.
+  hoTenNguoiNhan?: string;
+  soDienThoaiNhan?: string;
+  phuongThucThanhToan?: string;
 }
 
 export interface DiaChi {

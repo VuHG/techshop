@@ -25,4 +25,11 @@ public interface AnhSanPhamRepository extends JpaRepository<AnhSanPham, Long> {
     List<AnhSanPham> findAnhDaiDien(@Param("bienTheId") Long bienTheId,
                                     @Param("sanPhamId") Long sanPhamId,
                                     Pageable pageable);
+
+    // ─── Admin ───────────────────────────────────────────────────────────
+    List<AnhSanPham> findByBienTheIdOrderByThuTuAsc(Long bienTheId);
+
+    void deleteByBienTheId(Long bienTheId);
+
+    void deleteBySanPhamId(Long sanPhamId);
 }

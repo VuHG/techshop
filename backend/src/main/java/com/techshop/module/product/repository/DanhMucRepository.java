@@ -15,4 +15,14 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Long> {
     List<DanhMuc> findRootCategories();
 
     List<DanhMuc> findByDanhMucChaIdAndTrangThaiOrderByThuTuHienThi(Long parentId, String trangThai);
+
+    // ─── Admin ───────────────────────────────────────────────────────────
+    // Toàn bộ danh mục gốc (cả HIEN_THI lẫn AN) cho cây quản trị.
+    List<DanhMuc> findByDanhMucChaIsNullOrderByThuTuHienThiAsc();
+
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
+
+    boolean existsByDanhMucChaId(Long danhMucChaId);
 }

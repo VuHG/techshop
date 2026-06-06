@@ -264,6 +264,144 @@ public class DonHangService {
         return toDetailResponse(fresh);
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    //  ADMIN — thao tác toàn hệ thống (không lọc theo nguoiDungId).
+    //  Chuyển trạng thái đặt ở đây vì service này giữ state machine + hoàn kho/mã.
+    // ══════════════════════════════════════════════════════════════════
+
+    @Transactional(readOnly = true)
+    public PageResponse<DonHangSummaryResponse> getDanhSachAdmin(
+            String trangThai, String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DonHang> result = donHangRepo.timKiemAdmin(
+                trangThai == null ? "" : trangThai.trim(),
+                search == null ? "" : search.trim(),
+                pageable);
+
+        List<DonHangSummaryResponse> items = result.getContent().stream()
+                .map(this::toSummaryResponse)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> demTheoTrangThai() {
+        Map<String, Long> map = new LinkedHashMap<>();
+        for (Object[] row : donHangRepo.demTheoTrangThai()) {
+            map.put((String) row[0], (Long) row[1]);
+        }
+        return map;
+    }
+
+    @Transactional(readOnly = true)
+    public DonHangResponse getChiTietAdmin(Long donHangId) {
+        DonHang donHang = donHangRepo.findById(donHangId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+        return toDetailResponse(donHang);
+    }
+
+    /** Duyệt đơn: CHO_XU_LY → DA_DUYET. */
+    @Transactional
+    public DonHangResponse duyetDon(Long donHangId) {
+        return chuyenTrangThaiDon(donHangId, "CHO_XU_LY", "DA_DUYET",
+                "Quản trị viên đã duyệt đơn, chờ lấy hàng",
+                "Đơn hàng đã được duyệt",
+                "Đơn hàng %s đã được duyệt và đang chờ lấy hàng.");
+    }
+
+    /** Bàn giao đơn vị vận chuyển: DA_DUYET → DANG_GIAO. */
+    @Transactional
+    public DonHangResponse xacNhanGiao(Long donHangId) {
+        return chuyenTrangThaiDon(donHangId, "DA_DUYET", "DANG_GIAO",
+                "Đã bàn giao cho đơn vị vận chuyển",
+                "Đơn hàng đang được giao",
+                "Đơn hàng %s đang trên đường giao đến bạn.");
+    }
+
+    /** Giao thành công: DANG_GIAO → GIAO_THANH_CONG (khách tự xác nhận để hoàn thành). */
+    @Transactional
+    public DonHangResponse hoanTatGiao(Long donHangId) {
+        return chuyenTrangThaiDon(donHangId, "DANG_GIAO", "GIAO_THANH_CONG",
+                "Đơn vị vận chuyển báo giao thành công",
+                "Đơn hàng đã giao thành công",
+                "Đơn hàng %s đã giao thành công. Vui lòng xác nhận khi đã nhận hàng.");
+    }
+
+    /** Hủy đơn bởi admin (từ CHO_XU_LY / DA_DUYET / DANG_GIAO) + hoàn kho + hoàn lượt mã. */
+    @Transactional
+    public DonHangResponse huyDonAdmin(Long donHangId, String lyDo) {
+        DonHang donHang = donHangRepo.findById(donHangId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+
+        String tt = donHang.getTrangThai();
+        if (!("CHO_XU_LY".equals(tt) || "DA_DUYET".equals(tt) || "DANG_GIAO".equals(tt))) {
+            throw new AppException(ErrorCode.ORD_002);
+        }
+
+        Long id = donHang.getId();
+        Long nguoiDungId = donHang.getNguoiDungId();
+        Long maGiamGiaId = donHang.getMaGiamGiaId();
+        List<ChiTietDonHang> cts = new ArrayList<>(donHang.getChiTiet());
+
+        String ghiChu = (lyDo == null || lyDo.isBlank())
+                ? "Quản trị viên hủy đơn"
+                : "Quản trị viên hủy đơn: " + lyDo.trim();
+        donHang.setTrangThai("DA_HUY");
+        donHang.themLichSu(LichSuTrangThaiDonHang.builder()
+                .trangThai("DA_HUY")
+                .ghiChu(ghiChu)
+                .build());
+        donHangRepo.saveAndFlush(donHang);
+
+        for (ChiTietDonHang ct : cts) {
+            productQueryService.hoanTonKho(ct.getBienTheId(), ct.getSoLuong());
+        }
+        if (maGiamGiaId != null) {
+            maGiamGiaService.hoanTraSuDung(maGiamGiaId, id);
+        }
+
+        notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
+                "Đơn hàng đã bị hủy",
+                "Đơn hàng " + donHang.getMaDonHang() + " đã bị hủy. " + ghiChu,
+                id);
+
+        DonHang fresh = donHangRepo.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+        return toDetailResponse(fresh);
+    }
+
+    // Chuyển trạng thái đơn giản (không hoàn kho/mã): kiểm tra trạng thái hiện tại,
+    // cập nhật, ghi timeline + thông báo khách.
+    private DonHangResponse chuyenTrangThaiDon(
+            Long donHangId, String tuTrangThai, String denTrangThai,
+            String ghiChuTimeline, String tieuDeThongBao, String mauNoiDungThongBao) {
+        DonHang donHang = donHangRepo.findById(donHangId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+
+        if (!tuTrangThai.equals(donHang.getTrangThai())) {
+            throw new AppException(ErrorCode.ORD_004);
+        }
+
+        Long id = donHang.getId();
+        Long nguoiDungId = donHang.getNguoiDungId();
+        donHang.setTrangThai(denTrangThai);
+        donHang.themLichSu(LichSuTrangThaiDonHang.builder()
+                .trangThai(denTrangThai)
+                .ghiChu(ghiChuTimeline)
+                .build());
+        donHangRepo.saveAndFlush(donHang);
+
+        notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
+                tieuDeThongBao,
+                String.format(mauNoiDungThongBao, donHang.getMaDonHang()),
+                id);
+
+        DonHang fresh = donHangRepo.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+        return toDetailResponse(fresh);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────
 
     private BigDecimal tinhPhiVanChuyen(BigDecimal tongTienHang) {
@@ -332,6 +470,9 @@ public class DonHangService {
                 .tenSanPhamDau(dau == null ? null : dau.getTenSanPham())
                 .anhDaiDien(dau == null ? null : dau.getDuongDanAnhChinh())
                 .ngayTao(d.getNgayTao())
+                .hoTenNguoiNhan(d.getHoTenNguoiNhan())
+                .soDienThoaiNhan(d.getSoDienThoaiNhan())
+                .phuongThucThanhToan(d.getPhuongThucThanhToan())
                 .build();
     }
 }

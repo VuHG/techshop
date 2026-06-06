@@ -11,4 +11,6 @@ public interface MaGiamGiaSanPhamRepository extends JpaRepository<MaGiamGiaSanPh
 
     @Query("SELECT m.sanPhamId FROM MaGiamGiaSanPham m WHERE m.maGiamGiaId = :maGiamGiaId")
     List<Long> findSanPhamIdsByMaGiamGiaId(@Param("maGiamGiaId") Long maGiamGiaId);
+
+    void deleteByMaGiamGiaId(Long maGiamGiaId);
 }

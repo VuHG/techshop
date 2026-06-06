@@ -60,3 +60,8 @@ app:
     dev-mode: ${MAIL_DEV_MODE:false}     # true = log OTP ra console, không gửi email
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  admin:
+    # Tài khoản quản trị mặc định (AdminSeeder tạo nếu chưa có). Đổi ở prod qua biến môi trường.
+    phone: ${ADMIN_PHONE:0999999999}
+    password: ${ADMIN_PASSWORD:Admin@123}
+    full-name: ${ADMIN_FULLNAME:Quản trị viên}

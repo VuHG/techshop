@@ -21,4 +21,8 @@ public class DonHangSummaryResponse {
     private String tenSanPhamDau;   // tên sản phẩm đầu tiên (hiển thị nhanh)
     private String anhDaiDien;      // ảnh sản phẩm đầu tiên
     private OffsetDateTime ngayTao;
+    // Bổ sung cho danh sách admin (khách hàng không dùng nhưng vô hại).
+    private String hoTenNguoiNhan;
+    private String soDienThoaiNhan;
+    private String phuongThucThanhToan;
 }

@@ -9,6 +9,11 @@ public interface DanhGiaRepository extends JpaRepository<DanhGia, Long> {
 
     boolean existsByNguoiDungIdAndSanPhamIdAndDonHangId(Long nguoiDungId, Long sanPhamId, Long donHangId);
 
+    // Admin: sản phẩm đã có đánh giá chưa (quyết định xóa cứng/mềm).
+    boolean existsBySanPhamId(Long sanPhamId);
+
+    long countByNguoiDungId(Long nguoiDungId);
+
     Page<DanhGia> findByNguoiDungIdOrderByNgayTaoDesc(Long nguoiDungId, Pageable pageable);
 
     Page<DanhGia> findBySanPhamIdAndTrangThaiOrderByNgayTaoDesc(

@@ -1,6 +1,7 @@
 package com.techshop.module.product.repository;
 
 import com.techshop.module.product.entity.SanPham;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,6 +14,26 @@ import java.util.Optional;
 public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
 
     Optional<SanPham> findBySlugAndTrangThai(String slug, String trangThai);
+
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
+
+    // ─── Admin: liệt kê mọi sản phẩm (mọi trạng thái) + lọc + tìm kiếm ──────
+    @Query("""
+            SELECT s FROM SanPham s
+            WHERE (:trangThai = '' OR s.trangThai = :trangThai)
+              AND (:search = '' OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
+            ORDER BY s.ngayTao DESC
+            """)
+    Page<SanPham> timKiemAdmin(@Param("trangThai") String trangThai,
+                               @Param("search") String search,
+                               Pageable pageable);
+
+    @Query("SELECT s.trangThai, COUNT(s) FROM SanPham s GROUP BY s.trangThai")
+    List<Object[]> demTheoTrangThai();
+
+    long countByPhanLoaiId(Long phanLoaiId);
 
     // Atomic cập nhật cache field so_luot_ban khi đặt hàng thành công.
     @Modifying(clearAutomatically = true, flushAutomatically = true)

@@ -6,9 +6,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface LichSuDungMaRepository extends JpaRepository<LichSuDungMa, Long> {
 
     boolean existsByMaGiamGiaIdAndNguoiDungId(Long maGiamGiaId, Long nguoiDungId);
+
+    List<LichSuDungMa> findByMaGiamGiaIdOrderByNgayTaoDesc(Long maGiamGiaId);
 
     @Modifying
     @Query("DELETE FROM LichSuDungMa l WHERE l.donHangId = :donHangId")

@@ -14,4 +14,6 @@ public interface PhanLoaiSanPhamRepository extends JpaRepository<PhanLoaiSanPham
 
     @Query("SELECT p FROM PhanLoaiSanPham p JOIN p.danhMuc d WHERE d.id = :danhMucId ORDER BY p.tenPhanLoai")
     List<PhanLoaiSanPham> findByDanhMucId(@Param("danhMucId") Long danhMucId);
+
+    boolean existsByDanhMucId(Long danhMucId);
 }
