@@ -244,6 +244,8 @@ export interface DonHangSummary {
   hoTenNguoiNhan?: string;
   soDienThoaiNhan?: string;
   phuongThucThanhToan?: string;
+  tenTaiKhoan?: string;
+  sdtTaiKhoan?: string;
 }
 
 export interface DiaChi {

@@ -47,8 +47,8 @@ export default function AdminDonHangPage() {
       header: 'Khách hàng',
       cell: (d) => (
         <div>
-          <p className="font-medium text-gray-900">{d.hoTenNguoiNhan}</p>
-          <p className="text-xs text-gray-500">{d.soDienThoaiNhan}</p>
+          <p className="font-medium text-gray-900">{d.tenTaiKhoan ?? d.hoTenNguoiNhan}</p>
+          <p className="text-xs text-gray-500">{d.sdtTaiKhoan ?? d.soDienThoaiNhan}</p>
         </div>
       ),
     },

@@ -9,6 +9,7 @@ import {
   FolderTree,
   Ticket,
   Users,
+  SlidersHorizontal,
   LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,6 +19,7 @@ const NAV = [
   { href: '/admin', label: 'Tổng quan', icon: LayoutDashboard, exact: true },
   { href: '/admin/don-hang', label: 'Đơn hàng', icon: ShoppingCart },
   { href: '/admin/san-pham', label: 'Sản phẩm', icon: Package },
+  { href: '/admin/thuoc-tinh', label: 'Thuộc tính', icon: SlidersHorizontal },
   { href: '/admin/danh-muc', label: 'Danh mục', icon: FolderTree },
   { href: '/admin/ma-giam-gia', label: 'Mã giảm giá', icon: Ticket },
   { href: '/admin/nguoi-dung', label: 'Người dùng', icon: Users },

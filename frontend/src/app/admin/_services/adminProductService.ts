@@ -28,6 +28,7 @@ export interface AdminBienThe {
   trangThai: string;
   anhUrls: string[];
   nhanIds: number[];
+  nhanTens?: string[];
 }
 
 export interface AdminSanPhamDetail {
@@ -37,10 +38,13 @@ export interface AdminSanPhamDetail {
   moTa: string | null;
   moTaNgan: string | null;
   phanLoaiId: number;
+  tenPhanLoai?: string | null;
+  tenDanhMuc?: string | null;
   thuongHieu: string | null;
   thongSoKyThuat: Record<string, string>;
   trangThai: string;
   bienThes: AdminBienThe[];
+  vouchers?: { maCode: string; tenMa: string }[];
 }
 
 export interface SanPhamPayload {

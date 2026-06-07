@@ -11,6 +11,7 @@ import { adminOrderService } from '../../_services/adminOrderService';
 import { nhanTrangThai } from '../../_lib/orderStatus';
 import { StatusBadge } from '../../_components/StatusBadge';
 import { ConfirmDialog } from '../../_components/ConfirmDialog';
+import { OrderStatusStepper } from '../../_components/OrderStatusStepper';
 
 export default function AdminDonHangChiTietPage() {
   const { id } = useParams<{ id: string }>();
@@ -133,6 +134,11 @@ export default function AdminDonHangChiTietPage() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Tiến trình trạng thái */}
+      <div className="mb-5">
+        <OrderStatusStepper trangThai={tt} />
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

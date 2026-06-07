@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { Search, Plus, Pencil, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Search, Plus, Pencil, Eye, EyeOff, Trash2, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatPrice, cn } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -17,6 +17,7 @@ import { StatusBadge } from '../_components/StatusBadge';
 import { AdminPagination } from '../_components/AdminPagination';
 import { ConfirmDialog } from '../_components/ConfirmDialog';
 import { SanPhamFormModal } from './SanPhamFormModal';
+import { ProductDetailModal } from './ProductDetailModal';
 
 export default function AdminSanPhamPage() {
   const qc = useQueryClient();
@@ -27,6 +28,7 @@ export default function AdminSanPhamPage() {
 
   const [moForm, setMoForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
   const [xoaId, setXoaId] = useState<number | null>(null);
 
   const { data: options } = useQuery({
@@ -138,6 +140,9 @@ export default function AdminSanPhamPage() {
         const an = sp.trangThai === 'NGUNG_BAN';
         return (
           <div className="flex items-center justify-end gap-1">
+            <IconBtn title="Xem chi tiết" onClick={() => setDetailId(sp.id)}>
+              <Info className="h-4 w-4" />
+            </IconBtn>
             <IconBtn title="Sửa" onClick={() => { setEditingId(sp.id); setMoForm(true); }}>
               <Pencil className="h-4 w-4" />
             </IconBtn>
@@ -251,6 +256,10 @@ export default function AdminSanPhamPage() {
         onConfirm={() => xoaId != null && xoa.mutate(xoaId)}
         onClose={() => setXoaId(null)}
       />
+
+      {detailId != null && (
+        <ProductDetailModal id={detailId} onClose={() => setDetailId(null)} />
+      )}
     </div>
   );
 }

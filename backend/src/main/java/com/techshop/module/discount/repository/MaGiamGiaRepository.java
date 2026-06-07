@@ -27,6 +27,14 @@ public interface MaGiamGiaRepository extends JpaRepository<MaGiamGia, Long> {
             """)
     List<MaGiamGia> timKiemAdmin(@Param("search") String search);
 
+    // Mã giảm giá áp dụng cho một sản phẩm cụ thể (qua bảng ma_giam_gia_san_pham).
+    @Query("""
+            SELECT m FROM MaGiamGia m
+            WHERE m.id IN (SELECT s.maGiamGiaId FROM MaGiamGiaSanPham s WHERE s.sanPhamId = :sanPhamId)
+            ORDER BY m.ngayTao DESC
+            """)
+    List<MaGiamGia> findApDungChoSanPham(@Param("sanPhamId") Long sanPhamId);
+
     // Atomic tăng lượt dùng: chỉ tăng khi chưa hết lượt. 1 = OK, 0 = hết lượt.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

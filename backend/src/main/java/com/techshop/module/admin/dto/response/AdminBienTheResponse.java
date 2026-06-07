@@ -23,4 +23,5 @@ public class AdminBienTheResponse {
     private String trangThai;
     private List<String> anhUrls;
     private List<Long> nhanIds;
+    private List<String> nhanTens;   // tên nhãn (để hiển thị ở màn xem chi tiết)
 }

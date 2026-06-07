@@ -24,7 +24,7 @@ public interface ChiTietDonHangRepository extends JpaRepository<ChiTietDonHang, 
             JOIN san_pham sp ON bt.san_pham_id = sp.id
             JOIN phan_loai_san_pham pl ON sp.phan_loai_id = pl.id
             JOIN danh_muc dm ON pl.danh_muc_id = dm.id
-            WHERE dh.trang_thai <> 'DA_HUY' AND dh.ngay_tao >= :from
+            WHERE dh.trang_thai = 'HOAN_THANH' AND dh.ngay_tao >= :from
             GROUP BY dm.ten_danh_muc
             ORDER BY doanh_thu DESC
             """, nativeQuery = true)

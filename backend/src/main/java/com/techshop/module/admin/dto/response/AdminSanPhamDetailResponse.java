@@ -19,8 +19,20 @@ public class AdminSanPhamDetailResponse {
     private String moTa;
     private String moTaNgan;
     private Long phanLoaiId;
+    private String tenPhanLoai;
+    private String tenDanhMuc;
     private String thuongHieu;
     private Map<String, Object> thongSoKyThuat;
     private String trangThai;
     private List<AdminBienTheResponse> bienThes;
+    private List<VoucherItem> vouchers;   // mã giảm giá áp dụng cho sản phẩm này
+
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class VoucherItem {
+        private String maCode;
+        private String tenMa;
+    }
 }

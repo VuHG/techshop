@@ -29,6 +29,7 @@ public enum ErrorCode {
     CAT_002("CAT_002", "Không thể xóa danh mục đang có phân loại", HttpStatus.BAD_REQUEST),
     CAT_003("CAT_003", "Không thể xóa phân loại đang có sản phẩm", HttpStatus.BAD_REQUEST),
     CAT_004("CAT_004", "Slug đã tồn tại", HttpStatus.CONFLICT),
+    ATTR_001("ATTR_001", "Thuộc tính không tồn tại", HttpStatus.NOT_FOUND),
 
     // Cart
     CART_001("CART_001", "Sản phẩm không đủ số lượng trong kho", HttpStatus.BAD_REQUEST),

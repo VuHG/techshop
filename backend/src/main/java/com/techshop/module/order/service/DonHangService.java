@@ -1,5 +1,7 @@
 package com.techshop.module.order.service;
 
+import com.techshop.module.auth.dto.NguoiDungInfo;
+import com.techshop.module.auth.service.NguoiDungQueryService;
 import com.techshop.module.cart.dto.response.GioHangItemResponse;
 import com.techshop.module.cart.service.GioHangService;
 import com.techshop.module.discount.dto.KetQuaApDungMa;
@@ -46,6 +48,7 @@ public class DonHangService {
     private final ProductQueryService productQueryService;
     private final MaGiamGiaService maGiamGiaService;
     private final NotificationService notificationService;
+    private final NguoiDungQueryService nguoiDungQueryService;
 
     // Chính sách phí vận chuyển (business logic ở Java, không tính ở DB).
     private static final BigDecimal PHI_SHIP = BigDecimal.valueOf(30000);
@@ -278,8 +281,21 @@ public class DonHangService {
                 search == null ? "" : search.trim(),
                 pageable);
 
-        List<DonHangSummaryResponse> items = result.getContent().stream()
-                .map(this::toSummaryResponse)
+        List<DonHang> content = result.getContent();
+        // Batch lấy thông tin TÀI KHOẢN người đặt (tránh N+1) để hiển thị ở cột khách hàng.
+        Map<Long, NguoiDungInfo> taiKhoanMap = nguoiDungQueryService.layThongTinNhieu(
+                content.stream().map(DonHang::getNguoiDungId).distinct().toList());
+
+        List<DonHangSummaryResponse> items = content.stream()
+                .map(d -> {
+                    DonHangSummaryResponse r = toSummaryResponse(d);
+                    NguoiDungInfo tk = taiKhoanMap.get(d.getNguoiDungId());
+                    if (tk != null) {
+                        r.setTenTaiKhoan(tk.getHoTen());
+                        r.setSdtTaiKhoan(tk.getSoDienThoai());
+                    }
+                    return r;
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);

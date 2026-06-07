@@ -6,6 +6,7 @@ import com.techshop.module.admin.dto.response.AdminBienTheResponse;
 import com.techshop.module.admin.dto.response.AdminSanPhamDetailResponse;
 import com.techshop.module.admin.dto.response.AdminSanPhamSummaryResponse;
 import com.techshop.module.admin.dto.response.FormOptionsResponse;
+import com.techshop.module.discount.repository.MaGiamGiaRepository;
 import com.techshop.module.order.repository.ChiTietDonHangRepository;
 import com.techshop.module.product.entity.*;
 import com.techshop.module.product.repository.*;
@@ -42,6 +43,7 @@ public class AdminSanPhamService {
     private final PhanLoaiSanPhamRepository phanLoaiRepo;
     private final ChiTietDonHangRepository chiTietDonHangRepo;
     private final DanhGiaRepository danhGiaRepo;
+    private final MaGiamGiaRepository maGiamGiaRepo;
 
     private static final String CON_HANG = "CON_HANG";
 
@@ -380,8 +382,16 @@ public class AdminSanPhamService {
                         .anhUrls(anhRepo.findByBienTheIdOrderByThuTuAsc(bt.getId()).stream()
                                 .map(AnhSanPham::getUrlAnh).collect(Collectors.toList()))
                         .nhanIds(bt.getNhans().stream().map(NhanSanPham::getId).collect(Collectors.toList()))
+                        .nhanTens(bt.getNhans().stream().map(NhanSanPham::getTenNhan).collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
+
+        PhanLoaiSanPham pl = phanLoaiRepo.findById(sp.getPhanLoaiId()).orElse(null);
+        List<AdminSanPhamDetailResponse.VoucherItem> vouchers =
+                maGiamGiaRepo.findApDungChoSanPham(sp.getId()).stream()
+                        .map(m -> AdminSanPhamDetailResponse.VoucherItem.builder()
+                                .maCode(m.getMaCode()).tenMa(m.getTenMa()).build())
+                        .collect(Collectors.toList());
 
         return AdminSanPhamDetailResponse.builder()
                 .id(sp.getId())
@@ -390,10 +400,13 @@ public class AdminSanPhamService {
                 .moTa(sp.getMoTa())
                 .moTaNgan(sp.getMoTaNgan())
                 .phanLoaiId(sp.getPhanLoaiId())
+                .tenPhanLoai(pl == null ? null : pl.getTenPhanLoai())
+                .tenDanhMuc(pl == null ? null : pl.getDanhMuc().getTenDanhMuc())
                 .thuongHieu(sp.getThuongHieu())
                 .thongSoKyThuat(sp.getThongSoKyThuat())
                 .trangThai(sp.getTrangThai())
                 .bienThes(bienThes)
+                .vouchers(vouchers)
                 .build();
     }
 }

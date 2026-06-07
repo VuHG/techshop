@@ -25,4 +25,7 @@ public class DonHangSummaryResponse {
     private String hoTenNguoiNhan;
     private String soDienThoaiNhan;
     private String phuongThucThanhToan;
+    // Thông tin TÀI KHOẢN người đặt (khác với người nhận snapshot) — dùng ở cột khách hàng admin.
+    private String tenTaiKhoan;
+    private String sdtTaiKhoan;
 }

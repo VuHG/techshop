@@ -47,10 +47,10 @@ public interface DonHangRepository extends JpaRepository<DonHang, Long> {
     long countByNguoiDungId(Long nguoiDungId);
 
     // ─── Dashboard ────────────────────────────────────────────────────────
-    // Doanh thu = tổng tong_thanh_toan của đơn không bị hủy trong khoảng.
+    // Doanh thu = tổng tong_thanh_toan của đơn ĐÃ HOÀN THÀNH trong khoảng.
     @Query("""
             SELECT COALESCE(SUM(d.tongThanhToan), 0) FROM DonHang d
-            WHERE d.trangThai <> 'DA_HUY' AND d.ngayTao >= :from AND d.ngayTao < :to
+            WHERE d.trangThai = 'HOAN_THANH' AND d.ngayTao >= :from AND d.ngayTao < :to
             """)
     java.math.BigDecimal tinhDoanhThu(@Param("from") java.time.OffsetDateTime from,
                                       @Param("to") java.time.OffsetDateTime to);
@@ -59,11 +59,11 @@ public interface DonHangRepository extends JpaRepository<DonHang, Long> {
 
     long countByTrangThai(String trangThai);
 
-    // Doanh thu theo ngày (cho biểu đồ đường).
+    // Doanh thu theo ngày (chỉ đơn HOÀN THÀNH).
     @Query(value = """
             SELECT CAST(dh.ngay_tao AS date) AS ngay, COALESCE(SUM(dh.tong_thanh_toan), 0) AS doanh_thu
             FROM don_hang dh
-            WHERE dh.trang_thai <> 'DA_HUY' AND dh.ngay_tao >= :from
+            WHERE dh.trang_thai = 'HOAN_THANH' AND dh.ngay_tao >= :from
             GROUP BY CAST(dh.ngay_tao AS date)
             ORDER BY ngay
             """, nativeQuery = true)

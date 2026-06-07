@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,15 @@ public class NguoiDungQueryServiceImpl implements NguoiDungQueryService {
         NguoiDung nd = nguoiDungRepository.findById(nguoiDungId)
                 .orElseThrow(() -> new AppException(ErrorCode.AUTH_008));
         return toInfo(nd);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, NguoiDungInfo> layThongTinNhieu(List<Long> nguoiDungIds) {
+        if (nguoiDungIds == null || nguoiDungIds.isEmpty()) return Map.of();
+        return nguoiDungRepository.findAllById(nguoiDungIds).stream()
+                .map(this::toInfo)
+                .collect(Collectors.toMap(NguoiDungInfo::getId, Function.identity()));
     }
 
     @Override
