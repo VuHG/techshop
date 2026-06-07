@@ -129,8 +129,13 @@ public class AdminSanPhamService {
                 .build();
         SanPham saved = sanPhamRepo.save(sp);
 
-        for (BienTheRequest bt : req.getBienThes()) {
-            luuBienTheMoi(saved, bt);
+        luuAnhSanPham(saved.getId(), req.getAnhUrls());
+
+        // Biến thể chỉ tạo nếu request có gửi (form hộp chứa không gửi).
+        if (req.getBienThes() != null) {
+            for (BienTheRequest bt : req.getBienThes()) {
+                luuBienTheMoi(saved, bt);
+            }
         }
         return toDetail(saved);
     }
@@ -150,17 +155,32 @@ public class AdminSanPhamService {
         sp.setMoTaNgan(req.getMoTaNgan());
         sp.setPhanLoaiId(req.getPhanLoaiId());
         sp.setThuongHieu(req.getThuongHieu());
-        sp.setThongSoKyThuat(req.getThongSoKyThuat());
+        // Chỉ ghi đè thông số chung khi request có gửi (form hộp chứa không gửi → giữ nguyên).
+        if (req.getThongSoKyThuat() != null) sp.setThongSoKyThuat(req.getThongSoKyThuat());
         sp.setTrangThai(chuanTrangThaiSp(req.getTrangThai()));
         sanPhamRepo.save(sp);
 
+        // Ảnh cấp sản phẩm: chỉ thay khi request có gửi anhUrls.
+        if (req.getAnhUrls() != null) {
+            luuAnhSanPham(id, req.getAnhUrls());
+        }
+
+        // Biến thể: chỉ đồng bộ khi request có gửi bienThes. null = giữ nguyên (sửa hộp chứa).
+        if (req.getBienThes() != null) {
+            dongBoBienThe(sp, req.getBienThes());
+        }
+        return toDetail(sp);
+    }
+
+    // Đồng bộ danh sách biến thể (thêm/sửa/xóa) theo request.
+    private void dongBoBienThe(SanPham sp, List<BienTheRequest> bienThes) {
         // Biến thể hiện có trong DB (khử trùng vì JOIN FETCH anhs có thể nhân bản).
         List<BienTheSanPham> dbList = new ArrayList<>(
-                bienTheRepo.findBySanPhamIdWithDetails(id).stream()
+                bienTheRepo.findBySanPhamIdWithDetails(sp.getId()).stream()
                         .collect(Collectors.toMap(BienTheSanPham::getId, b -> b, (a, b) -> a,
                                 LinkedHashMap::new))
                         .values());
-        Set<Long> reqIds = req.getBienThes().stream()
+        Set<Long> reqIds = bienThes.stream()
                 .map(BienTheRequest::getId).filter(Objects::nonNull).collect(Collectors.toSet());
 
         // Xóa biến thể bị loại bỏ (chặn nếu đã có đơn).
@@ -175,7 +195,7 @@ public class AdminSanPhamService {
         }
 
         // Upsert biến thể từ request.
-        for (BienTheRequest bt : req.getBienThes()) {
+        for (BienTheRequest bt : bienThes) {
             if (bt.getId() == null) {
                 luuBienTheMoi(sp, bt);
             } else {
@@ -186,7 +206,6 @@ public class AdminSanPhamService {
                 luuAnh(sp.getId(), existing.getId(), bt.getAnhUrls());
             }
         }
-        return toDetail(sp);
     }
 
     // ─── Ẩn / hiện (đổi trạng thái) ───────────────────────────────────────
@@ -320,6 +339,24 @@ public class AdminSanPhamService {
         }
     }
 
+    // Thay toàn bộ ảnh CẤP SẢN PHẨM (bien_the_id = NULL).
+    private void luuAnhSanPham(Long sanPhamId, List<String> urls) {
+        anhRepo.deleteBySanPhamIdAndBienTheIdIsNull(sanPhamId);
+        if (urls == null) return;
+        int thuTu = 1;
+        for (String url : urls) {
+            if (url == null || url.isBlank()) continue;
+            anhRepo.save(AnhSanPham.builder()
+                    .sanPhamId(sanPhamId)
+                    .bienTheId(null)
+                    .urlAnh(url.trim())
+                    .laAnhChinh(thuTu == 1)
+                    .thuTu(thuTu)
+                    .build());
+            thuTu++;
+        }
+    }
+
     private AdminSanPhamSummaryResponse toSummary(SanPham sp, Map<Long, PhanLoaiSanPham> plMap) {
         List<BienTheSanPham> bts = sp.getBienThes();
         BigDecimal giaThap = null, giaCao = null;
@@ -342,6 +379,12 @@ public class AdminSanPhamService {
                         .findFirst()
                         .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null));
             }
+        }
+
+        // Hộp chứa chưa có biến thể (hoặc biến thể chưa có ảnh) → dùng ảnh cấp sản phẩm.
+        if (anhChinh == null) {
+            anhChinh = anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
+                    .stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null);
         }
 
         PhanLoaiSanPham pl = plMap.get(sp.getPhanLoaiId());
@@ -405,6 +448,8 @@ public class AdminSanPhamService {
                 .thuongHieu(sp.getThuongHieu())
                 .thongSoKyThuat(sp.getThongSoKyThuat())
                 .trangThai(sp.getTrangThai())
+                .anhUrls(anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
+                        .stream().map(AnhSanPham::getUrlAnh).collect(Collectors.toList()))
                 .bienThes(bienThes)
                 .vouchers(vouchers)
                 .build();

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { Search, Plus, Pencil, Eye, EyeOff, Trash2, Info } from 'lucide-react';
+import { Search, Plus, Pencil, Eye, EyeOff, Trash2, Info, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatPrice, cn } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -18,6 +18,7 @@ import { AdminPagination } from '../_components/AdminPagination';
 import { ConfirmDialog } from '../_components/ConfirmDialog';
 import { SanPhamFormModal } from './SanPhamFormModal';
 import { ProductDetailModal } from './ProductDetailModal';
+import { ThemBienTheModal } from './ThemBienTheModal';
 
 export default function AdminSanPhamPage() {
   const qc = useQueryClient();
@@ -29,6 +30,7 @@ export default function AdminSanPhamPage() {
   const [moForm, setMoForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [themBienThe, setThemBienThe] = useState<AdminSanPhamSummary | null>(null);
   const [xoaId, setXoaId] = useState<number | null>(null);
 
   const { data: options } = useQuery({
@@ -140,6 +142,9 @@ export default function AdminSanPhamPage() {
         const an = sp.trangThai === 'NGUNG_BAN';
         return (
           <div className="flex items-center justify-end gap-1">
+            <IconBtn title="Thêm biến thể" onClick={() => setThemBienThe(sp)}>
+              <Layers className="h-4 w-4" />
+            </IconBtn>
             <IconBtn title="Xem chi tiết" onClick={() => setDetailId(sp.id)}>
               <Info className="h-4 w-4" />
             </IconBtn>
@@ -259,6 +264,15 @@ export default function AdminSanPhamPage() {
 
       {detailId != null && (
         <ProductDetailModal id={detailId} onClose={() => setDetailId(null)} />
+      )}
+
+      {themBienThe && (
+        <ThemBienTheModal
+          sanPhamId={themBienThe.id}
+          tenSanPham={themBienThe.tenSanPham}
+          onClose={() => setThemBienThe(null)}
+          onSaved={() => { setThemBienThe(null); lamMoi(); }}
+        />
       )}
     </div>
   );

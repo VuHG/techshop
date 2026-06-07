@@ -2,14 +2,17 @@ package com.techshop.module.admin.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
 
-/** Thêm/sửa sản phẩm (kèm biến thể). Ảnh truyền dạng URL. */
+/**
+ * Thêm/sửa "hộp chứa" sản phẩm. Biến thể được quản lý riêng (nút Thêm biến thể).
+ * - Khi TẠO: thường chỉ gồm thông tin hộp chứa + ảnh, KHÔNG kèm biến thể.
+ * - Khi SỬA: nếu bienThes = null → giữ nguyên biến thể hiện có (không đụng tới).
+ */
 @Data
 public class SanPhamRequest {
 
@@ -27,11 +30,12 @@ public class SanPhamRequest {
 
     private String thuongHieu;
 
-    private Map<String, Object> thongSoKyThuat;  // thông số chung của sản phẩm
+    private Map<String, Object> thongSoKyThuat;  // tùy chọn (không dùng ở form hộp chứa)
 
     private String trangThai;              // CON_HANG | NGUNG_BAN | BAN_NHAP (mặc định CON_HANG)
 
-    @NotEmpty(message = "Sản phẩm phải có ít nhất một biến thể")
+    private List<String> anhUrls;          // ảnh cấp sản phẩm (bien_the_id = NULL)
+
     @Valid
-    private List<BienTheRequest> bienThes;
+    private List<BienTheRequest> bienThes; // tùy chọn — null = không đụng biến thể
 }

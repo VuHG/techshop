@@ -32,4 +32,9 @@ public interface AnhSanPhamRepository extends JpaRepository<AnhSanPham, Long> {
     void deleteByBienTheId(Long bienTheId);
 
     void deleteBySanPhamId(Long sanPhamId);
+
+    // Ảnh cấp sản phẩm (không gắn biến thể).
+    List<AnhSanPham> findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(Long sanPhamId);
+
+    void deleteBySanPhamIdAndBienTheIdIsNull(Long sanPhamId);
 }

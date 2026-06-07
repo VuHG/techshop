@@ -24,6 +24,7 @@ public class AdminSanPhamDetailResponse {
     private String thuongHieu;
     private Map<String, Object> thongSoKyThuat;
     private String trangThai;
+    private List<String> anhUrls;         // ảnh cấp sản phẩm (bien_the_id = NULL)
     private List<AdminBienTheResponse> bienThes;
     private List<VoucherItem> vouchers;   // mã giảm giá áp dụng cho sản phẩm này
 

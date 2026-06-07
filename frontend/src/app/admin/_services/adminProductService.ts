@@ -43,6 +43,7 @@ export interface AdminSanPhamDetail {
   thuongHieu: string | null;
   thongSoKyThuat: Record<string, string>;
   trangThai: string;
+  anhUrls?: string[];
   bienThes: AdminBienThe[];
   vouchers?: { maCode: string; tenMa: string }[];
 }
@@ -54,9 +55,10 @@ export interface SanPhamPayload {
   moTaNgan?: string;
   phanLoaiId: number;
   thuongHieu?: string;
-  thongSoKyThuat: Record<string, string>;
+  thongSoKyThuat?: Record<string, string>;
   trangThai: string;
-  bienThes: AdminBienThe[];
+  anhUrls?: string[];
+  bienThes?: AdminBienThe[];
 }
 
 export interface FormOptions {
