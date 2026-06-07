@@ -74,17 +74,23 @@ export default function AdminDonHangChiTietPage() {
     <div className="mx-auto max-w-4xl">
       <button
         onClick={() => router.push('/admin/don-hang')}
-        className="mb-4 flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800"
+        className="mb-4 flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 print:hidden"
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
       </button>
+
+      {/* Tiêu đề chỉ in khi xuất hóa đơn */}
+      <div className="mb-4 hidden print:block">
+        <p className="text-xl font-bold text-primary">TechShop</p>
+        <p className="text-sm text-gray-500">Hóa đơn bán hàng</p>
+      </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-gray-900">{don.maDonHang}</h1>
           <StatusBadge label={label} tone={tone} />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 print:hidden">
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
@@ -187,7 +193,7 @@ export default function AdminDonHangChiTietPage() {
       </section>
 
       {/* Timeline */}
-      <section className="mt-5 rounded-xl border border-gray-200 bg-white p-5">
+      <section className="mt-5 rounded-xl border border-gray-200 bg-white p-5 print:hidden">
         <h2 className="mb-3 font-semibold text-gray-900">Lịch sử trạng thái</h2>
         <ol className="space-y-3">
           {don.lichSu.map((ls, i) => (

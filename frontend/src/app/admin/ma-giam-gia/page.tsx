@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { Search, Plus, Pencil, Ban, Trash2 } from 'lucide-react';
+import { Search, Plus, Pencil, Ban, Trash2, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatPrice, formatNgay, cn } from '@/lib/utils';
 import { adminDiscountService, type MaGiamGia } from '../_services/adminDiscountService';
@@ -13,6 +13,7 @@ import { StatusBadge } from '../_components/StatusBadge';
 import { AdminPagination } from '../_components/AdminPagination';
 import { ConfirmDialog } from '../_components/ConfirmDialog';
 import { MaGiamGiaFormModal } from './MaGiamGiaFormModal';
+import { MaGiamGiaDetailModal } from './MaGiamGiaDetailModal';
 
 export default function AdminMaGiamGiaPage() {
   const qc = useQueryClient();
@@ -22,6 +23,7 @@ export default function AdminMaGiamGiaPage() {
   const [page, setPage] = useState(0);
   const [moForm, setMoForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
   const [xoaId, setXoaId] = useState<number | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -98,6 +100,9 @@ export default function AdminMaGiamGiaPage() {
       className: 'text-right',
       cell: (m) => (
         <div className="flex items-center justify-end gap-1">
+          <IconBtn title="Xem" onClick={() => setDetailId(m.id)}>
+            <Eye className="h-4 w-4" />
+          </IconBtn>
           <IconBtn title="Sửa" onClick={() => { setEditingId(m.id); setMoForm(true); }}>
             <Pencil className="h-4 w-4" />
           </IconBtn>
@@ -193,6 +198,10 @@ export default function AdminMaGiamGiaPage() {
         onConfirm={() => xoaId != null && xoa.mutate(xoaId)}
         onClose={() => setXoaId(null)}
       />
+
+      {detailId != null && (
+        <MaGiamGiaDetailModal id={detailId} onClose={() => setDetailId(null)} />
+      )}
     </div>
   );
 }

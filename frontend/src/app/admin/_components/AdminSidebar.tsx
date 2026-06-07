@@ -23,7 +23,13 @@ const NAV = [
   { href: '/admin/nguoi-dung', label: 'Người dùng', icon: Users },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  className,
+  onNavigate,
+}: {
+  className?: string;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -35,7 +41,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className={cn('flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white print:hidden', className)}>
       <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-5">
         <span className="text-xl font-bold text-primary">TechAdmin</span>
       </div>
@@ -47,6 +53,7 @@ export function AdminSidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
                 active
