@@ -120,6 +120,10 @@ public class AdminSanPhamService {
                 .thuongHieu(req.getThuongHieu())
                 .thongSoKyThuat(req.getThongSoKyThuat())
                 .trangThai(chuanTrangThaiSp(req.getTrangThai()))
+                // Khởi tạo cache field đánh giá = 0 (tránh NULL gây lỗi .toFixed ở FE).
+                .diemDanhGiaTb(BigDecimal.ZERO)
+                .soLuotDanhGia(0)
+                .soLuotBan(0)
                 .build();
         SanPham saved = sanPhamRepo.save(sp);
 

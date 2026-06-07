@@ -26,8 +26,8 @@ export function ProductReviews({
 
       <div className="mb-4 flex items-center gap-4 rounded-lg bg-gray-50 p-4">
         <div className="text-center">
-          <p className="text-3xl font-bold text-gray-800">{diemTb.toFixed(1)}</p>
-          <StarRating diem={diemTb} className="justify-center" />
+          <p className="text-3xl font-bold text-gray-800">{(diemTb ?? 0).toFixed(1)}</p>
+          <StarRating diem={diemTb ?? 0} className="justify-center" />
         </div>
         <p className="text-sm text-gray-500">{soLuot} lượt đánh giá</p>
       </div>

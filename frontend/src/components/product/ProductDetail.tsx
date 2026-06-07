@@ -110,9 +110,10 @@ export function ProductDetail({ slug }: { slug: string }) {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">{sp.tenSanPham}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-500">
-            <StarRating diem={sp.diemDanhGiaTb} />
+            <StarRating diem={sp.diemDanhGiaTb ?? 0} />
             <span>
-              {sp.diemDanhGiaTb.toFixed(1)} · {sp.soLuotDanhGia} đánh giá · Đã bán {sp.soLuotBan}
+              {(sp.diemDanhGiaTb ?? 0).toFixed(1)} · {sp.soLuotDanhGia ?? 0} đánh giá · Đã bán{' '}
+              {sp.soLuotBan ?? 0}
             </span>
           </div>
 
