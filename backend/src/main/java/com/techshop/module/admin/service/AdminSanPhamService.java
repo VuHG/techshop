@@ -1,6 +1,7 @@
 package com.techshop.module.admin.service;
 
 import com.techshop.module.admin.dto.request.BienTheRequest;
+import com.techshop.module.admin.dto.request.BienTheUpsertRequest;
 import com.techshop.module.admin.dto.request.SanPhamRequest;
 import com.techshop.module.admin.dto.response.AdminBienTheResponse;
 import com.techshop.module.admin.dto.response.AdminSanPhamDetailResponse;
@@ -276,6 +277,63 @@ public class AdminSanPhamService {
         bienTheRepo.delete(bt);
     }
 
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void themBienThe(Long sanPhamId, BienTheUpsertRequest req) {
+        if (!sanPhamRepo.existsById(sanPhamId)) {
+            throw new AppException(ErrorCode.PROD_001);
+        }
+        // Nếu đặt làm mặc định → bỏ cờ ở các biến thể khác trước (query này clear context).
+        if (req.isLaMacDinh()) {
+            bienTheRepo.boMacDinhTatCa(sanPhamId);
+        }
+        SanPham sp = sanPhamRepo.findById(sanPhamId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_001));
+
+        BienTheSanPham bt = BienTheSanPham.builder()
+                .sanPham(sp)
+                .phanLoaiId(sp.getPhanLoaiId())
+                .tenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim())
+                .thongSoBienThe(req.getThongSoBienThe() == null ? new HashMap<>() : req.getThongSoBienThe())
+                .gia(req.getGia())
+                .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
+                .soLuongTon(req.getSoLuongTon())
+                .trangThai(CON_HANG)
+                .laBienTheMacDinh(req.isLaMacDinh())
+                .build();
+        bienTheRepo.save(bt);
+    }
+
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void suaBienThe(Long bienTheId, BienTheUpsertRequest req) {
+        BienTheSanPham bt = bienTheRepo.findById(bienTheId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
+        Long sanPhamId = bt.getSanPham().getId();
+
+        bt.setTenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim());
+        bt.setThongSoBienThe(req.getThongSoBienThe() == null ? new HashMap<>() : req.getThongSoBienThe());
+        bt.setGia(req.getGia());
+        bt.setGiaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()));
+        bt.setSoLuongTon(req.getSoLuongTon());
+        bt.setLaBienTheMacDinh(req.isLaMacDinh());
+
+        // Đặt mặc định → bỏ cờ các biến thể khác (clear context), rồi save merge lại biến thể này.
+        if (req.isLaMacDinh()) {
+            bienTheRepo.boMacDinhTatCa(sanPhamId);
+        }
+        bienTheRepo.save(bt);
+    }
+
+    private BigDecimal tinhGiaKhuyenMai(BigDecimal gia, BigDecimal giaBan) {
+        // Giá bán chỉ là "khuyến mãi" khi thực sự thấp hơn niêm yết; bằng/cao hơn → không khuyến mãi.
+        return (giaBan != null && gia != null && giaBan.compareTo(gia) < 0) ? giaBan : null;
+    }
+
+    private boolean rong(String s) {
+        return s == null || s.isBlank();
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────
 
     private void kiemTraPhanLoai(Long phanLoaiId) {
@@ -407,6 +465,8 @@ public class AdminSanPhamService {
             bienTheDongs.add(AdminSanPhamSummaryResponse.BienTheDong.builder()
                     .id(bt.getId())
                     .maBienThe(bt.getMaBienThe())
+                    .tenBienThe(bt.getTenBienThe())
+                    .laMacDinh(Boolean.TRUE.equals(bt.getLaBienTheMacDinh()))
                     .thongSoBienThe(bt.getThongSoBienThe())
                     .gia(bt.getGia())
                     .giaKhuyenMai(bt.getGiaKhuyenMai())
@@ -453,6 +513,8 @@ public class AdminSanPhamService {
                 .map(bt -> AdminBienTheResponse.builder()
                         .id(bt.getId())
                         .maBienThe(bt.getMaBienThe())
+                        .tenBienThe(bt.getTenBienThe())
+                        .laMacDinh(Boolean.TRUE.equals(bt.getLaBienTheMacDinh()))
                         .thongSoBienThe(bt.getThongSoBienThe())
                         .gia(bt.getGia())
                         .giaKhuyenMai(bt.getGiaKhuyenMai())

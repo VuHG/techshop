@@ -1,43 +1,164 @@
 'use client';
 
-import { Layers } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { Modal } from '../_components/Modal';
+import {
+  adminProductService,
+  type BienThePayload,
+  type BienTheDong,
+} from '../_services/adminProductService';
 
-/**
- * Thêm biến thể cho một sản phẩm.
- * NỘI DUNG FORM SẼ ĐƯỢC BỔ SUNG theo yêu cầu của bạn (giá, giá KM, tồn, thuộc tính, nhãn, ảnh...).
- */
-export function ThemBienTheModal(props: {
+const inp =
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
+
+/** Form thêm/sửa MỘT biến thể. Thông số chọn từ filter schema của phân loại. */
+export function ThemBienTheModal({
+  sanPhamId,
+  phanLoaiId,
+  tenSanPham,
+  editing,
+  onClose,
+  onSaved,
+}: {
   sanPhamId: number;
+  phanLoaiId: number;
   tenSanPham: string;
-  title?: string;
+  editing?: BienTheDong | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { data: schema } = useQuery({
+    queryKey: ['admin-filter-schema', phanLoaiId],
+    queryFn: () => adminProductService.getFilterSchema(phanLoaiId),
+  });
+
+  const [tenBienThe, setTenBienThe] = useState(editing?.tenBienThe ?? '');
+  const [gia, setGia] = useState(editing ? String(editing.gia) : '');
+  const [giaBan, setGiaBan] = useState(
+    editing ? String(editing.giaKhuyenMai ?? editing.gia) : '',
+  );
+  const [soLuongTon, setSoLuongTon] = useState(editing ? String(editing.soLuongTon) : '0');
+  const [laMacDinh, setLaMacDinh] = useState(editing?.laMacDinh ?? false);
+  const [thongSo, setThongSo] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    if (editing?.thongSoBienThe) {
+      for (const [k, v] of Object.entries(editing.thongSoBienThe)) init[k] = String(v ?? '');
+    }
+    return init;
+  });
+  const [dangLuu, setDangLuu] = useState(false);
+
+  const chonThongSo = (key: string, value: string) =>
+    setThongSo((prev) => {
+      const next = { ...prev };
+      if (value) next[key] = value;
+      else delete next[key];
+      return next;
+    });
+
+  const luu = async () => {
+    if (!gia || Number(gia) <= 0) return toast.error('Nhập giá niêm yết hợp lệ');
+
+    const payload: BienThePayload = {
+      tenBienThe: tenBienThe.trim() || undefined,
+      gia: Number(gia),
+      giaBan: giaBan ? Number(giaBan) : null,
+      soLuongTon: Number(soLuongTon) || 0,
+      laMacDinh,
+      thongSoBienThe: thongSo,
+    };
+
+    setDangLuu(true);
+    try {
+      if (editing) await adminProductService.suaBienThe(editing.id, payload);
+      else await adminProductService.themBienThe(sanPhamId, payload);
+      toast.success(editing ? 'Đã cập nhật biến thể' : 'Đã thêm biến thể');
+      onSaved();
+    } catch {
+      // interceptor đã toast lỗi
+    } finally {
+      setDangLuu(false);
+    }
+  };
+
+  const schemaKeys = schema ? Object.keys(schema) : [];
+
   return (
-    <Modal open title={props.title ?? 'Thêm biến thể'} size="md" onClose={props.onClose}>
+    <Modal open title={editing ? 'Sửa biến thể' : 'Thêm biến thể'} size="md" onClose={onClose}>
       <div className="space-y-4">
-        <p className="text-sm text-gray-600">
-          Sản phẩm: <b className="text-gray-900">{props.tenSanPham}</b>
+        <p className="text-sm text-gray-500">
+          Sản phẩm: <b className="text-gray-900">{tenSanPham}</b>
         </p>
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-gray-300 py-10 text-center">
-          <Layers className="h-8 w-8 text-gray-300" />
-          <p className="text-sm text-gray-500">
-            Biểu mẫu thêm biến thể đang chờ bạn cung cấp nội dung chi tiết.
-          </p>
-          <p className="text-xs text-gray-400">
-            (giá, giá khuyến mãi, tồn kho, thuộc tính, nhãn, ảnh…)
-          </p>
+
+        <Field label="Tên biến thể">
+          <input className={inp} value={tenBienThe} onChange={(e) => setTenBienThe(e.target.value)} placeholder="VD: i5 / 16GB / Đen" />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Giá niêm yết *">
+            <input type="number" className={inp} value={gia} onChange={(e) => setGia(e.target.value)} />
+          </Field>
+          <Field label="Giá bán">
+            <input type="number" className={inp} value={giaBan} onChange={(e) => setGiaBan(e.target.value)} />
+          </Field>
+          <Field label="Số lượng tồn">
+            <input type="number" className={inp} value={soLuongTon} onChange={(e) => setSoLuongTon(e.target.value)} />
+          </Field>
+          <Field label="Biến thể mặc định">
+            <label className="flex h-[42px] items-center gap-2 rounded-lg border border-gray-300 px-3 text-sm">
+              <input type="checkbox" checked={laMacDinh} onChange={(e) => setLaMacDinh(e.target.checked)} />
+              <span className="text-gray-700">{laMacDinh ? 'Có' : 'Không'}</span>
+            </label>
+          </Field>
         </div>
-        <div className="flex justify-end">
-          <button
-            onClick={props.onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-          >
-            Đóng
+
+        {/* Thông số biến thể — dropdown từ filter schema */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Thông số biến thể</label>
+          {schemaKeys.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-gray-300 px-3 py-3 text-xs text-gray-400">
+              Phân loại này chưa có thông số lọc. Hãy thêm ở mục <b>Thuộc tính</b> trước.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {schemaKeys.map((key) => {
+                const item = schema![key];
+                return (
+                  <div key={key}>
+                    <label className="mb-1 block text-xs text-gray-500">{item.label}</label>
+                    <select className={inp} value={thongSo[key] ?? ''} onChange={(e) => chonThongSo(key, e.target.value)}>
+                      <option value="">— Không chọn —</option>
+                      {item.values.map((v) => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-gray-200 pt-4">
+          <button onClick={onClose} disabled={dangLuu} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60">
+            Quay lại
+          </button>
+          <button onClick={luu} disabled={dangLuu} className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60">
+            {dangLuu ? 'Đang lưu...' : 'Lưu biến thể'}
           </button>
         </div>
       </div>
     </Modal>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      {children}
+    </div>
   );
 }

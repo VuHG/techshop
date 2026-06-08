@@ -77,6 +77,24 @@ public class AdminSanPhamController {
 
     // ─── Thao tác từng biến thể ───────────────────────────────────────────
 
+    /** Thêm biến thể cho 1 sản phẩm. */
+    @PostMapping("/{sanPhamId}/bien-the")
+    public ResponseEntity<ApiResponse<Void>> themBienThe(
+            @PathVariable Long sanPhamId,
+            @Valid @RequestBody com.techshop.module.admin.dto.request.BienTheUpsertRequest req) {
+        service.themBienThe(sanPhamId, req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok());
+    }
+
+    /** Sửa 1 biến thể. */
+    @PutMapping("/bien-the/{bienTheId}")
+    public ResponseEntity<ApiResponse<Void>> suaBienThe(
+            @PathVariable Long bienTheId,
+            @Valid @RequestBody com.techshop.module.admin.dto.request.BienTheUpsertRequest req) {
+        service.suaBienThe(bienTheId, req);
+        return ResponseEntity.ok(ApiResponse.ok());
+    }
+
     /** Ẩn/hiện biến thể. Body: {"trangThai":"NGUNG_BAN"|"CON_HANG"}. */
     @PatchMapping("/bien-the/{bienTheId}/trang-thai")
     public ResponseEntity<ApiResponse<Void>> doiTrangThaiBienThe(

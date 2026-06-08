@@ -39,6 +39,8 @@ public class AdminSanPhamSummaryResponse {
     public static class BienTheDong {
         private Long id;
         private String maBienThe;
+        private String tenBienThe;
+        private boolean laMacDinh;
         private Map<String, Object> thongSoBienThe;
         private BigDecimal gia;
         private BigDecimal giaKhuyenMai;

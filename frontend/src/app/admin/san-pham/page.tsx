@@ -8,7 +8,6 @@ import { formatPrice, cn } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
 import {
   adminProductService,
-  type AdminSanPhamSummary,
   type BienTheDong,
 } from '../_services/adminProductService';
 import { PRODUCT_TABS, nhanTrangThaiSp, nhanTrangThaiBienThe } from '../_lib/productStatus';
@@ -21,7 +20,9 @@ import { ProductDetailModal } from './ProductDetailModal';
 import { ThemBienTheModal } from './ThemBienTheModal';
 
 // Lưới dùng chung cho thanh tiêu đề, header sản phẩm và hàng biến thể (để thẳng cột).
-const GRID = 'grid grid-cols-[2.5fr_1.2fr_1.4fr_0.7fr_1fr_auto] items-center gap-3';
+// Cột thao tác cố định 216px (đủ 5 nút) để cụm nút luôn thẳng hàng.
+const GRID =
+  'grid grid-cols-[minmax(0,2.4fr)_1.3fr_1.4fr_0.6fr_1fr_216px] items-center gap-3';
 
 export default function AdminSanPhamPage() {
   const qc = useQueryClient();
@@ -33,11 +34,15 @@ export default function AdminSanPhamPage() {
   const [moForm, setMoForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
-  const [themBienThe, setThemBienThe] = useState<AdminSanPhamSummary | null>(null);
   const [xoaId, setXoaId] = useState<number | null>(null);
   // Thao tác biến thể
   const [viewBienThe, setViewBienThe] = useState<{ sanPhamId: number; bienTheId: number } | null>(null);
-  const [suaBienThe, setSuaBienThe] = useState<{ sanPhamId: number; tenSanPham: string } | null>(null);
+  const [bienTheForm, setBienTheForm] = useState<{
+    sanPhamId: number;
+    phanLoaiId: number;
+    tenSanPham: string;
+    editing: BienTheDong | null;
+  } | null>(null);
   const [xoaBienTheId, setXoaBienTheId] = useState<number | null>(null);
 
   const { data: options } = useQuery({
@@ -184,7 +189,7 @@ export default function AdminSanPhamPage() {
                       <span className="text-center text-sm font-semibold text-gray-900">{sp.tongTon}</span>
                       <span><StatusBadge label={spTt.label} tone={spTt.tone} /></span>
                       <div className="flex items-center justify-end gap-1">
-                        <IconBtn title="Thêm biến thể" onClick={() => setThemBienThe(sp)}><Layers className="h-4 w-4" /></IconBtn>
+                        <IconBtn title="Thêm biến thể" onClick={() => setBienTheForm({ sanPhamId: sp.id, phanLoaiId: sp.phanLoaiId, tenSanPham: sp.tenSanPham, editing: null })}><Layers className="h-4 w-4" /></IconBtn>
                         <IconBtn title="Xem chi tiết" onClick={() => setDetailId(sp.id)}><Info className="h-4 w-4" /></IconBtn>
                         <IconBtn title="Sửa" onClick={() => { setEditingId(sp.id); setMoForm(true); }}><Pencil className="h-4 w-4" /></IconBtn>
                         <IconBtn title={an ? 'Hiện' : 'Ẩn'} onClick={() => doiTrangThai.mutate({ id: sp.id, tt: an ? 'CON_HANG' : 'NGUNG_BAN' })}>
@@ -205,7 +210,7 @@ export default function AdminSanPhamPage() {
                           key={bt.id}
                           bt={bt}
                           onView={() => setViewBienThe({ sanPhamId: sp.id, bienTheId: bt.id })}
-                          onEdit={() => setSuaBienThe({ sanPhamId: sp.id, tenSanPham: sp.tenSanPham })}
+                          onEdit={() => setBienTheForm({ sanPhamId: sp.id, phanLoaiId: sp.phanLoaiId, tenSanPham: sp.tenSanPham, editing: bt })}
                           onToggle={() =>
                             toggleBienThe.mutate({ id: bt.id, tt: bt.trangThai === 'NGUNG_BAN' ? 'CON_HANG' : 'NGUNG_BAN' })
                           }
@@ -267,22 +272,14 @@ export default function AdminSanPhamPage() {
         />
       )}
 
-      {themBienThe && (
+      {bienTheForm && (
         <ThemBienTheModal
-          sanPhamId={themBienThe.id}
-          tenSanPham={themBienThe.tenSanPham}
-          onClose={() => setThemBienThe(null)}
-          onSaved={() => { setThemBienThe(null); lamMoi(); }}
-        />
-      )}
-
-      {suaBienThe && (
-        <ThemBienTheModal
-          title="Sửa biến thể"
-          sanPhamId={suaBienThe.sanPhamId}
-          tenSanPham={suaBienThe.tenSanPham}
-          onClose={() => setSuaBienThe(null)}
-          onSaved={() => { setSuaBienThe(null); lamMoi(); }}
+          sanPhamId={bienTheForm.sanPhamId}
+          phanLoaiId={bienTheForm.phanLoaiId}
+          tenSanPham={bienTheForm.tenSanPham}
+          editing={bienTheForm.editing}
+          onClose={() => setBienTheForm(null)}
+          onSaved={() => { setBienTheForm(null); lamMoi(); }}
         />
       )}
     </div>
@@ -318,14 +315,14 @@ function BienTheRow({
         </div>
       </div>
       <span className="text-xs text-gray-300">—</span>
-      <span className="text-sm">
+      <span className="text-sm text-gray-800">
         {coKM ? (
           <>
-            <b className="text-primary">{formatPrice(bt.giaKhuyenMai as number)}</b>
+            {formatPrice(bt.giaKhuyenMai as number)}
             <span className="ml-1.5 text-xs text-gray-400 line-through">{formatPrice(bt.gia)}</span>
           </>
         ) : (
-          <span className="text-gray-800">{formatPrice(bt.gia)}</span>
+          formatPrice(bt.gia)
         )}
       </span>
       <span className="text-center text-sm text-gray-700">{bt.soLuongTon}</span>

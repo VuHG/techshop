@@ -32,6 +32,15 @@ public class BienTheSanPham {
     @Column(name = "ma_bien_the", unique = true, length = 50)
     private String maBienThe;
 
+    @Column(name = "ten_bien_the", length = 200)
+    private String tenBienThe;
+
+    @Column(name = "phan_loai_id")
+    private Long phanLoaiId;
+
+    @Column(name = "la_bien_the_mac_dinh")
+    private Boolean laBienTheMacDinh;
+
     @Column(name = "thong_so_bien_the", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> thongSoBienThe;

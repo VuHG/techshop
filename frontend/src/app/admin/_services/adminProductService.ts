@@ -4,12 +4,26 @@ import type { ApiResponse, PageResult } from '@/types';
 export interface BienTheDong {
   id: number;
   maBienThe: string | null;
+  tenBienThe: string | null;
+  laMacDinh: boolean;
   thongSoBienThe: Record<string, unknown>;
   gia: number;
   giaKhuyenMai: number | null;
   soLuongTon: number;
   trangThai: string;
   anhChinh: string | null;
+}
+
+/** Filter schema (chi_tiet_thuoc_tinh_loc.thong_so_loc) cho dropdown thông số biến thể. */
+export type FilterSchema = Record<string, { label: string; values: string[] }>;
+
+export interface BienThePayload {
+  tenBienThe?: string;
+  gia: number;
+  giaBan?: number | null;
+  soLuongTon: number;
+  laMacDinh: boolean;
+  thongSoBienThe: Record<string, string>;
 }
 
 export interface AdminSanPhamSummary {
@@ -33,6 +47,8 @@ export interface AdminSanPhamSummary {
 export interface AdminBienThe {
   id?: number;
   maBienThe: string | null;
+  tenBienThe?: string | null;
+  laMacDinh?: boolean;
   thongSoBienThe: Record<string, string>;
   gia: number;
   giaKhuyenMai: number | null;
@@ -127,5 +143,21 @@ export const adminProductService = {
 
   async xoaBienThe(bienTheId: number): Promise<void> {
     await api.delete(`/admin/san-pham/bien-the/${bienTheId}`);
+  },
+
+  async themBienThe(sanPhamId: number, payload: BienThePayload): Promise<void> {
+    await api.post(`/admin/san-pham/${sanPhamId}/bien-the`, payload);
+  },
+
+  async suaBienThe(bienTheId: number, payload: BienThePayload): Promise<void> {
+    await api.put(`/admin/san-pham/bien-the/${bienTheId}`, payload);
+  },
+
+  /** Filter schema của phân loại (cho dropdown thông số biến thể). */
+  async getFilterSchema(phanLoaiId: number): Promise<FilterSchema> {
+    const res = await api.get<ApiResponse<FilterSchema>>(
+      `/phan-loai/${phanLoaiId}/filter-schema`,
+    );
+    return res.data.data;
   },
 };

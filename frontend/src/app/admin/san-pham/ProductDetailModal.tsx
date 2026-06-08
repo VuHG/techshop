@@ -1,20 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, Ticket } from 'lucide-react';
-import { formatPrice, cn } from '@/lib/utils';
+import { Ticket } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 import { Modal } from '../_components/Modal';
 import { StatusBadge } from '../_components/StatusBadge';
-import { nhanTrangThaiSp } from '../_lib/productStatus';
+import { nhanTrangThaiSp, nhanTrangThaiBienThe } from '../_lib/productStatus';
 import { adminProductService, type AdminBienThe } from '../_services/adminProductService';
 
-const VARIANT_STATUS: Record<string, { label: string; tone: 'green' | 'amber' | 'red' }> = {
-  CON_HANG: { label: 'Còn hàng', tone: 'green' },
-  HET_HANG: { label: 'Hết hàng', tone: 'amber' },
-  NGUNG_BAN: { label: 'Ngừng bán', tone: 'red' },
-};
-
+/**
+ * - Mở từ sản phẩm (không bienTheId): chỉ hiển thị chi tiết SẢN PHẨM.
+ * - Mở từ biến thể (có bienTheId): chi tiết sản phẩm bên trên + chi tiết biến thể đó bên dưới.
+ */
 export function ProductDetailModal({
   id,
   bienTheId,
@@ -28,22 +25,16 @@ export function ProductDetailModal({
     queryKey: ['admin-sp-detail', id],
     queryFn: () => adminProductService.getChiTiet(id),
   });
-  const [moBienThe, setMoBienThe] = useState<number | null>(null);
 
-  // Tự mở rộng đúng biến thể khi mở từ hàng biến thể trong bảng.
-  useEffect(() => {
-    if (bienTheId == null || !sp) return;
-    const idx = sp.bienThes.findIndex((b) => b.id === bienTheId);
-    if (idx >= 0) setMoBienThe(idx);
-  }, [bienTheId, sp]);
+  const bt = sp && bienTheId != null ? sp.bienThes.find((b) => b.id === bienTheId) : undefined;
 
   return (
-    <Modal open title="Chi tiết sản phẩm" size="lg" onClose={onClose}>
+    <Modal open title={bienTheId != null ? 'Chi tiết biến thể' : 'Chi tiết sản phẩm'} size="lg" onClose={onClose}>
       {!sp ? (
         <div className="py-10 text-center text-gray-400">Đang tải...</div>
       ) : (
         <div className="space-y-5">
-          {/* Thông tin sản phẩm */}
+          {/* ── Chi tiết sản phẩm ── */}
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-bold text-gray-900">{sp.tenSanPham}</h3>
@@ -56,7 +47,6 @@ export function ProductDetailModal({
             </p>
           </div>
 
-          {/* Voucher áp dụng */}
           <div>
             <h4 className="mb-2 flex items-center gap-1.5 font-semibold text-gray-900">
               <Ticket className="h-4 w-4" /> Mã giảm giá áp dụng
@@ -74,7 +64,6 @@ export function ProductDetailModal({
             )}
           </div>
 
-          {/* Thông số chung */}
           {sp.thongSoKyThuat && Object.keys(sp.thongSoKyThuat).length > 0 && (
             <div>
               <h4 className="mb-2 font-semibold text-gray-900">Thông số kỹ thuật chung</h4>
@@ -89,40 +78,25 @@ export function ProductDetailModal({
             </div>
           )}
 
-          {/* Biến thể — click để xem toàn bộ */}
-          <div>
-            <h4 className="mb-2 font-semibold text-gray-900">Biến thể ({sp.bienThes.length})</h4>
-            <div className="space-y-2">
-              {sp.bienThes.map((bt, i) => {
-                const mo = moBienThe === i;
-                return (
-                  <div key={i} className="rounded-xl border border-gray-200">
-                    <button
-                      onClick={() => setMoBienThe(mo ? null : i)}
-                      className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-gray-900">
-                          {bt.maBienThe || `Biến thể #${i + 1}`}
-                        </p>
-                        <p className="truncate text-xs text-gray-500">
-                          {Object.values(bt.thongSoBienThe).join(' · ') || '—'}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <span className="text-sm font-semibold text-primary">
-                          {formatPrice(bt.giaKhuyenMai ?? bt.gia)}
-                        </span>
-                        <ChevronDown className={cn('h-4 w-4 text-gray-400 transition', mo && 'rotate-180')} />
-                      </div>
-                    </button>
-
-                    {mo && <VariantDetail bt={bt} />}
+          {/* ── Chi tiết biến thể (chỉ khi mở từ biến thể) ── */}
+          {bienTheId != null && (
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="mb-2 font-semibold text-gray-900">Chi tiết biến thể</h4>
+              {bt ? (
+                <div className="rounded-xl border border-gray-200">
+                  <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-2.5">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      {bt.tenBienThe || bt.maBienThe || Object.values(bt.thongSoBienThe).map(String).join(' · ') || 'Biến thể'}
+                    </p>
+                    {bt.laMacDinh && <StatusBadge label="Mặc định" tone="blue" />}
                   </div>
-                );
-              })}
+                  <VariantDetail bt={bt} />
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">Không tìm thấy biến thể.</p>
+              )}
             </div>
-          </div>
+          )}
         </div>
       )}
     </Modal>
@@ -130,12 +104,12 @@ export function ProductDetailModal({
 }
 
 function VariantDetail({ bt }: { bt: AdminBienThe }) {
-  const st = VARIANT_STATUS[bt.trangThai] ?? { label: bt.trangThai, tone: 'gray' as const };
+  const st = nhanTrangThaiBienThe(bt.trangThai);
   return (
-    <div className="space-y-3 border-t border-gray-100 px-4 py-3">
+    <div className="space-y-3 px-4 py-3">
       <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
         <Row k="Giá niêm yết" v={formatPrice(bt.gia)} />
-        <Row k="Giá khuyến mãi" v={bt.giaKhuyenMai != null ? formatPrice(bt.giaKhuyenMai) : '—'} />
+        <Row k="Giá bán" v={bt.giaKhuyenMai != null ? formatPrice(bt.giaKhuyenMai) : formatPrice(bt.gia)} />
         <Row k="Tồn kho" v={String(bt.soLuongTon)} />
         <div className="flex justify-between gap-2">
           <dt className="text-gray-500">Trạng thái</dt>
@@ -157,7 +131,7 @@ function VariantDetail({ bt }: { bt: AdminBienThe }) {
       </div>
 
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase text-gray-400">Thuộc tính</p>
+        <p className="mb-1 text-xs font-semibold uppercase text-gray-400">Thông số</p>
         {Object.keys(bt.thongSoBienThe).length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(bt.thongSoBienThe).map(([k, v]) => (
@@ -167,7 +141,7 @@ function VariantDetail({ bt }: { bt: AdminBienThe }) {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-gray-400">Không có thuộc tính</p>
+          <p className="text-xs text-gray-400">Không có thông số</p>
         )}
       </div>
 
