@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Ticket } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, formatNgay } from '@/lib/utils';
 import { Modal } from '../_components/Modal';
 import { StatusBadge } from '../_components/StatusBadge';
 import { nhanTrangThaiSp, nhanTrangThaiBienThe } from '../_lib/productStatus';
@@ -46,6 +46,30 @@ export function ProductDetailModal({
               {sp.thuongHieu ? ` · ${sp.thuongHieu}` : ''}
             </p>
           </div>
+
+          {/* Thông tin tổng quan */}
+          <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
+            <Row k="Thương hiệu" v={sp.thuongHieu || '—'} />
+            <Row k="Trạng thái" v={nhanTrangThaiSp(sp.trangThai).label} />
+            <Row k="Số lượt đánh giá" v={`${sp.soLuotDanhGia ?? 0} (${(sp.diemDanhGiaTb ?? 0).toFixed(1)}★)`} />
+            <Row k="Số lượt bán" v={String(sp.soLuotBan ?? 0)} />
+            <Row k="Ngày tạo" v={sp.ngayTao ? formatNgay(sp.ngayTao) : '—'} />
+            <Row k="Ngày cập nhật" v={sp.ngayCapNhat ? formatNgay(sp.ngayCapNhat) : '—'} />
+          </dl>
+
+          {sp.moTaNgan && (
+            <div>
+              <h4 className="mb-1 font-semibold text-gray-900">Mô tả ngắn</h4>
+              <p className="text-sm text-gray-700">{sp.moTaNgan}</p>
+            </div>
+          )}
+
+          {sp.moTa && (
+            <div>
+              <h4 className="mb-1 font-semibold text-gray-900">Mô tả</h4>
+              <p className="whitespace-pre-line text-sm text-gray-700">{sp.moTa}</p>
+            </div>
+          )}
 
           <div>
             <h4 className="mb-2 flex items-center gap-1.5 font-semibold text-gray-900">

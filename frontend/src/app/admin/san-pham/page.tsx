@@ -29,6 +29,8 @@ export default function AdminSanPhamPage() {
   const [tab, setTab] = useState('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [danhMucId, setDanhMucId] = useState<number | ''>('');
+  const [phanLoaiId, setPhanLoaiId] = useState<number | ''>('');
   const [page, setPage] = useState(0);
 
   const [moForm, setMoForm] = useState(false);
@@ -54,10 +56,26 @@ export default function AdminSanPhamPage() {
     queryFn: () => adminProductService.demTrangThai(),
   });
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-sp', tab, search, page],
-    queryFn: () => adminProductService.getDanhSach(tab, search, page, 20),
+    queryKey: ['admin-sp', tab, search, danhMucId, phanLoaiId, page],
+    queryFn: () =>
+      adminProductService.getDanhSach(
+        tab,
+        search,
+        page,
+        20,
+        danhMucId === '' ? undefined : danhMucId,
+        phanLoaiId === '' ? undefined : phanLoaiId,
+      ),
     placeholderData: keepPreviousData,
   });
+
+  // Danh mục duy nhất + phân loại theo danh mục đang chọn (suy từ options).
+  const danhMucs = Array.from(
+    new Map((options?.phanLoais ?? []).map((p) => [p.danhMucId, p.tenDanhMuc])).entries(),
+  ).map(([id, ten]) => ({ id, ten }));
+  const phanLoaisLoc = (options?.phanLoais ?? []).filter(
+    (p) => danhMucId === '' || p.danhMucId === danhMucId,
+  );
   const { data: editing } = useQuery({
     queryKey: ['admin-sp-detail', editingId],
     queryFn: () => adminProductService.getChiTiet(editingId as number),
@@ -133,8 +151,8 @@ export default function AdminSanPhamPage() {
         })}
       </div>
 
-      <form onSubmit={onSearch} className="mb-4 flex gap-2">
-        <div className="relative max-w-md flex-1">
+      <form onSubmit={onSearch} className="mb-4 flex flex-wrap gap-2">
+        <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             value={searchInput}
@@ -143,6 +161,33 @@ export default function AdminSanPhamPage() {
             className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
+        <select
+          value={danhMucId}
+          onChange={(e) => {
+            setDanhMucId(e.target.value ? Number(e.target.value) : '');
+            setPhanLoaiId('');
+            setPage(0);
+          }}
+          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          <option value="">Tất cả danh mục</option>
+          {danhMucs.map((d) => (
+            <option key={d.id} value={d.id}>{d.ten}</option>
+          ))}
+        </select>
+        <select
+          value={phanLoaiId}
+          onChange={(e) => {
+            setPhanLoaiId(e.target.value ? Number(e.target.value) : '');
+            setPage(0);
+          }}
+          className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          <option value="">Tất cả phân loại</option>
+          {phanLoaisLoc.map((p) => (
+            <option key={p.id} value={p.id}>{p.tenPhanLoai}</option>
+          ))}
+        </select>
         <button type="submit" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">
           Tìm
         </button>

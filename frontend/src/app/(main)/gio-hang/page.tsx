@@ -125,8 +125,11 @@ function GioHangContent() {
     try {
       const kq = await discountService.apDung(
         maCode.trim(),
-        tamTinh,
-        selectedItems.map((i) => i.sanPhamId),
+        selectedItems.map((i) => ({
+          sanPhamId: i.sanPhamId,
+          bienTheId: i.bienTheId,
+          thanhTien: i.thanhTien,
+        })),
       );
       setVoucher(kq);
       toast.success(`Áp mã thành công, giảm ${formatPrice(kq.tienGiam)}`);
@@ -227,6 +230,13 @@ function GioHangContent() {
                 </div>
                 <p className="mt-1 font-semibold text-primary">{formatPrice(item.gia)}</p>
                 {!item.conHang && <p className="text-xs text-sale">Hết hàng / không đủ tồn</p>}
+
+                {/* Mã giảm giá áp dụng cho sản phẩm: trừ thẳng tiền ngay dưới ô sản phẩm */}
+                {voucher?.loaiApDung === 'SAN_PHAM' && (voucher.giamTheoBienThe?.[item.bienTheId] ?? 0) > 0 && (
+                  <p className="mt-1 inline-flex items-center gap-1 rounded-md bg-sale/10 px-2 py-0.5 text-xs font-medium text-sale">
+                    Mã {voucher.maCode}: -{formatPrice(voucher.giamTheoBienThe[item.bienTheId])}
+                  </p>
+                )}
 
                 <div className="mt-2 flex items-center justify-between">
                   {/* Stepper */}

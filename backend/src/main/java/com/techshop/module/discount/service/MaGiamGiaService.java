@@ -1,8 +1,8 @@
 package com.techshop.module.discount.service;
 
+import com.techshop.module.discount.dto.DongTinhGiam;
 import com.techshop.module.discount.dto.KetQuaApDungMa;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -13,10 +13,10 @@ public interface MaGiamGiaService {
 
     /**
      * Kiểm tra mã hợp lệ với đơn hàng và tính số tiền giảm. KHÔNG thay đổi dữ liệu.
-     * Ném DIS_001..DIS_006 nếu không hợp lệ.
+     * Mã áp dụng cho sản phẩm → trừ vào các dòng sản phẩm tương ứng (giamTheoBienThe);
+     * mã áp dụng cho đơn hàng → trừ tổng đơn. Ném DIS_001..DIS_006 nếu không hợp lệ.
      */
-    KetQuaApDungMa kiemTraVaTinhGiam(String maCode, Long nguoiDungId,
-                                     BigDecimal tongTienHang, List<Long> sanPhamIds);
+    KetQuaApDungMa kiemTraVaTinhGiam(String maCode, Long nguoiDungId, List<DongTinhGiam> items);
 
     /** Ghi nhận đã dùng mã (atomic tăng lượt + lưu lịch sử). Ném DIS_002 nếu hết lượt. */
     void ghiNhanSuDung(Long maGiamGiaId, Long nguoiDungId, Long donHangId);

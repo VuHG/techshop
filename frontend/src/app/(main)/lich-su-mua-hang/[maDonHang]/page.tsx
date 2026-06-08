@@ -178,6 +178,11 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
                 <p className="mt-1 text-sm text-gray-500">
                   {formatPrice(item.giaLucMua)} × {item.soLuong}
                 </p>
+                {item.tienGiamSanPham != null && item.tienGiamSanPham > 0 && (
+                  <p className="mt-0.5 inline-flex rounded bg-sale/10 px-1.5 py-0.5 text-[11px] font-medium text-sale">
+                    Giảm trực tiếp: -{formatPrice(item.tienGiamSanPham)}
+                  </p>
+                )}
               </div>
               <span className="text-sm font-medium text-gray-800">{formatPrice(item.thanhTien)}</span>
             </li>

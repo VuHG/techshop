@@ -19,6 +19,7 @@ const inp =
 
 export default function AdminThuocTinhPage() {
   const qc = useQueryClient();
+  const [danhMucId, setDanhMucId] = useState<number | ''>('');
   const [phanLoaiId, setPhanLoaiId] = useState<number | ''>('');
   const [moForm, setMoForm] = useState(false);
   const [editing, setEditing] = useState<ThuocTinh | null>(null);
@@ -36,6 +37,14 @@ export default function AdminThuocTinhPage() {
   });
 
   const lamMoi = () => qc.invalidateQueries({ queryKey: ['admin-thuoc-tinh', phanLoaiId] });
+
+  // Danh mục duy nhất + phân loại theo danh mục đang chọn.
+  const danhMucs = Array.from(
+    new Map((options?.phanLoais ?? []).map((p) => [p.danhMucId, p.tenDanhMuc])).entries(),
+  ).map(([id, ten]) => ({ id, ten }));
+  const phanLoaisLoc = (options?.phanLoais ?? []).filter(
+    (p) => danhMucId !== '' && p.danhMucId === danhMucId,
+  );
 
   const xoa = useMutation({
     mutationFn: (id: number) => adminAttributeService.xoa(id),
@@ -58,20 +67,39 @@ export default function AdminThuocTinhPage() {
         }
       />
 
-      <div className="mb-5 max-w-md">
-        <label className="mb-1 block text-sm font-medium text-gray-700">Chọn phân loại</label>
-        <select
-          className={inp}
-          value={phanLoaiId}
-          onChange={(e) => setPhanLoaiId(e.target.value ? Number(e.target.value) : '')}
-        >
-          <option value="">— Chọn phân loại sản phẩm —</option>
-          {options?.phanLoais.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.tenDanhMuc} › {p.tenPhanLoai}
+      <div className="mb-5 grid max-w-2xl gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Bước 1 · Chọn danh mục</label>
+          <select
+            className={inp}
+            value={danhMucId}
+            onChange={(e) => {
+              setDanhMucId(e.target.value ? Number(e.target.value) : '');
+              setPhanLoaiId('');
+            }}
+          >
+            <option value="">— Chọn danh mục —</option>
+            {danhMucs.map((d) => (
+              <option key={d.id} value={d.id}>{d.ten}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Bước 2 · Chọn phân loại</label>
+          <select
+            className={inp}
+            value={phanLoaiId}
+            disabled={danhMucId === ''}
+            onChange={(e) => setPhanLoaiId(e.target.value ? Number(e.target.value) : '')}
+          >
+            <option value="">
+              {danhMucId === '' ? '— Chọn danh mục trước —' : '— Chọn phân loại sản phẩm —'}
             </option>
-          ))}
-        </select>
+            {phanLoaisLoc.map((p) => (
+              <option key={p.id} value={p.id}>{p.tenPhanLoai}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {phanLoaiId === '' ? (

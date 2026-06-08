@@ -20,4 +20,5 @@ public class ChiTietDonHangResponse {
     private BigDecimal giaLucMua;
     private int soLuong;
     private BigDecimal thanhTien;
+    private BigDecimal tienGiamSanPham;   // mã giảm giá sản phẩm trừ thẳng vào dòng (null = không)
 }

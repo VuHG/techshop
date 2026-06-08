@@ -52,11 +52,13 @@ public class AdminSanPhamService {
 
     @Transactional(readOnly = true)
     public PageResponse<AdminSanPhamSummaryResponse> getDanhSach(
-            String trangThai, String search, int page, int size) {
+            String trangThai, String search, Long danhMucId, Long phanLoaiId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<SanPham> result = sanPhamRepo.timKiemAdmin(
                 trangThai == null ? "" : trangThai.trim(),
                 search == null ? "" : search.trim(),
+                danhMucId,
+                phanLoaiId,
                 pageable);
 
         // Nạp map phân loại → (tên phân loại, tên danh mục) một lần.
@@ -292,12 +294,14 @@ public class AdminSanPhamService {
         SanPham sp = sanPhamRepo.findById(sanPhamId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROD_001));
 
+        Map<String, Object> specs = stripMau(req.getThongSoBienThe());
+        String mau = rong(req.getMauSac()) ? null : req.getMauSac().trim();
         BienTheSanPham bt = BienTheSanPham.builder()
                 .sanPham(sp)
                 .phanLoaiId(sp.getPhanLoaiId())
-                .tenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim())
-                .mauSac(rong(req.getMauSac()) ? null : req.getMauSac().trim())
-                .thongSoBienThe(stripMau(req.getThongSoBienThe()))
+                .tenBienThe(sinhTenBienThe(specs, mau))   // tên tự sinh = thông số + màu
+                .mauSac(mau)
+                .thongSoBienThe(specs)
                 .gia(req.getGia())
                 .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
                 .soLuongTon(req.getSoLuongTon())
@@ -315,9 +319,11 @@ public class AdminSanPhamService {
                 .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
         Long sanPhamId = bt.getSanPham().getId();
 
-        bt.setTenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim());
-        bt.setMauSac(rong(req.getMauSac()) ? null : req.getMauSac().trim());
-        bt.setThongSoBienThe(stripMau(req.getThongSoBienThe()));
+        Map<String, Object> specs = stripMau(req.getThongSoBienThe());
+        String mau = rong(req.getMauSac()) ? null : req.getMauSac().trim();
+        bt.setTenBienThe(sinhTenBienThe(specs, mau));   // tên tự sinh = thông số + màu
+        bt.setMauSac(mau);
+        bt.setThongSoBienThe(specs);
         bt.setGia(req.getGia());
         bt.setGiaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()));
         bt.setSoLuongTon(req.getSoLuongTon());
@@ -355,6 +361,15 @@ public class AdminSanPhamService {
                 .sorted(Map.Entry.comparingByKey())
                 .map(e -> String.valueOf(e.getValue()))
                 .collect(Collectors.joining(" / "));
+    }
+
+    // Tên biến thể tự sinh = chuỗi thông số + màu, VD "Intel Core i5 / 8GB / 512GB / Bạc".
+    private String sinhTenBienThe(Map<String, Object> specs, String mauSac) {
+        String chuoi = buildChuoiThongSo(specs);
+        if (mauSac != null && !mauSac.isBlank()) {
+            chuoi = chuoi.isBlank() ? mauSac.trim() : chuoi + " / " + mauSac.trim();
+        }
+        return chuoi.isBlank() ? null : chuoi;
     }
 
     // Dựng lại san_pham.ban_do_bien_the = { chuỗi thông số: { màu: id biến thể } } từ toàn bộ biến thể.
@@ -594,6 +609,11 @@ public class AdminSanPhamService {
                 .tenDanhMuc(pl == null ? null : pl.getDanhMuc().getTenDanhMuc())
                 .thuongHieu(sp.getThuongHieu())
                 .trangThai(sp.getTrangThai())
+                .diemDanhGiaTb(sp.getDiemDanhGiaTb())
+                .soLuotDanhGia(sp.getSoLuotDanhGia())
+                .soLuotBan(sp.getSoLuotBan())
+                .ngayTao(sp.getNgayTao())
+                .ngayCapNhat(sp.getNgayCapNhat())
                 .anhUrls(anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
                         .stream().map(AnhSanPham::getUrlAnh).collect(Collectors.toList()))
                 .bienThes(bienThes)

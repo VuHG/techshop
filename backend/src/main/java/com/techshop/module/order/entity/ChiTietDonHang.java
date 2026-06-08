@@ -51,6 +51,13 @@ public class ChiTietDonHang {
     @Column(name = "thanh_tien", nullable = false, precision = 15, scale = 2)
     private BigDecimal thanhTien;
 
+    // Mã giảm giá áp dụng cho sản phẩm: tiền giảm trừ thẳng vào dòng này (V7).
+    @Column(name = "ma_giam_gia_id")
+    private Long maGiamGiaId;
+
+    @Column(name = "tien_giam_san_pham", precision = 15, scale = 2)
+    private BigDecimal tienGiamSanPham;
+
     @Column(name = "ngay_tao", updatable = false)
     private OffsetDateTime ngayTao;
 

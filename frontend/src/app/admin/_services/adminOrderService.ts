@@ -7,9 +7,18 @@ export const adminOrderService = {
     search?: string,
     page = 0,
     size = 20,
+    tuNgay?: string,
+    denNgay?: string,
   ): Promise<PageResult<DonHangSummary>> {
     const res = await api.get<ApiResponse<PageResult<DonHangSummary>>>('/admin/don-hang', {
-      params: { trangThai: trangThai || undefined, search: search || undefined, page, size },
+      params: {
+        trangThai: trangThai || undefined,
+        search: search || undefined,
+        tuNgay: tuNgay || undefined,
+        denNgay: denNgay || undefined,
+        page,
+        size,
+      },
     });
     return res.data.data;
   },

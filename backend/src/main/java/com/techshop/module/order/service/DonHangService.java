@@ -4,6 +4,7 @@ import com.techshop.module.auth.dto.NguoiDungInfo;
 import com.techshop.module.auth.service.NguoiDungQueryService;
 import com.techshop.module.cart.dto.response.GioHangItemResponse;
 import com.techshop.module.cart.service.GioHangService;
+import com.techshop.module.discount.dto.DongTinhGiam;
 import com.techshop.module.discount.dto.KetQuaApDungMa;
 import com.techshop.module.discount.service.MaGiamGiaService;
 import com.techshop.module.notification.service.NotificationService;
@@ -67,14 +68,18 @@ public class DonHangService {
         // 1. Snapshot + tổng tiền hàng. Kiểm tra còn hàng trước khi trừ kho.
         BigDecimal tongTienHang = BigDecimal.ZERO;
         List<ChiTietDonHang> chiTietList = new ArrayList<>();
-        List<Long> sanPhamIds = new ArrayList<>();
+        List<DongTinhGiam> dongTinhGiam = new ArrayList<>();
 
         for (GioHangItemResponse item : items) {
             if (!item.isConHang()) {
                 throw new AppException(ErrorCode.CART_001);
             }
             tongTienHang = tongTienHang.add(item.getThanhTien());
-            sanPhamIds.add(item.getSanPhamId());
+            dongTinhGiam.add(DongTinhGiam.builder()
+                    .bienTheId(item.getBienTheId())
+                    .sanPhamId(item.getSanPhamId())
+                    .thanhTien(item.getThanhTien())
+                    .build());
 
             chiTietList.add(ChiTietDonHang.builder()
                     .bienTheId(item.getBienTheId())
@@ -88,13 +93,25 @@ public class DonHangService {
         }
 
         // 2. Áp mã giảm giá (1 mã/đơn) — chỉ kiểm tra & tính, chưa ghi nhận.
+        //    Mã sản phẩm: trừ thẳng vào từng dòng (tien_giam_san_pham). Mã đơn: trừ tổng đơn.
         BigDecimal tienGiamGia = BigDecimal.ZERO;
         Long maGiamGiaId = null;
         if (req.getMaGiamGia() != null && !req.getMaGiamGia().isBlank()) {
             KetQuaApDungMa kq = maGiamGiaService.kiemTraVaTinhGiam(
-                    req.getMaGiamGia(), nguoiDungId, tongTienHang, sanPhamIds);
+                    req.getMaGiamGia(), nguoiDungId, dongTinhGiam);
             tienGiamGia = kq.getTienGiam();
             maGiamGiaId = kq.getMaGiamGiaId();
+
+            Map<Long, BigDecimal> giamTheoBienThe = kq.getGiamTheoBienThe();
+            if ("SAN_PHAM".equals(kq.getLoaiApDung()) && giamTheoBienThe != null) {
+                for (ChiTietDonHang ct : chiTietList) {
+                    BigDecimal giam = giamTheoBienThe.get(ct.getBienTheId());
+                    if (giam != null && giam.signum() > 0) {
+                        ct.setMaGiamGiaId(kq.getMaGiamGiaId());
+                        ct.setTienGiamSanPham(giam);
+                    }
+                }
+            }
         }
 
         // 3. Phí ship + tổng thanh toán.
@@ -279,11 +296,18 @@ public class DonHangService {
 
     @Transactional(readOnly = true)
     public PageResponse<DonHangSummaryResponse> getDanhSachAdmin(
-            String trangThai, String search, int page, int size) {
+            String trangThai, String search, LocalDate tuNgay, LocalDate denNgay, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        // Lọc theo ngày đặt: [tuNgay 00:00, denNgay+1 00:00) theo múi giờ hệ thống.
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        java.time.OffsetDateTime from = tuNgay == null ? null
+                : tuNgay.atStartOfDay(zone).toOffsetDateTime();
+        java.time.OffsetDateTime to = denNgay == null ? null
+                : denNgay.plusDays(1).atStartOfDay(zone).toOffsetDateTime();
         Page<DonHang> result = donHangRepo.timKiemAdmin(
                 trangThai == null ? "" : trangThai.trim(),
                 search == null ? "" : search.trim(),
+                from, to,
                 pageable);
 
         List<DonHang> content = result.getContent();
@@ -446,6 +470,7 @@ public class DonHangService {
                         .giaLucMua(ct.getGiaLucMua())
                         .soLuong(ct.getSoLuong())
                         .thanhTien(ct.getThanhTien())
+                        .tienGiamSanPham(ct.getTienGiamSanPham())
                         .build())
                 .collect(Collectors.toCollection(ArrayList::new));
 

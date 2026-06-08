@@ -28,9 +28,12 @@ public class AdminSanPhamController {
     public ResponseEntity<ApiResponse<PageResponse<AdminSanPhamSummaryResponse>>> getDanhSach(
             @RequestParam(required = false) String trangThai,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long danhMucId,
+            @RequestParam(required = false) Long phanLoaiId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.getDanhSach(trangThai, search, page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.getDanhSach(trangThai, search, danhMucId, phanLoaiId, page, size)));
     }
 
     @GetMapping("/dem-trang-thai")

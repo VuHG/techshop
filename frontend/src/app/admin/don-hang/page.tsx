@@ -18,6 +18,8 @@ export default function AdminDonHangPage() {
   const [tab, setTab] = useState('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [tuNgay, setTuNgay] = useState('');
+  const [denNgay, setDenNgay] = useState('');
   const [page, setPage] = useState(0);
 
   const { data: counts } = useQuery({
@@ -26,8 +28,8 @@ export default function AdminDonHangPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-don-hang', tab, search, page],
-    queryFn: () => adminOrderService.getDanhSach(tab, search, page, 20),
+    queryKey: ['admin-don-hang', tab, search, tuNgay, denNgay, page],
+    queryFn: () => adminOrderService.getDanhSach(tab, search, page, 20, tuNgay, denNgay),
     placeholderData: keepPreviousData,
   });
 
@@ -101,9 +103,9 @@ export default function AdminDonHangPage() {
         })}
       </div>
 
-      {/* Tìm kiếm */}
-      <form onSubmit={onSearch} className="mb-4 flex gap-2">
-        <div className="relative flex-1 max-w-md">
+      {/* Tìm kiếm + lọc ngày */}
+      <form onSubmit={onSearch} className="mb-4 flex flex-wrap items-end gap-2">
+        <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             value={searchInput}
@@ -112,6 +114,35 @@ export default function AdminDonHangPage() {
             className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
+        <div>
+          <label className="mb-1 block text-xs text-gray-500">Từ ngày</label>
+          <input
+            type="date"
+            value={tuNgay}
+            max={denNgay || undefined}
+            onChange={(e) => { setTuNgay(e.target.value); setPage(0); }}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-gray-500">Đến ngày</label>
+          <input
+            type="date"
+            value={denNgay}
+            min={tuNgay || undefined}
+            onChange={(e) => { setDenNgay(e.target.value); setPage(0); }}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+        {(tuNgay || denNgay) && (
+          <button
+            type="button"
+            onClick={() => { setTuNgay(''); setDenNgay(''); setPage(0); }}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100"
+          >
+            Xóa lọc ngày
+          </button>
+        )}
         <button
           type="submit"
           className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"

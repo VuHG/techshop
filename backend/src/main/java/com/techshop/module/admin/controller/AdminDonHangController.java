@@ -7,10 +7,12 @@ import com.techshop.module.order.service.DonHangService;
 import com.techshop.shared.response.ApiResponse;
 import com.techshop.shared.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -25,15 +27,17 @@ public class AdminDonHangController {
 
     private final DonHangService donHangService;
 
-    /** Danh sách đơn toàn hệ thống: lọc trạng thái + tìm theo mã/tên/SĐT. */
+    /** Danh sách đơn toàn hệ thống: lọc trạng thái + tìm theo mã/tên/SĐT + lọc theo ngày đặt. */
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<DonHangSummaryResponse>>> getDanhSach(
             @RequestParam(required = false) String trangThai,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(ApiResponse.ok(
-                donHangService.getDanhSachAdmin(trangThai, search, page, size)));
+                donHangService.getDanhSachAdmin(trangThai, search, tuNgay, denNgay, page, size)));
     }
 
     /** Đếm số đơn theo từng trạng thái (badge các tab). */

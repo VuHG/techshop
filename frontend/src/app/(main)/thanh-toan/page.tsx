@@ -68,7 +68,10 @@ function ThanhToanContent() {
   useEffect(() => {
     if (maGiamGiaInit && selectedItems.length > 0 && !voucher) {
       discountService
-        .apDung(maGiamGiaInit, tamTinh, selectedItems.map((i) => i.sanPhamId))
+        .apDung(
+          maGiamGiaInit,
+          selectedItems.map((i) => ({ sanPhamId: i.sanPhamId, bienTheId: i.bienTheId, thanhTien: i.thanhTien })),
+        )
         .then(setVoucher)
         .catch(() => {});
     }
@@ -81,8 +84,7 @@ function ThanhToanContent() {
     try {
       const kq = await discountService.apDung(
         maCode.trim(),
-        tamTinh,
-        selectedItems.map((i) => i.sanPhamId),
+        selectedItems.map((i) => ({ sanPhamId: i.sanPhamId, bienTheId: i.bienTheId, thanhTien: i.thanhTien })),
       );
       setVoucher(kq);
       toast.success(`Áp mã thành công, giảm ${formatPrice(kq.tienGiam)}`);
@@ -353,6 +355,11 @@ function ThanhToanContent() {
                   <p className="text-gray-500">
                     {formatPrice(i.gia)} × {i.soLuong}
                   </p>
+                  {voucher?.loaiApDung === 'SAN_PHAM' && (voucher.giamTheoBienThe?.[i.bienTheId] ?? 0) > 0 && (
+                    <p className="mt-0.5 inline-flex rounded bg-sale/10 px-1.5 py-0.5 text-[11px] font-medium text-sale">
+                      Mã {voucher.maCode}: -{formatPrice(voucher.giamTheoBienThe[i.bienTheId])}
+                    </p>
+                  )}
                 </div>
                 <span className="text-sm font-medium text-gray-800">{formatPrice(i.thanhTien)}</span>
               </li>

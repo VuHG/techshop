@@ -185,6 +185,11 @@ export default function AdminDonHangChiTietPage() {
                 <p className="truncate text-xs text-gray-500">
                   {Object.values(it.thongSoBienThe).join(' · ')}
                 </p>
+                {it.tienGiamSanPham != null && it.tienGiamSanPham > 0 && (
+                  <p className="mt-0.5 inline-flex rounded bg-sale/10 px-1.5 py-0.5 text-[11px] font-medium text-sale">
+                    Giảm trực tiếp: -{formatPrice(it.tienGiamSanPham)}
+                  </p>
+                )}
               </div>
               <div className="text-right text-sm">
                 <p className="text-gray-900">{formatPrice(it.giaLucMua)}</p>

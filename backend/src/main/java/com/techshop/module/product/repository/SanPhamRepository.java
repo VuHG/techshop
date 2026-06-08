@@ -24,10 +24,15 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
             SELECT s FROM SanPham s
             WHERE (:trangThai = '' OR s.trangThai = :trangThai)
               AND (:search = '' OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
+              AND (:danhMucId IS NULL OR s.phanLoaiId IN (
+                    SELECT p.id FROM PhanLoaiSanPham p WHERE p.danhMuc.id = :danhMucId))
             ORDER BY s.ngayTao DESC
             """)
     Page<SanPham> timKiemAdmin(@Param("trangThai") String trangThai,
                                @Param("search") String search,
+                               @Param("danhMucId") Long danhMucId,
+                               @Param("phanLoaiId") Long phanLoaiId,
                                Pageable pageable);
 
     @Query("SELECT s.trangThai, COUNT(s) FROM SanPham s GROUP BY s.trangThai")

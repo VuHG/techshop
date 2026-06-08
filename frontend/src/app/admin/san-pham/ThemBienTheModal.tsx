@@ -34,7 +34,6 @@ export function ThemBienTheModal({
     queryFn: () => adminProductService.getFilterSchema(phanLoaiId),
   });
 
-  const [tenBienThe, setTenBienThe] = useState(editing?.tenBienThe ?? '');
   const [mauSac, setMauSac] = useState(editing?.mauSac ?? '');
   const [gia, setGia] = useState(editing ? String(editing.gia) : '');
   const [giaBan, setGiaBan] = useState(
@@ -63,7 +62,6 @@ export function ThemBienTheModal({
     if (!gia || Number(gia) <= 0) return toast.error('Nhập giá niêm yết hợp lệ');
 
     const payload: BienThePayload = {
-      tenBienThe: tenBienThe.trim() || undefined,
       mauSac: mauSac.trim() || null,
       gia: Number(gia),
       giaBan: giaBan ? Number(giaBan) : null,
@@ -96,14 +94,12 @@ export function ThemBienTheModal({
           Sản phẩm: <b className="text-gray-900">{tenSanPham}</b>
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Tên biến thể">
-            <input className={inp} value={tenBienThe} onChange={(e) => setTenBienThe(e.target.value)} placeholder="VD: i5 / 16GB" />
-          </Field>
-          <Field label="Màu sắc">
-            <input className={inp} value={mauSac} onChange={(e) => setMauSac(e.target.value)} placeholder="VD: Đen" />
-          </Field>
-        </div>
+        <Field label="Màu sắc">
+          <input className={inp} value={mauSac} onChange={(e) => setMauSac(e.target.value)} placeholder="VD: Đen" />
+        </Field>
+        <p className="-mt-1 text-xs text-gray-400">
+          Tên biến thể tự sinh từ thông số + màu, VD <i>Intel Core i5 / 8GB / 512GB / Bạc</i>.
+        </p>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Giá niêm yết *">

@@ -75,6 +75,11 @@ export interface AdminSanPhamDetail {
   tenDanhMuc?: string | null;
   thuongHieu: string | null;
   trangThai: string;
+  diemDanhGiaTb?: number | null;
+  soLuotDanhGia?: number;
+  soLuotBan?: number;
+  ngayTao?: string;
+  ngayCapNhat?: string;
   anhUrls?: string[];
   bienThes: AdminBienThe[];
   vouchers?: { maCode: string; tenMa: string }[];
@@ -98,9 +103,23 @@ export interface FormOptions {
 }
 
 export const adminProductService = {
-  async getDanhSach(trangThai?: string, search?: string, page = 0, size = 20) {
+  async getDanhSach(
+    trangThai?: string,
+    search?: string,
+    page = 0,
+    size = 20,
+    danhMucId?: number,
+    phanLoaiId?: number,
+  ) {
     const res = await api.get<ApiResponse<PageResult<AdminSanPhamSummary>>>('/admin/san-pham', {
-      params: { trangThai: trangThai || undefined, search: search || undefined, page, size },
+      params: {
+        trangThai: trangThai || undefined,
+        search: search || undefined,
+        danhMucId: danhMucId ?? undefined,
+        phanLoaiId: phanLoaiId ?? undefined,
+        page,
+        size,
+      },
     });
     return res.data.data;
   },

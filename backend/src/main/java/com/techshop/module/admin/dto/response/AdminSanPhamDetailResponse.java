@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -22,6 +24,11 @@ public class AdminSanPhamDetailResponse {
     private String tenDanhMuc;
     private String thuongHieu;
     private String trangThai;
+    private BigDecimal diemDanhGiaTb;
+    private int soLuotDanhGia;
+    private int soLuotBan;
+    private OffsetDateTime ngayTao;
+    private OffsetDateTime ngayCapNhat;
     private List<String> anhUrls;         // ảnh cấp sản phẩm (bien_the_id = NULL)
     private List<AdminBienTheResponse> bienThes;
     private List<VoucherItem> vouchers;   // mã giảm giá áp dụng cho sản phẩm này

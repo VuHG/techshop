@@ -34,10 +34,14 @@ public interface DonHangRepository extends JpaRepository<DonHang, Long> {
                    OR LOWER(d.maDonHang) LIKE LOWER(CONCAT('%', :search, '%'))
                    OR LOWER(d.hoTenNguoiNhan) LIKE LOWER(CONCAT('%', :search, '%'))
                    OR d.soDienThoaiNhan LIKE CONCAT('%', :search, '%'))
+              AND (:from IS NULL OR d.ngayTao >= :from)
+              AND (:to IS NULL OR d.ngayTao < :to)
             ORDER BY d.ngayTao DESC
             """)
     Page<DonHang> timKiemAdmin(@Param("trangThai") String trangThai,
                                @Param("search") String search,
+                               @Param("from") java.time.OffsetDateTime from,
+                               @Param("to") java.time.OffsetDateTime to,
                                Pageable pageable);
 
     // Đếm đơn theo từng trạng thái (cho badge các tab).

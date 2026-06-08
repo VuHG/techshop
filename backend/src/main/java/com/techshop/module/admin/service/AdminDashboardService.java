@@ -70,7 +70,7 @@ public class AdminDashboardService {
                 .kpi(kpi)
                 .doanhThuTheoNgay(theoNgay)
                 .doanhThuTheoDanhMuc(theoDanhMuc)
-                .donMoiNhat(donHangService.getDanhSachAdmin("", "", 0, 8).getItems())
+                .donMoiNhat(donHangService.getDanhSachAdmin("", "", null, null, 0, 8).getItems())
                 .build();
     }
 

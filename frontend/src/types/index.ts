@@ -202,8 +202,11 @@ export interface DiscountResult {
   maCode: string;
   tenMa: string;
   loaiGiam: string;
+  loaiApDung: 'DON_HANG' | 'SAN_PHAM';
   tienGiam: number;
   tongThanhToanSauGiam: number;
+  /** Mã sản phẩm: tiền giảm theo từng biến thể (bienTheId → tiền giảm). Mã đơn: rỗng. */
+  giamTheoBienThe: Record<number, number>;
 }
 
 export interface ChiTietDonHang {
@@ -214,6 +217,7 @@ export interface ChiTietDonHang {
   giaLucMua: number;
   soLuong: number;
   thanhTien: number;
+  tienGiamSanPham: number | null;
 }
 
 export interface TrangThaiDonHang {
