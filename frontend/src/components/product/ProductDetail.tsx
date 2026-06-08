@@ -53,7 +53,11 @@ export function ProductDetail({ slug }: { slug: string }) {
   const selected = bienThes.find((b) => b.id === variantId) ?? bienThes[0];
   const gia = selected ? giaBienThe(selected) : null;
   const giaGoc = selected && selected.giaKhuyenMai != null ? selected.gia : null;
-  const thongSo = { ...sp.thongSoKyThuat, ...(selected?.thongSoBienThe ?? {}) };
+  // Sản phẩm không còn thông số chung → bảng thông số = thông số của biến thể đang chọn + màu.
+  const thongSo: Record<string, unknown> = {
+    ...(selected?.thongSoBienThe ?? {}),
+    ...(selected?.mauSac ? { 'Màu sắc': selected.mauSac } : {}),
+  };
 
   const themVaoSoSanh = () => {
     const card: SanPhamCard = {
@@ -124,10 +128,10 @@ export function ProductDetail({ slug }: { slug: string }) {
             {giaGoc && <span className="text-gray-400 line-through">{formatPrice(giaGoc)}</span>}
           </div>
 
-          {bienThes.length > 0 && (
+          {Object.keys(sp.banDoBienThe ?? {}).length > 0 && (
             <div className="mt-4">
-              <p className="mb-2 text-sm font-semibold text-gray-700">Phiên bản</p>
               <VariantSelector
+                banDoBienThe={sp.banDoBienThe}
                 bienThes={bienThes}
                 selectedId={selected?.id ?? 0}
                 onSelect={setVariantId}

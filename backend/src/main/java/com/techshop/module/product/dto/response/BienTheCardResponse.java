@@ -19,6 +19,7 @@ public class BienTheCardResponse {
     private String slug;
     private String tenSanPham;
     private String tenBienThe;
+    private String mauSac;
     private Map<String, Object> thongSoBienThe;
     private String anhChinh;
     private BigDecimal gia;        // giá niêm yết

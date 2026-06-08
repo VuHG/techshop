@@ -40,6 +40,8 @@ public class AdminSanPhamSummaryResponse {
         private Long id;
         private String maBienThe;
         private String tenBienThe;
+        private String mauSac;
+        private int soLuotBan;
         private boolean laMacDinh;
         private Map<String, Object> thongSoBienThe;
         private BigDecimal gia;

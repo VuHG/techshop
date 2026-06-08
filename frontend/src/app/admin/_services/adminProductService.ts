@@ -5,6 +5,8 @@ export interface BienTheDong {
   id: number;
   maBienThe: string | null;
   tenBienThe: string | null;
+  mauSac: string | null;
+  soLuotBan: number;
   laMacDinh: boolean;
   thongSoBienThe: Record<string, unknown>;
   gia: number;
@@ -19,6 +21,7 @@ export type FilterSchema = Record<string, { label: string; values: string[] }>;
 
 export interface BienThePayload {
   tenBienThe?: string;
+  mauSac?: string | null;
   gia: number;
   giaBan?: number | null;
   soLuongTon: number;
@@ -48,6 +51,8 @@ export interface AdminBienThe {
   id?: number;
   maBienThe: string | null;
   tenBienThe?: string | null;
+  mauSac?: string | null;
+  soLuotBan?: number;
   laMacDinh?: boolean;
   thongSoBienThe: Record<string, string>;
   gia: number;
@@ -69,7 +74,6 @@ export interface AdminSanPhamDetail {
   tenPhanLoai?: string | null;
   tenDanhMuc?: string | null;
   thuongHieu: string | null;
-  thongSoKyThuat: Record<string, string>;
   trangThai: string;
   anhUrls?: string[];
   bienThes: AdminBienThe[];
@@ -83,7 +87,6 @@ export interface SanPhamPayload {
   moTaNgan?: string;
   phanLoaiId: number;
   thuongHieu?: string;
-  thongSoKyThuat?: Record<string, string>;
   trangThai: string;
   anhUrls?: string[];
   bienThes?: AdminBienThe[];

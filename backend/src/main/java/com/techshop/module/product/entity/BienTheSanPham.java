@@ -35,6 +35,12 @@ public class BienTheSanPham {
     @Column(name = "ten_bien_the", length = 200)
     private String tenBienThe;
 
+    @Column(name = "mau_sac", length = 50)
+    private String mauSac;
+
+    @Column(name = "so_luot_ban", nullable = false)
+    private int soLuotBan;
+
     @Column(name = "phan_loai_id")
     private Long phanLoaiId;
 

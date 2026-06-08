@@ -9,12 +9,13 @@ import { ProductImage } from '@/components/ui/ProductImage';
 import { StarRating } from '@/components/ui/StarRating';
 import { MuaNgayModal } from './MuaNgayModal';
 
-/** Nhãn biến thể từ thông số (vd "16GB / Đen / 512GB"), tối đa 3 giá trị. */
-function nhanBienThe(thongSo: Record<string, unknown>): string {
-  return Object.values(thongSo)
+/** Nhãn biến thể: ưu tiên tên biến thể, nếu không thì ghép thông số + màu (tối đa 3 giá trị). */
+function nhanBienThe(thongSo: Record<string, unknown>, mauSac: string | null): string {
+  const vals = Object.values(thongSo)
     .filter((v) => v != null && v !== '')
-    .slice(0, 3)
-    .join(' / ');
+    .map(String);
+  if (mauSac) vals.push(mauSac);
+  return vals.slice(0, 3).join(' / ');
 }
 
 // Màu nền nhãn theo tên (Tailwind class — không dùng inline style theo quy ước dự án).
@@ -28,11 +29,11 @@ const TAG_CLASS: Record<string, string> = {
 
 export function BienTheCard({ item }: { item: BienTheCardType }) {
   const [modalMode, setModalMode] = useState<null | 'mua-ngay' | 'them-gio'>(null);
-  const { slug, bienTheId, tenSanPham, thongSoBienThe, anhChinh, gia, giaBan, phanTramGiam } = item;
+  const { slug, bienTheId, tenSanPham, tenBienThe, mauSac, thongSoBienThe, anhChinh, gia, giaBan, phanTramGiam } = item;
   const href = `/san-pham/${slug}?bienThe=${bienTheId}`;
   const coGiam = phanTramGiam > 0 && giaBan < gia;
   const isFlash = item.flashSale; // → dùng màu Flash Sale (đỏ/sale + gradient) giống mục Flash Sale
-  const nhanBt = nhanBienThe(thongSoBienThe);
+  const nhanBt = tenBienThe || nhanBienThe(thongSoBienThe, mauSac);
   // Bỏ nhãn "Sale" vì đã có badge % giảm giá bên trái.
   const tags = item.nhans.filter((n) => n.tenNhan.toLowerCase() !== 'sale');
 

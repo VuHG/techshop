@@ -1,0 +1,417 @@
+// ============================================================
+// TechShop — Database schema (dbdiagram.io / DBML)
+// Sinh từ Flyway migrations V1–V13 (PostgreSQL 16)
+// Dán toàn bộ file này vào https://dbdiagram.io
+// ============================================================
+
+// ─────────────── NHÓM 1: Bảo mật & Người dùng ───────────────
+
+Table vai_tro {
+  id            bigserial [pk]
+  ten_vai_tro   varchar(50) [not null, unique]
+  ma_vai_tro    varchar(50) [unique]
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+}
+
+Table nguoi_dung {
+  id                 bigserial [pk]
+  ho_ten             varchar(100) [not null]
+  so_dien_thoai      varchar(15) [not null, unique]
+  email              varchar(150) [unique]
+  ngay_sinh          date
+  mat_khau           varchar(255) [not null]
+  vai_tro_id         bigint [not null, ref: > vai_tro.id]
+  trang_thai         varchar(20) [not null, default: 'HOAT_DONG', note: 'HOAT_DONG | BI_KHOA | CHO_XAC_THUC']
+  otp_xac_thuc       varchar(6)
+  otp_het_han        timestamptz
+  da_xac_thuc        boolean [not null, default: false]
+  gioi_tinh          varchar(10) [note: 'NAM | NU | KHAC']
+  avatar_url         varchar(500)
+  lan_dang_nhap_cuoi timestamptz
+  ip_dang_nhap_cuoi  varchar(50)
+  ngay_tao           timestamptz
+  ngay_cap_nhat      timestamptz
+
+  indexes {
+    so_dien_thoai
+    email
+    vai_tro_id
+  }
+}
+
+Table mat_khau_reset {
+  id            bigserial [pk]
+  nguoi_dung_id bigint [not null, ref: > nguoi_dung.id]
+  otp           varchar(6) [not null]
+  email         varchar(150)
+  het_han       timestamptz [not null]
+  da_su_dung    boolean [not null, default: false]
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+}
+
+Table dia_chi {
+  id                bigserial [pk]
+  nguoi_dung_id     bigint [not null, ref: > nguoi_dung.id]
+  ho_ten_nguoi_nhan varchar(100) [not null]
+  so_dien_thoai     varchar(15) [not null]
+  dia_chi_chi_tiet  text [not null]
+  phuong_xa         varchar(100) [not null]
+  quan_huyen        varchar(100) [not null]
+  tinh_thanh        varchar(100) [not null]
+  la_mac_dinh       boolean [not null, default: false]
+  ngay_tao          timestamptz
+  ngay_cap_nhat     timestamptz
+}
+
+// ─────────────── NHÓM 2: Danh mục & Phân loại ───────────────
+
+Table danh_muc {
+  id              bigserial [pk]
+  ten_danh_muc    varchar(100) [not null]
+  slug            varchar(100) [not null, unique]
+  danh_muc_cha_id bigint [ref: > danh_muc.id]
+  thu_tu_hien_thi int [default: 0]
+  trang_thai      varchar(20) [not null, default: 'HIEN_THI', note: 'HIEN_THI | AN']
+  ngay_tao        timestamptz
+  ngay_cap_nhat   timestamptz
+}
+
+Table phan_loai_san_pham {
+  id              bigserial [pk]
+  ten_phan_loai   varchar(100) [not null]
+  danh_muc_id     bigint [not null, ref: > danh_muc.id]
+  slug            varchar(100) [unique]
+  thu_tu_hien_thi int [default: 0]
+  trang_thai      varchar(20) [default: 'HIEN_THI']
+  ngay_tao        timestamptz
+  ngay_cap_nhat   timestamptz
+}
+
+// JSONB: schema filter pre-computed theo từng phân loại (1-1)
+Table chi_tiet_thuoc_tinh_loc {
+  id            bigserial [pk]
+  phan_loai_id  bigint [not null, unique, ref: > phan_loai_san_pham.id]
+  thong_so_loc  jsonb [not null, note: 'GIN index']
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+}
+
+// ─────────────── NHÓM 3: Từ điển thuộc tính ───────────────
+
+Table thuoc_tinh {
+  id               bigserial [pk]
+  ten_thuoc_tinh   varchar(100) [not null]
+  phan_loai_id     bigint [not null, ref: > phan_loai_san_pham.id]
+  ma_thuoc_tinh    varchar(50) [note: 'khớp KEY trong thong_so_loc']
+  kieu_du_lieu     varchar(20) [default: 'STRING']
+  thu_tu_hien_thi  int [default: 0]
+  trang_thai_duyet varchar(20) [default: 'APPROVED']
+  trang_thai       varchar(20) [default: 'ACTIVE', note: 'ACTIVE | INACTIVE (soft-delete)']
+  ngay_tao         timestamptz
+  ngay_cap_nhat    timestamptz
+}
+
+Table gia_tri_thuoc_tinh {
+  id               bigserial [pk]
+  thuoc_tinh_id    bigint [not null, ref: > thuoc_tinh.id]
+  gia_tri          varchar(100) [not null]
+  thu_tu_hien_thi  int [default: 0]
+  trang_thai_duyet varchar(20) [default: 'APPROVED']
+  trang_thai       varchar(20) [default: 'ACTIVE']
+  ngay_tao         timestamptz
+  ngay_cap_nhat    timestamptz
+}
+
+// ─────────────── NHÓM 4: Nhãn ───────────────
+
+Table nhan_san_pham {
+  id              bigserial [pk]
+  ten_nhan        varchar(50) [not null, unique]
+  ma_nhan         varchar(50) [unique]
+  mau_sac         varchar(7) [note: 'hex color, VD #FF4444']
+  thu_tu_hien_thi int [default: 0]
+  trang_thai      varchar(20) [default: 'ACTIVE']
+  ngay_tao        timestamptz
+  ngay_cap_nhat   timestamptz
+}
+
+// ─────────────── NHÓM 5: Sản phẩm & Biến thể ───────────────
+
+// san_pham = hộp chứa: KHÔNG giá, KHÔNG stock, KHÔNG ảnh trực tiếp.
+Table san_pham {
+  id                bigserial [pk]
+  ten_san_pham      varchar(200) [not null]
+  slug              varchar(200) [not null, unique]
+  mo_ta             text
+  mo_ta_ngan        varchar(500)
+  phan_loai_id      bigint [not null, ref: > phan_loai_san_pham.id]
+  thuong_hieu       varchar(100)
+  ban_do_bien_the   jsonb [note: 'sơ đồ phiên bản { "<chuỗi thông số>": { "<màu>": <id biến thể> } }; trước là thong_so_ky_thuat (V14)']
+  diem_danh_gia_tb  "decimal(3,2)" [default: 0, note: 'cache']
+  so_luot_danh_gia  int [default: 0, note: 'cache']
+  so_luot_ban       int [default: 0, note: 'cache']
+  trang_thai        varchar(20) [not null, default: 'CON_HANG', note: 'CON_HANG | HET_HANG | NGUNG_BAN | BAN_NHAP']
+  ngay_tao          timestamptz
+  ngay_cap_nhat     timestamptz
+}
+
+Table bien_the_san_pham {
+  id                   bigserial [pk]
+  san_pham_id          bigint [not null, ref: > san_pham.id]
+  phan_loai_id         bigint [ref: > phan_loai_san_pham.id]
+  ma_bien_the          varchar(50) [unique, note: 'SKU']
+  ten_bien_the         varchar(200)
+  mau_sac              varchar(50) [note: 'tách khỏi thong_so_bien_the (V14)']
+  thong_so_bien_the    jsonb [not null, note: '{"ram":"16GB","cpu":"i7"} — KHÔNG còn màu; GIN index']
+  gia                  "decimal(15,2)" [not null]
+  gia_khuyen_mai       "decimal(15,2)"
+  so_luong_ton         int [not null, default: 0, note: 'cache']
+  so_luot_ban          int [not null, default: 0, note: 'cache (đơn HOAN_THANH)']
+  la_bien_the_mac_dinh boolean [default: false]
+  trang_thai           varchar(20) [not null, default: 'CON_HANG', note: 'CON_HANG | HET_HANG | NGUNG_BAN']
+  ngay_tao             timestamptz
+  ngay_cap_nhat        timestamptz
+}
+
+Table bien_the_gia_tri_thuoc_tinh {
+  id                    bigserial [pk]
+  bien_the_id           bigint [not null, ref: > bien_the_san_pham.id]
+  gia_tri_thuoc_tinh_id bigint [not null, ref: > gia_tri_thuoc_tinh.id]
+  ngay_tao              timestamptz
+
+  indexes {
+    (bien_the_id, gia_tri_thuoc_tinh_id) [unique]
+  }
+}
+
+Table bien_the_nhan {
+  id          bigserial [pk]
+  bien_the_id bigint [not null, ref: > bien_the_san_pham.id]
+  nhan_id     bigint [not null, ref: > nhan_san_pham.id]
+  ngay_tao    timestamptz
+
+  indexes {
+    (bien_the_id, nhan_id) [unique]
+  }
+}
+
+// bien_the_id NULL = ảnh chung của sản phẩm
+Table anh_san_pham {
+  id            bigserial [pk]
+  san_pham_id   bigint [not null, ref: > san_pham.id]
+  bien_the_id   bigint [ref: > bien_the_san_pham.id]
+  url_anh       varchar(500) [not null]
+  la_anh_chinh  boolean [not null, default: false]
+  thu_tu        int [default: 0]
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+}
+
+// ─────────────── NHÓM 6: Giỏ hàng ───────────────
+
+Table gio_hang {
+  id            bigserial [pk]
+  nguoi_dung_id bigint [not null, ref: > nguoi_dung.id]
+  bien_the_id   bigint [not null, ref: > bien_the_san_pham.id]
+  so_luong      int [not null, default: 1]
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+
+  indexes {
+    (nguoi_dung_id, bien_the_id) [unique]
+  }
+}
+
+// ─────────────── NHÓM 10: Mã giảm giá ───────────────
+
+Table ma_giam_gia {
+  id                  bigserial [pk]
+  ma_code             varchar(50) [not null, unique]
+  ten_ma              varchar(100) [not null]
+  mo_ta               text
+  loai_giam           varchar(20) [not null, note: 'PHAN_TRAM | SO_TIEN_CO_DINH']
+  gia_tri_giam        "decimal(15,2)" [not null]
+  gia_tri_giam_toi_da "decimal(15,2)"
+  dieu_kien_toi_thieu "decimal(15,2)" [default: 0]
+  so_luong_toi_da     int [not null]
+  so_luong_da_dung    int [not null, default: 0, note: 'cache (atomic SQL)']
+  loai_ap_dung        varchar(20) [default: 'DON_HANG', note: 'DON_HANG | SAN_PHAM']
+  gioi_han_moi_user   int [default: 1]
+  bat_dau             timestamptz [not null]
+  ket_thuc            timestamptz [not null]
+  trang_thai          varchar(20) [not null, default: 'HOAT_DONG', note: 'HOAT_DONG | HET_HAN | VO_HIEU']
+  ngay_tao            timestamptz
+  ngay_cap_nhat       timestamptz
+}
+
+Table ma_giam_gia_san_pham {
+  id             bigserial [pk]
+  ma_giam_gia_id bigint [not null, ref: > ma_giam_gia.id]
+  san_pham_id    bigint [not null, ref: > san_pham.id]
+  ngay_tao       timestamptz
+
+  indexes {
+    (ma_giam_gia_id, san_pham_id) [unique]
+  }
+}
+
+// ─────────────── NHÓM 7: Đơn hàng (snapshot) ───────────────
+
+Table don_hang {
+  id                      bigserial [pk]
+  ma_don_hang             varchar(20) [not null, unique]
+  nguoi_dung_id           bigint [not null, ref: > nguoi_dung.id]
+  ho_ten_nguoi_nhan       varchar(100) [not null, note: 'snapshot']
+  so_dien_thoai_nhan      varchar(15) [not null, note: 'snapshot']
+  dia_chi_giao_hang       text [not null, note: 'snapshot']
+  phuong_thuc_thanh_toan  varchar(20) [not null, default: 'COD']
+  trang_thai              varchar(30) [not null, default: 'CHO_XU_LY', note: 'CHO_THANH_TOAN|CHO_XU_LY|DA_DUYET|DANG_GIAO|GIAO_THANH_CONG|HOAN_THANH|DA_HUY']
+  tong_tien_hang          "decimal(15,2)" [not null]
+  tien_giam_gia           "decimal(15,2)" [not null, default: 0]
+  phi_van_chuyen          "decimal(15,2)" [not null, default: 0]
+  tong_thanh_toan         "decimal(15,2)" [not null]
+  ma_giam_gia_id          bigint [ref: > ma_giam_gia.id]
+  trang_thai_thanh_toan   varchar(20) [default: 'CHUA_THANH_TOAN']
+  ma_giao_dich_thanh_toan varchar(100)
+  ly_do_huy               text
+  ghi_chu                 text
+  ngay_tao                timestamptz
+  ngay_cap_nhat           timestamptz
+
+  indexes {
+    nguoi_dung_id
+    trang_thai
+    ma_don_hang
+  }
+}
+
+Table chi_tiet_don_hang {
+  id                  bigserial [pk]
+  don_hang_id         bigint [not null, ref: > don_hang.id]
+  bien_the_id         bigint [ref: > bien_the_san_pham.id]
+  ten_san_pham        varchar(200) [not null, note: 'snapshot']
+  ten_bien_the        varchar(200) [note: 'snapshot']
+  thong_so_bien_the   jsonb [not null, note: 'snapshot']
+  duong_dan_anh_chinh varchar(500) [note: 'snapshot']
+  gia_luc_mua         "decimal(15,2)" [not null, note: 'snapshot']
+  so_luong            int [not null]
+  thanh_tien          "decimal(15,2)" [not null]
+  ma_giam_gia_id      bigint [ref: > ma_giam_gia.id]
+  tien_giam_san_pham  "decimal(15,2)" [default: 0]
+  ngay_tao            timestamptz
+  ngay_cap_nhat       timestamptz
+}
+
+Table lich_su_trang_thai_don_hang {
+  id                bigserial [pk]
+  don_hang_id       bigint [not null, ref: > don_hang.id]
+  trang_thai        varchar(30) [not null]
+  trang_thai_cu     varchar(30)
+  nguoi_thay_doi_id bigint [ref: > nguoi_dung.id]
+  ghi_chu           text
+  ngay_tao          timestamptz
+}
+
+Table lich_su_dung_ma {
+  id             bigserial [pk]
+  ma_giam_gia_id bigint [not null, ref: > ma_giam_gia.id]
+  nguoi_dung_id  bigint [not null, ref: > nguoi_dung.id]
+  don_hang_id    bigint [not null, ref: > don_hang.id]
+  ngay_tao       timestamptz
+
+  indexes {
+    (ma_giam_gia_id, nguoi_dung_id) [unique]
+  }
+}
+
+// ─────────────── NHÓM 8: Đánh giá ───────────────
+
+Table danh_gia {
+  id                bigserial [pk]
+  nguoi_dung_id     bigint [not null, ref: > nguoi_dung.id]
+  san_pham_id       bigint [not null, ref: > san_pham.id]
+  don_hang_id       bigint [ref: > don_hang.id]
+  bien_the_id       bigint [ref: > bien_the_san_pham.id]
+  diem_danh_gia     smallint [not null, note: '1..5']
+  noi_dung          text
+  phan_hoi_admin    text
+  ngay_phan_hoi     timestamptz
+  nguoi_phan_hoi_id bigint [ref: > nguoi_dung.id]
+  trang_thai        varchar(20) [not null, default: 'DA_DUYET', note: 'CHO_DUYET | DA_DUYET | TU_CHOI']
+  ngay_tao          timestamptz
+  ngay_cap_nhat     timestamptz
+
+  indexes {
+    (nguoi_dung_id, bien_the_id, don_hang_id) [unique]
+  }
+}
+
+Table danh_gia_media {
+  id          bigserial [pk]
+  danh_gia_id bigint [not null, ref: > danh_gia.id]
+  url_media   varchar(500) [not null]
+  loai_media  varchar(20) [not null, note: 'HINH_ANH | VIDEO']
+  thu_tu      int [default: 0]
+  ngay_tao    timestamptz
+}
+
+// ─────────────── NHÓM 9: Thông báo ───────────────
+
+Table thong_bao {
+  id             bigserial [pk]
+  nguoi_dung_id  bigint [not null, ref: > nguoi_dung.id]
+  tieu_de        varchar(200) [not null]
+  noi_dung       text [not null]
+  loai_thong_bao varchar(50) [not null, note: 'DON_HANG | KHUYEN_MAI | HE_THONG | BAO_MAT']
+  da_doc         boolean [not null, default: false]
+  tham_chieu_id  bigint
+  duong_dan_dich varchar(500)
+  ngay_tao       timestamptz
+  ngay_cap_nhat  timestamptz
+
+  indexes {
+    nguoi_dung_id
+    (nguoi_dung_id, da_doc)
+  }
+}
+
+// ─────────────── NHÓM 11: Kho ───────────────
+
+Table phieu_nhap {
+  id            bigserial [pk]
+  ma_phieu      varchar(20) [not null, unique]
+  tong_tien     "decimal(15,2)" [not null]
+  nha_cung_cap  varchar(200)
+  trang_thai    varchar(20) [default: 'APPROVED', note: 'DRAFT | APPROVED | CANCELLED']
+  ghi_chu       text
+  nguoi_tao_id  bigint [ref: > nguoi_dung.id]
+  ngay_tao      timestamptz
+  ngay_cap_nhat timestamptz
+}
+
+Table chi_tiet_phieu_nhap {
+  id            bigserial [pk]
+  phieu_nhap_id bigint [not null, ref: > phieu_nhap.id]
+  bien_the_id   bigint [not null, ref: > bien_the_san_pham.id]
+  so_luong      int [not null]
+  gia_nhap      "decimal(15,2)" [not null]
+  thanh_tien    "decimal(15,2)"
+  ngay_tao      timestamptz
+}
+
+// ─────────────── Flash Sale (V8) ───────────────
+
+Table flashsale {
+  id                 bigserial [pk]
+  bien_the_id        bigint [not null, ref: > bien_the_san_pham.id]
+  gia_flash_sale     "decimal(15,2)" [not null]
+  thoi_gian_bat_dau  timestamptz [not null]
+  thoi_gian_ket_thuc timestamptz [not null]
+  so_luong_gioi_han  int [note: 'null = không giới hạn']
+  so_luong_da_ban    int [not null, default: 0]
+  trang_thai         varchar(20) [not null, default: 'HOAT_DONG', note: 'HOAT_DONG | KET_THUC | VO_HIEU']
+  ngay_tao           timestamptz
+  ngay_cap_nhat      timestamptz
+}

@@ -75,6 +75,8 @@ export interface SanPhamCard {
 export interface BienThe {
   id: number;
   maBienThe: string;
+  tenBienThe: string | null;
+  mauSac: string | null;
   thongSoBienThe: Record<string, unknown>;
   gia: number;
   giaKhuyenMai: number | null;
@@ -84,6 +86,12 @@ export interface BienThe {
   nhans: Nhan[];
 }
 
+/**
+ * Sơ đồ phiên bản (san_pham.ban_do_bien_the):
+ *   { "<chuỗi thông số>": { "<màu>": <id biến thể> } }
+ */
+export type BanDoBienThe = Record<string, Record<string, number>>;
+
 export interface SanPhamDetail {
   id: number;
   slug: string;
@@ -92,7 +100,7 @@ export interface SanPhamDetail {
   moTaNgan: string | null;
   thuongHieu: string | null;
   phanLoaiId: number;
-  thongSoKyThuat: Record<string, unknown>;
+  banDoBienThe: BanDoBienThe;
   diemDanhGiaTb: number;
   soLuotDanhGia: number;
   soLuotBan: number;
@@ -115,6 +123,7 @@ export interface BienTheCard {
   slug: string;
   tenSanPham: string;
   tenBienThe: string | null;
+  mauSac: string | null;
   thongSoBienThe: Record<string, unknown>;
   anhChinh: string | null;
   gia: number;        // niêm yết

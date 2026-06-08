@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Thêm/sửa "hộp chứa" sản phẩm. Biến thể được quản lý riêng (nút Thêm biến thể).
@@ -29,8 +28,6 @@ public class SanPhamRequest {
     private Long phanLoaiId;
 
     private String thuongHieu;
-
-    private Map<String, Object> thongSoKyThuat;  // tùy chọn (không dùng ở form hộp chứa)
 
     private String trangThai;              // CON_HANG | NGUNG_BAN | BAN_NHAP (mặc định CON_HANG)
 

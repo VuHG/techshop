@@ -302,7 +302,11 @@ function BienTheRow({
   const tt = nhanTrangThaiBienThe(bt.trangThai);
   const an = bt.trangThai === 'NGUNG_BAN';
   const coKM = bt.giaKhuyenMai != null && bt.giaKhuyenMai < bt.gia;
-  const tenBt = Object.values(bt.thongSoBienThe).map(String).join(' · ') || bt.maBienThe || 'Biến thể';
+  const tenBt =
+    bt.tenBienThe
+    || [...Object.values(bt.thongSoBienThe).map(String), bt.mauSac].filter(Boolean).join(' · ')
+    || bt.maBienThe
+    || 'Biến thể';
 
   return (
     <div className={cn(GRID, 'border-t border-gray-100 px-4 py-2.5')}>

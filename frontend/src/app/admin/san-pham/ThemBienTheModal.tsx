@@ -35,6 +35,7 @@ export function ThemBienTheModal({
   });
 
   const [tenBienThe, setTenBienThe] = useState(editing?.tenBienThe ?? '');
+  const [mauSac, setMauSac] = useState(editing?.mauSac ?? '');
   const [gia, setGia] = useState(editing ? String(editing.gia) : '');
   const [giaBan, setGiaBan] = useState(
     editing ? String(editing.giaKhuyenMai ?? editing.gia) : '',
@@ -63,6 +64,7 @@ export function ThemBienTheModal({
 
     const payload: BienThePayload = {
       tenBienThe: tenBienThe.trim() || undefined,
+      mauSac: mauSac.trim() || null,
       gia: Number(gia),
       giaBan: giaBan ? Number(giaBan) : null,
       soLuongTon: Number(soLuongTon) || 0,
@@ -83,7 +85,9 @@ export function ThemBienTheModal({
     }
   };
 
-  const schemaKeys = schema ? Object.keys(schema) : [];
+  // Màu sắc đã có ô riêng → loại khỏi dropdown thông số để tránh trùng.
+  const MAU_KEYS = ['color', 'mau_sac', 'mauSac', 'Màu sắc'];
+  const schemaKeys = schema ? Object.keys(schema).filter((k) => !MAU_KEYS.includes(k)) : [];
 
   return (
     <Modal open title={editing ? 'Sửa biến thể' : 'Thêm biến thể'} size="md" onClose={onClose}>
@@ -92,9 +96,14 @@ export function ThemBienTheModal({
           Sản phẩm: <b className="text-gray-900">{tenSanPham}</b>
         </p>
 
-        <Field label="Tên biến thể">
-          <input className={inp} value={tenBienThe} onChange={(e) => setTenBienThe(e.target.value)} placeholder="VD: i5 / 16GB / Đen" />
-        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Tên biến thể">
+            <input className={inp} value={tenBienThe} onChange={(e) => setTenBienThe(e.target.value)} placeholder="VD: i5 / 16GB" />
+          </Field>
+          <Field label="Màu sắc">
+            <input className={inp} value={mauSac} onChange={(e) => setMauSac(e.target.value)} placeholder="VD: Đen" />
+          </Field>
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Giá niêm yết *">

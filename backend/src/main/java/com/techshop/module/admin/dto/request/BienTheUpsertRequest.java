@@ -13,6 +13,8 @@ public class BienTheUpsertRequest {
 
     private String tenBienThe;
 
+    private String mauSac;             // màu sắc (tách khỏi thongSoBienThe)
+
     @NotNull(message = "Giá niêm yết không được để trống")
     @PositiveOrZero(message = "Giá niêm yết không hợp lệ")
     private BigDecimal gia;            // giá niêm yết

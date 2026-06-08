@@ -248,13 +248,18 @@ public class DonHangService {
                 .build());
         donHangRepo.saveAndFlush(donHang);
 
-        // Lượt bán chỉ tăng khi đơn thực sự hoàn thành (gộp theo sản phẩm).
+        // Lượt bán chỉ tăng khi đơn thực sự hoàn thành (gộp theo sản phẩm + theo biến thể).
         Map<Long, Integer> soLuongTheoSanPham = new LinkedHashMap<>();
+        Map<Long, Integer> soLuongTheoBienThe = new LinkedHashMap<>();
         for (ChiTietDonHang ct : cts) {
             BienTheInfo info = productQueryService.layThongTinBienThe(ct.getBienTheId());
             soLuongTheoSanPham.merge(info.getSanPhamId(), ct.getSoLuong(), Integer::sum);
+            if (ct.getBienTheId() != null) {
+                soLuongTheoBienThe.merge(ct.getBienTheId(), ct.getSoLuong(), Integer::sum);
+            }
         }
         soLuongTheoSanPham.forEach(productQueryService::tangSoLuotBan);
+        soLuongTheoBienThe.forEach(productQueryService::tangSoLuotBanBienThe);
 
         notificationService.taoThongBao(nguoiDungId, NotificationService.LOAI_DON_HANG,
                 "Đơn hàng hoàn thành",

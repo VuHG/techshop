@@ -121,7 +121,7 @@ public class AdminSanPhamService {
                 .moTaNgan(req.getMoTaNgan())
                 .phanLoaiId(req.getPhanLoaiId())
                 .thuongHieu(req.getThuongHieu())
-                .thongSoKyThuat(req.getThongSoKyThuat())
+                .banDoBienThe(new HashMap<>())   // dựng lại sau khi có biến thể
                 .trangThai(chuanTrangThaiSp(req.getTrangThai()))
                 // Khởi tạo cache field đánh giá = 0 (tránh NULL gây lỗi .toFixed ở FE).
                 .diemDanhGiaTb(BigDecimal.ZERO)
@@ -137,6 +137,7 @@ public class AdminSanPhamService {
             for (BienTheRequest bt : req.getBienThes()) {
                 luuBienTheMoi(saved, bt);
             }
+            dongBoBanDoBienThe(saved.getId());
         }
         return toDetail(saved);
     }
@@ -156,8 +157,6 @@ public class AdminSanPhamService {
         sp.setMoTaNgan(req.getMoTaNgan());
         sp.setPhanLoaiId(req.getPhanLoaiId());
         sp.setThuongHieu(req.getThuongHieu());
-        // Chỉ ghi đè thông số chung khi request có gửi (form hộp chứa không gửi → giữ nguyên).
-        if (req.getThongSoKyThuat() != null) sp.setThongSoKyThuat(req.getThongSoKyThuat());
         sp.setTrangThai(chuanTrangThaiSp(req.getTrangThai()));
         sanPhamRepo.save(sp);
 
@@ -207,6 +206,7 @@ public class AdminSanPhamService {
                 luuAnh(sp.getId(), existing.getId(), bt.getAnhUrls());
             }
         }
+        dongBoBanDoBienThe(sp.getId());
     }
 
     // ─── Ẩn / hiện (đổi trạng thái) ───────────────────────────────────────
@@ -269,12 +269,14 @@ public class AdminSanPhamService {
     public void xoaBienThe(Long bienTheId) {
         BienTheSanPham bt = bienTheRepo.findById(bienTheId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
+        Long sanPhamId = bt.getSanPham().getId();
         // Biến thể đã phát sinh đơn → không xóa (admin nên ẩn thay vì xóa).
         if (chiTietDonHangRepo.existsByBienTheIdIn(List.of(bienTheId))) {
             throw new AppException(ErrorCode.PROD_005);
         }
         anhRepo.deleteByBienTheId(bienTheId);
         bienTheRepo.delete(bt);
+        dongBoBanDoBienThe(sanPhamId);
     }
 
     @Transactional
@@ -294,7 +296,8 @@ public class AdminSanPhamService {
                 .sanPham(sp)
                 .phanLoaiId(sp.getPhanLoaiId())
                 .tenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim())
-                .thongSoBienThe(req.getThongSoBienThe() == null ? new HashMap<>() : req.getThongSoBienThe())
+                .mauSac(rong(req.getMauSac()) ? null : req.getMauSac().trim())
+                .thongSoBienThe(stripMau(req.getThongSoBienThe()))
                 .gia(req.getGia())
                 .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
                 .soLuongTon(req.getSoLuongTon())
@@ -302,6 +305,7 @@ public class AdminSanPhamService {
                 .laBienTheMacDinh(req.isLaMacDinh())
                 .build();
         bienTheRepo.save(bt);
+        dongBoBanDoBienThe(sanPhamId);
     }
 
     @Transactional
@@ -312,7 +316,8 @@ public class AdminSanPhamService {
         Long sanPhamId = bt.getSanPham().getId();
 
         bt.setTenBienThe(rong(req.getTenBienThe()) ? null : req.getTenBienThe().trim());
-        bt.setThongSoBienThe(req.getThongSoBienThe() == null ? new HashMap<>() : req.getThongSoBienThe());
+        bt.setMauSac(rong(req.getMauSac()) ? null : req.getMauSac().trim());
+        bt.setThongSoBienThe(stripMau(req.getThongSoBienThe()));
         bt.setGia(req.getGia());
         bt.setGiaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()));
         bt.setSoLuongTon(req.getSoLuongTon());
@@ -323,6 +328,7 @@ public class AdminSanPhamService {
             bienTheRepo.boMacDinhTatCa(sanPhamId);
         }
         bienTheRepo.save(bt);
+        dongBoBanDoBienThe(sanPhamId);
     }
 
     private BigDecimal tinhGiaKhuyenMai(BigDecimal gia, BigDecimal giaBan) {
@@ -332,6 +338,45 @@ public class AdminSanPhamService {
 
     private boolean rong(String s) {
         return s == null || s.isBlank();
+    }
+
+    // Loại các key màu khỏi thông số biến thể (màu đã tách sang cột mau_sac).
+    private Map<String, Object> stripMau(Map<String, Object> specs) {
+        if (specs == null) return new HashMap<>();
+        Map<String, Object> m = new LinkedHashMap<>(specs);
+        m.keySet().removeAll(List.of("color", "mau_sac", "mauSac", "Màu sắc"));
+        return m;
+    }
+
+    // Chuỗi thông số = các value nối bằng " / " (sắp theo key). Khớp string_agg trong V14.
+    private String buildChuoiThongSo(Map<String, Object> specs) {
+        if (specs == null || specs.isEmpty()) return "";
+        return specs.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> String.valueOf(e.getValue()))
+                .collect(Collectors.joining(" / "));
+    }
+
+    // Dựng lại san_pham.ban_do_bien_the = { chuỗi thông số: { màu: id biến thể } } từ toàn bộ biến thể.
+    private void dongBoBanDoBienThe(Long sanPhamId) {
+        SanPham sp = sanPhamRepo.findById(sanPhamId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_001));
+        List<BienTheSanPham> bts = new ArrayList<>(
+                bienTheRepo.findBySanPhamIdWithDetails(sanPhamId).stream()
+                        .collect(Collectors.toMap(BienTheSanPham::getId, b -> b, (a, b) -> a,
+                                LinkedHashMap::new))
+                        .values());
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (BienTheSanPham bt : bts) {
+            String spec = buildChuoiThongSo(bt.getThongSoBienThe());
+            String mau = rong(bt.getMauSac()) ? "—" : bt.getMauSac();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> colorMap = (Map<String, Object>)
+                    map.computeIfAbsent(spec, k -> new LinkedHashMap<String, Object>());
+            colorMap.put(mau, bt.getId());
+        }
+        sp.setBanDoBienThe(map);
+        sanPhamRepo.save(sp);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────
@@ -466,6 +511,8 @@ public class AdminSanPhamService {
                     .id(bt.getId())
                     .maBienThe(bt.getMaBienThe())
                     .tenBienThe(bt.getTenBienThe())
+                    .mauSac(bt.getMauSac())
+                    .soLuotBan(bt.getSoLuotBan())
                     .laMacDinh(Boolean.TRUE.equals(bt.getLaBienTheMacDinh()))
                     .thongSoBienThe(bt.getThongSoBienThe())
                     .gia(bt.getGia())
@@ -514,6 +561,8 @@ public class AdminSanPhamService {
                         .id(bt.getId())
                         .maBienThe(bt.getMaBienThe())
                         .tenBienThe(bt.getTenBienThe())
+                        .mauSac(bt.getMauSac())
+                        .soLuotBan(bt.getSoLuotBan())
                         .laMacDinh(Boolean.TRUE.equals(bt.getLaBienTheMacDinh()))
                         .thongSoBienThe(bt.getThongSoBienThe())
                         .gia(bt.getGia())
@@ -544,7 +593,6 @@ public class AdminSanPhamService {
                 .tenPhanLoai(pl == null ? null : pl.getTenPhanLoai())
                 .tenDanhMuc(pl == null ? null : pl.getDanhMuc().getTenDanhMuc())
                 .thuongHieu(sp.getThuongHieu())
-                .thongSoKyThuat(sp.getThongSoKyThuat())
                 .trangThai(sp.getTrangThai())
                 .anhUrls(anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
                         .stream().map(AnhSanPham::getUrlAnh).collect(Collectors.toList()))

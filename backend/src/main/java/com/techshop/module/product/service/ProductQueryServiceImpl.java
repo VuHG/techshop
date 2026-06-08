@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,12 +41,20 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
         boolean conHang = "CON_HANG".equals(bt.getTrangThai()) && bt.getSoLuongTon() > 0;
 
+        // Gộp màu vào thông số để giỏ hàng / snapshot đơn vẫn hiển thị đầy đủ
+        // (màu đã tách sang cột mau_sac từ V14, nhưng các nơi hiển thị/snapshot cần map đầy đủ).
+        Map<String, Object> thongSo = new LinkedHashMap<>();
+        if (bt.getThongSoBienThe() != null) thongSo.putAll(bt.getThongSoBienThe());
+        if (bt.getMauSac() != null && !bt.getMauSac().isBlank()) {
+            thongSo.put("Màu sắc", bt.getMauSac());
+        }
+
         return BienTheInfo.builder()
                 .bienTheId(bt.getId())
                 .sanPhamId(sp.getId())
                 .tenSanPham(sp.getTenSanPham())
                 .slug(sp.getSlug())
-                .thongSoBienThe(bt.getThongSoBienThe())
+                .thongSoBienThe(thongSo)
                 .anhChinh(anhChinh)
                 .gia(bt.getGia())
                 .giaKhuyenMai(bt.getGiaKhuyenMai())
@@ -71,6 +81,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     @Transactional
     public void tangSoLuotBan(Long sanPhamId, int soLuong) {
         sanPhamRepo.tangSoLuotBan(sanPhamId, soLuong);
+    }
+
+    @Override
+    @Transactional
+    public void tangSoLuotBanBienThe(Long bienTheId, int soLuong) {
+        bienTheRepo.tangSoLuotBan(bienTheId, soLuong);
     }
 
     @Override

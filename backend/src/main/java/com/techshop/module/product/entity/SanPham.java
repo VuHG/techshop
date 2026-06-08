@@ -41,9 +41,11 @@ public class SanPham {
     @Column(name = "thuong_hieu", length = 100)
     private String thuongHieu;
 
-    @Column(name = "thong_so_ky_thuat", columnDefinition = "jsonb")
+    // Sơ đồ phiên bản: { "<chuỗi thông số>": { "<màu>": <id biến thể> } }.
+    // Sản phẩm không còn thông số kỹ thuật chung; cột này thay thế thong_so_ky_thuat (V14).
+    @Column(name = "ban_do_bien_the", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> thongSoKyThuat;
+    private Map<String, Object> banDoBienThe;
 
     @Column(name = "diem_danh_gia_tb", precision = 3, scale = 2)
     private BigDecimal diemDanhGiaTb;

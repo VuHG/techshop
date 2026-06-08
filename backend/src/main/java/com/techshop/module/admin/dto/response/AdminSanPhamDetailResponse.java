@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
@@ -22,7 +21,6 @@ public class AdminSanPhamDetailResponse {
     private String tenPhanLoai;
     private String tenDanhMuc;
     private String thuongHieu;
-    private Map<String, Object> thongSoKyThuat;
     private String trangThai;
     private List<String> anhUrls;         // ảnh cấp sản phẩm (bien_the_id = NULL)
     private List<AdminBienTheResponse> bienThes;

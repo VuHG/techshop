@@ -21,7 +21,8 @@ public class SanPhamDetailResponse {
     private String moTaNgan;
     private String thuongHieu;
     private Long phanLoaiId;
-    private Map<String, Object> thongSoKyThuat;
+    // Sơ đồ phiên bản: { "<chuỗi thông số>": { "<màu>": <id biến thể> } } — dùng để chọn phiên bản.
+    private Map<String, Object> banDoBienThe;
     private BigDecimal diemDanhGiaTb;
     private int soLuotDanhGia;
     private int soLuotBan;

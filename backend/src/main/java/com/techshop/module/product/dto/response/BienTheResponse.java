@@ -17,6 +17,8 @@ import java.util.Set;
 public class BienTheResponse {
     private Long id;
     private String maBienThe;
+    private String tenBienThe;
+    private String mauSac;
     private Map<String, Object> thongSoBienThe;
     private BigDecimal gia;
     private BigDecimal giaKhuyenMai;

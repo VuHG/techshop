@@ -31,10 +31,24 @@ export default function SoSanhPage() {
   const modalPhanLoaiId = isEmpty ? undefined : mocPhanLoaiId;
 
   const products = data ?? [];
-  const keys = Array.from(new Set(products.flatMap((p) => Object.keys(p.thongSoKyThuat))));
+  // Sản phẩm không còn thông số chung → gộp thông số từ các biến thể (mỗi key = các giá trị khác nhau).
+  const specOf = (p: (typeof products)[number]): Record<string, string> => {
+    const acc: Record<string, Set<string>> = {};
+    for (const bt of p.bienThes ?? []) {
+      for (const [k, v] of Object.entries(bt.thongSoBienThe ?? {})) {
+        (acc[k] ??= new Set()).add(String(v));
+      }
+      if (bt.mauSac) (acc['Màu sắc'] ??= new Set()).add(bt.mauSac);
+    }
+    const out: Record<string, string> = {};
+    for (const [k, s] of Object.entries(acc)) out[k] = Array.from(s).join(', ');
+    return out;
+  };
+  const specMap = new Map(products.map((p) => [p.id, specOf(p)]));
+  const keys = Array.from(new Set(products.flatMap((p) => Object.keys(specMap.get(p.id) ?? {}))));
   const rows = keys.filter((k) => {
     if (!chiKhac) return true;
-    const vals = products.map((p) => String(p.thongSoKyThuat[k] ?? '-'));
+    const vals = products.map((p) => specMap.get(p.id)?.[k] ?? '-');
     return new Set(vals).size > 1;
   });
 
@@ -122,7 +136,7 @@ export default function SoSanhPage() {
                   <td className="px-3 py-2.5 font-medium text-gray-600">{nhanThongSo(k)}</td>
                   {products.map((p) => (
                     <td key={p.id} className="px-3 py-2.5 text-center text-gray-800">
-                      {String(p.thongSoKyThuat[k] ?? '-')}
+                      {specMap.get(p.id)?.[k] ?? '-'}
                     </td>
                   ))}
                   {items.length < 3 && <td />}

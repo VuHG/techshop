@@ -64,20 +64,6 @@ export function ProductDetailModal({
             )}
           </div>
 
-          {sp.thongSoKyThuat && Object.keys(sp.thongSoKyThuat).length > 0 && (
-            <div>
-              <h4 className="mb-2 font-semibold text-gray-900">Thông số kỹ thuật chung</h4>
-              <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
-                {Object.entries(sp.thongSoKyThuat).map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-2 border-b border-gray-50 py-1">
-                    <dt className="text-gray-500">{k}</dt>
-                    <dd className="text-right font-medium text-gray-800">{String(v)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
-
           {/* ── Chi tiết biến thể (chỉ khi mở từ biến thể) ── */}
           {bienTheId != null && (
             <div className="border-t border-gray-200 pt-4">
@@ -86,7 +72,10 @@ export function ProductDetailModal({
                 <div className="rounded-xl border border-gray-200">
                   <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-2.5">
                     <p className="truncate text-sm font-medium text-gray-900">
-                      {bt.tenBienThe || bt.maBienThe || Object.values(bt.thongSoBienThe).map(String).join(' · ') || 'Biến thể'}
+                      {bt.tenBienThe
+                        || [...Object.values(bt.thongSoBienThe).map(String), bt.mauSac].filter(Boolean).join(' · ')
+                        || bt.maBienThe
+                        || 'Biến thể'}
                     </p>
                     {bt.laMacDinh && <StatusBadge label="Mặc định" tone="blue" />}
                   </div>
@@ -108,6 +97,8 @@ function VariantDetail({ bt }: { bt: AdminBienThe }) {
   return (
     <div className="space-y-3 px-4 py-3">
       <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
+        <Row k="Màu sắc" v={bt.mauSac || '—'} />
+        <Row k="Đã bán" v={String(bt.soLuotBan ?? 0)} />
         <Row k="Giá niêm yết" v={formatPrice(bt.gia)} />
         <Row k="Giá bán" v={bt.giaKhuyenMai != null ? formatPrice(bt.giaKhuyenMai) : formatPrice(bt.gia)} />
         <Row k="Tồn kho" v={String(bt.soLuongTon)} />

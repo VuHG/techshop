@@ -28,8 +28,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             AND (CAST(:maxPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
             AND (:khuyenMai = 0 OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
             AND (CAST(:thongSo AS text) IS NULL
-                 OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
-                    @> CAST(:thongSo AS jsonb))
+                 OR bt.thong_so_bien_the @> CAST(:thongSo AS jsonb))
             AND (CAST(:nhanMa AS text) IS NULL OR EXISTS (
                  SELECT 1 FROM bien_the_nhan bn JOIN nhan_san_pham n ON bn.nhan_id = n.id
                  WHERE bn.bien_the_id = bt.id AND n.ma_nhan = :nhanMa))
@@ -50,8 +49,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             AND (CAST(:maxPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) <= :maxPrice)
             AND (:khuyenMai = 0 OR (bt.gia_khuyen_mai IS NOT NULL AND bt.gia_khuyen_mai < bt.gia))
             AND (CAST(:thongSo AS text) IS NULL
-                 OR (COALESCE(sp.thong_so_ky_thuat, '{}'::jsonb) || bt.thong_so_bien_the)
-                    @> CAST(:thongSo AS jsonb))
+                 OR bt.thong_so_bien_the @> CAST(:thongSo AS jsonb))
             AND (CAST(:nhanMa AS text) IS NULL OR EXISTS (
                  SELECT 1 FROM bien_the_nhan bn JOIN nhan_san_pham n ON bn.nhan_id = n.id
                  WHERE bn.bien_the_id = bt.id AND n.ma_nhan = :nhanMa))
@@ -103,4 +101,9 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.laBienTheMacDinh = false WHERE bt.sanPham.id = :sanPhamId")
     void boMacDinhTatCa(@Param("sanPhamId") Long sanPhamId);
+
+    // Atomic cập nhật cache field so_luot_ban của biến thể khi đơn hoàn thành.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham bt SET bt.soLuotBan = bt.soLuotBan + :soLuong WHERE bt.id = :id")
+    int tangSoLuotBan(@Param("id") Long id, @Param("soLuong") int soLuong);
 }
