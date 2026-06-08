@@ -11,6 +11,17 @@ export function nhanTrangThaiSp(tt: string): { label: string; tone: Tone } {
   return PRODUCT_STATUS[tt] ?? { label: tt, tone: 'gray' };
 }
 
+/** Trạng thái của BIẾN THỂ (khác sản phẩm). */
+export const VARIANT_STATUS: Record<string, { label: string; tone: Tone }> = {
+  CON_HANG: { label: 'Còn hàng', tone: 'green' },
+  HET_HANG: { label: 'Hết hàng', tone: 'amber' },
+  NGUNG_BAN: { label: 'Đã ẩn', tone: 'red' },
+};
+
+export function nhanTrangThaiBienThe(tt: string): { label: string; tone: Tone } {
+  return VARIANT_STATUS[tt] ?? { label: tt, tone: 'gray' };
+}
+
 export const PRODUCT_TABS: { value: string; label: string }[] = [
   { value: '', label: 'Tất cả' },
   { value: 'CON_HANG', label: 'Đang bán' },

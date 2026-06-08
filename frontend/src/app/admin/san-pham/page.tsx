@@ -9,16 +9,19 @@ import { ProductImage } from '@/components/ui/ProductImage';
 import {
   adminProductService,
   type AdminSanPhamSummary,
+  type BienTheDong,
 } from '../_services/adminProductService';
-import { PRODUCT_TABS, nhanTrangThaiSp } from '../_lib/productStatus';
+import { PRODUCT_TABS, nhanTrangThaiSp, nhanTrangThaiBienThe } from '../_lib/productStatus';
 import { PageHeader } from '../_components/PageHeader';
-import { DataTable, type Column } from '../_components/DataTable';
 import { StatusBadge } from '../_components/StatusBadge';
 import { AdminPagination } from '../_components/AdminPagination';
 import { ConfirmDialog } from '../_components/ConfirmDialog';
 import { SanPhamFormModal } from './SanPhamFormModal';
 import { ProductDetailModal } from './ProductDetailModal';
 import { ThemBienTheModal } from './ThemBienTheModal';
+
+// Lưới dùng chung cho thanh tiêu đề, header sản phẩm và hàng biến thể (để thẳng cột).
+const GRID = 'grid grid-cols-[2.5fr_1.2fr_1.4fr_0.7fr_1fr_auto] items-center gap-3';
 
 export default function AdminSanPhamPage() {
   const qc = useQueryClient();
@@ -32,6 +35,10 @@ export default function AdminSanPhamPage() {
   const [detailId, setDetailId] = useState<number | null>(null);
   const [themBienThe, setThemBienThe] = useState<AdminSanPhamSummary | null>(null);
   const [xoaId, setXoaId] = useState<number | null>(null);
+  // Thao tác biến thể
+  const [viewBienThe, setViewBienThe] = useState<{ sanPhamId: number; bienTheId: number } | null>(null);
+  const [suaBienThe, setSuaBienThe] = useState<{ sanPhamId: number; tenSanPham: string } | null>(null);
+  const [xoaBienTheId, setXoaBienTheId] = useState<number | null>(null);
 
   const { data: options } = useQuery({
     queryKey: ['admin-sp-options'],
@@ -58,20 +65,21 @@ export default function AdminSanPhamPage() {
   };
 
   const doiTrangThai = useMutation({
-    mutationFn: ({ id, tt }: { id: number; tt: string }) =>
-      adminProductService.doiTrangThai(id, tt),
-    onSuccess: () => {
-      toast.success('Đã cập nhật trạng thái');
-      lamMoi();
-    },
+    mutationFn: ({ id, tt }: { id: number; tt: string }) => adminProductService.doiTrangThai(id, tt),
+    onSuccess: () => { toast.success('Đã cập nhật trạng thái'); lamMoi(); },
   });
   const xoa = useMutation({
     mutationFn: (id: number) => adminProductService.xoa(id),
-    onSuccess: () => {
-      toast.success('Đã xóa sản phẩm');
-      setXoaId(null);
-      lamMoi();
-    },
+    onSuccess: () => { toast.success('Đã xóa sản phẩm'); setXoaId(null); lamMoi(); },
+  });
+  const toggleBienThe = useMutation({
+    mutationFn: ({ id, tt }: { id: number; tt: string }) =>
+      adminProductService.doiTrangThaiBienThe(id, tt),
+    onSuccess: () => { toast.success('Đã cập nhật biến thể'); lamMoi(); },
+  });
+  const xoaBT = useMutation({
+    mutationFn: (id: number) => adminProductService.xoaBienThe(id),
+    onSuccess: () => { toast.success('Đã xóa biến thể'); setXoaBienTheId(null); lamMoi(); },
   });
 
   const onSearch = (e: React.FormEvent) => {
@@ -79,100 +87,13 @@ export default function AdminSanPhamPage() {
     setSearch(searchInput.trim());
     setPage(0);
   };
-
-  const dongForm = () => {
-    setMoForm(false);
-    setEditingId(null);
-  };
-
-  const columns: Column<AdminSanPhamSummary>[] = [
-    {
-      header: 'Sản phẩm',
-      cell: (sp) => (
-        <div className="flex items-center gap-3">
-          <ProductImage
-            src={sp.anhChinh}
-            alt={sp.tenSanPham}
-            className="h-12 w-12 shrink-0 rounded-lg border border-gray-100"
-          />
-          <div className="min-w-0">
-            <p className="truncate font-medium text-gray-900">{sp.tenSanPham}</p>
-            <p className="truncate text-xs text-gray-500">
-              {sp.thuongHieu ? `${sp.thuongHieu} · ` : ''}
-              {sp.soBienThe} biến thể
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'Danh mục',
-      cell: (sp) => (
-        <span className="text-gray-600">
-          {sp.tenDanhMuc}
-          {sp.tenPhanLoai ? ` › ${sp.tenPhanLoai}` : ''}
-        </span>
-      ),
-    },
-    {
-      header: 'Giá',
-      cell: (sp) =>
-        sp.giaThap == null ? (
-          '—'
-        ) : sp.giaThap === sp.giaCao ? (
-          formatPrice(sp.giaThap)
-        ) : (
-          <span className="whitespace-nowrap">
-            {formatPrice(sp.giaThap)} – {formatPrice(sp.giaCao as number)}
-          </span>
-        ),
-    },
-    { header: 'Tồn', cell: (sp) => sp.tongTon, className: 'text-center' },
-    {
-      header: 'Trạng thái',
-      cell: (sp) => {
-        const { label, tone } = nhanTrangThaiSp(sp.trangThai);
-        return <StatusBadge label={label} tone={tone} />;
-      },
-    },
-    {
-      header: '',
-      className: 'text-right',
-      cell: (sp) => {
-        const an = sp.trangThai === 'NGUNG_BAN';
-        return (
-          <div className="flex items-center justify-end gap-1">
-            <IconBtn title="Thêm biến thể" onClick={() => setThemBienThe(sp)}>
-              <Layers className="h-4 w-4" />
-            </IconBtn>
-            <IconBtn title="Xem chi tiết" onClick={() => setDetailId(sp.id)}>
-              <Info className="h-4 w-4" />
-            </IconBtn>
-            <IconBtn title="Sửa" onClick={() => { setEditingId(sp.id); setMoForm(true); }}>
-              <Pencil className="h-4 w-4" />
-            </IconBtn>
-            <IconBtn
-              title={an ? 'Hiện' : 'Ẩn'}
-              onClick={() =>
-                doiTrangThai.mutate({ id: sp.id, tt: an ? 'CON_HANG' : 'NGUNG_BAN' })
-              }
-            >
-              {an ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            </IconBtn>
-            <IconBtn title="Xóa" danger onClick={() => setXoaId(sp.id)}>
-              <Trash2 className="h-4 w-4" />
-            </IconBtn>
-          </div>
-        );
-      },
-    },
-  ];
+  const dongForm = () => { setMoForm(false); setEditingId(null); };
 
   return (
     <div>
       <PageHeader
         title="Quản lý sản phẩm"
-        subtitle="Thêm, sửa, ẩn/hiện sản phẩm và biến thể"
+        subtitle="Mỗi sản phẩm là một cụm gồm các biến thể bên dưới"
         action={
           <button
             onClick={() => { setEditingId(null); setMoForm(true); }}
@@ -200,9 +121,7 @@ export default function AdminSanPhamPage() {
             >
               {t.label}
               {count != null && count > 0 && (
-                <span className={cn('ml-1.5', active ? 'text-white/80' : 'text-gray-400')}>
-                  ({count})
-                </span>
+                <span className={cn('ml-1.5', active ? 'text-white/80' : 'text-gray-400')}>({count})</span>
               )}
             </button>
           );
@@ -219,30 +138,94 @@ export default function AdminSanPhamPage() {
             className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
-        <button
-          type="submit"
-          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
-        >
+        <button type="submit" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark">
           Tìm
         </button>
       </form>
 
-      <DataTable
-        columns={columns}
-        rows={data?.items ?? []}
-        rowKey={(sp) => sp.id}
-        dangTai={isLoading}
-        thongBaoRong="Chưa có sản phẩm nào"
-      />
+      {/* Bảng cụm sản phẩm → biến thể */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[920px]">
+          <div className={cn(GRID, 'px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500')}>
+            <span>Sản phẩm / Biến thể</span>
+            <span>Danh mục</span>
+            <span>Giá</span>
+            <span className="text-center">Tồn</span>
+            <span>Trạng thái</span>
+            <span className="text-right">Thao tác</span>
+          </div>
+
+          {isLoading ? (
+            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center text-gray-400">Đang tải...</div>
+          ) : (data?.items.length ?? 0) === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center text-gray-400">Chưa có sản phẩm nào</div>
+          ) : (
+            <div className="space-y-3">
+              {data!.items.map((sp) => {
+                const spTt = nhanTrangThaiSp(sp.trangThai);
+                const an = sp.trangThai === 'NGUNG_BAN';
+                return (
+                  <div key={sp.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                    {/* Header sản phẩm */}
+                    <div className={cn(GRID, 'bg-gray-50 px-4 py-3')}>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <ProductImage src={sp.anhChinh} alt={sp.tenSanPham} className="h-12 w-12 shrink-0 rounded-lg border border-gray-100" />
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-gray-900">{sp.tenSanPham}</p>
+                          <p className="truncate text-xs text-gray-500">
+                            {sp.thuongHieu ? `${sp.thuongHieu} · ` : ''}{sp.soBienThe} biến thể
+                          </p>
+                        </div>
+                      </div>
+                      <span className="truncate text-sm text-gray-600">
+                        {sp.tenDanhMuc}{sp.tenPhanLoai ? ` › ${sp.tenPhanLoai}` : ''}
+                      </span>
+                      <span className="text-sm text-gray-300">—</span>
+                      <span className="text-center text-sm font-semibold text-gray-900">{sp.tongTon}</span>
+                      <span><StatusBadge label={spTt.label} tone={spTt.tone} /></span>
+                      <div className="flex items-center justify-end gap-1">
+                        <IconBtn title="Thêm biến thể" onClick={() => setThemBienThe(sp)}><Layers className="h-4 w-4" /></IconBtn>
+                        <IconBtn title="Xem chi tiết" onClick={() => setDetailId(sp.id)}><Info className="h-4 w-4" /></IconBtn>
+                        <IconBtn title="Sửa" onClick={() => { setEditingId(sp.id); setMoForm(true); }}><Pencil className="h-4 w-4" /></IconBtn>
+                        <IconBtn title={an ? 'Hiện' : 'Ẩn'} onClick={() => doiTrangThai.mutate({ id: sp.id, tt: an ? 'CON_HANG' : 'NGUNG_BAN' })}>
+                          {an ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </IconBtn>
+                        <IconBtn title="Xóa" danger onClick={() => setXoaId(sp.id)}><Trash2 className="h-4 w-4" /></IconBtn>
+                      </div>
+                    </div>
+
+                    {/* Hàng biến thể */}
+                    {sp.bienThes.length === 0 ? (
+                      <div className="border-t border-gray-100 px-4 py-3 pl-14 text-xs text-gray-400">
+                        Chưa có biến thể — bấm <b>Thêm biến thể</b> để thêm.
+                      </div>
+                    ) : (
+                      sp.bienThes.map((bt) => (
+                        <BienTheRow
+                          key={bt.id}
+                          bt={bt}
+                          onView={() => setViewBienThe({ sanPhamId: sp.id, bienTheId: bt.id })}
+                          onEdit={() => setSuaBienThe({ sanPhamId: sp.id, tenSanPham: sp.tenSanPham })}
+                          onToggle={() =>
+                            toggleBienThe.mutate({ id: bt.id, tt: bt.trangThai === 'NGUNG_BAN' ? 'CON_HANG' : 'NGUNG_BAN' })
+                          }
+                          onDelete={() => setXoaBienTheId(bt.id)}
+                        />
+                      ))
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {data && (
-        <AdminPagination
-          currentPage={data.currentPage}
-          totalPages={data.totalPages}
-          onChange={setPage}
-        />
+        <AdminPagination currentPage={data.currentPage} totalPages={data.totalPages} onChange={setPage} />
       )}
 
+      {/* Modals */}
       {moForm && options && (editingId == null || editing) && (
         <SanPhamFormModal
           options={options}
@@ -262,8 +245,26 @@ export default function AdminSanPhamPage() {
         onClose={() => setXoaId(null)}
       />
 
+      <ConfirmDialog
+        open={xoaBienTheId != null}
+        title="Xóa biến thể"
+        message="Biến thể đã phát sinh đơn sẽ không xóa được (hãy ẩn thay thế). Tiếp tục?"
+        confirmLabel="Xóa"
+        dangXuLy={xoaBT.isPending}
+        onConfirm={() => xoaBienTheId != null && xoaBT.mutate(xoaBienTheId)}
+        onClose={() => setXoaBienTheId(null)}
+      />
+
       {detailId != null && (
         <ProductDetailModal id={detailId} onClose={() => setDetailId(null)} />
+      )}
+
+      {viewBienThe && (
+        <ProductDetailModal
+          id={viewBienThe.sanPhamId}
+          bienTheId={viewBienThe.bienTheId}
+          onClose={() => setViewBienThe(null)}
+        />
       )}
 
       {themBienThe && (
@@ -274,6 +275,69 @@ export default function AdminSanPhamPage() {
           onSaved={() => { setThemBienThe(null); lamMoi(); }}
         />
       )}
+
+      {suaBienThe && (
+        <ThemBienTheModal
+          title="Sửa biến thể"
+          sanPhamId={suaBienThe.sanPhamId}
+          tenSanPham={suaBienThe.tenSanPham}
+          onClose={() => setSuaBienThe(null)}
+          onSaved={() => { setSuaBienThe(null); lamMoi(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function BienTheRow({
+  bt,
+  onView,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  bt: BienTheDong;
+  onView: () => void;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const tt = nhanTrangThaiBienThe(bt.trangThai);
+  const an = bt.trangThai === 'NGUNG_BAN';
+  const coKM = bt.giaKhuyenMai != null && bt.giaKhuyenMai < bt.gia;
+  const tenBt = Object.values(bt.thongSoBienThe).map(String).join(' · ') || bt.maBienThe || 'Biến thể';
+
+  return (
+    <div className={cn(GRID, 'border-t border-gray-100 px-4 py-2.5')}>
+      <div className="flex min-w-0 items-center gap-2 pl-6">
+        <span className="text-gray-300">└</span>
+        <ProductImage src={bt.anhChinh} alt={tenBt} className="h-9 w-9 shrink-0 rounded-md border border-gray-100" />
+        <div className="min-w-0">
+          <p className="truncate text-sm text-gray-800">{tenBt}</p>
+          {bt.maBienThe && <p className="truncate text-xs text-gray-400">{bt.maBienThe}</p>}
+        </div>
+      </div>
+      <span className="text-xs text-gray-300">—</span>
+      <span className="text-sm">
+        {coKM ? (
+          <>
+            <b className="text-primary">{formatPrice(bt.giaKhuyenMai as number)}</b>
+            <span className="ml-1.5 text-xs text-gray-400 line-through">{formatPrice(bt.gia)}</span>
+          </>
+        ) : (
+          <span className="text-gray-800">{formatPrice(bt.gia)}</span>
+        )}
+      </span>
+      <span className="text-center text-sm text-gray-700">{bt.soLuongTon}</span>
+      <span><StatusBadge label={tt.label} tone={tt.tone} /></span>
+      <div className="flex items-center justify-end gap-1">
+        <IconBtn title="Xem chi tiết" onClick={onView}><Info className="h-4 w-4" /></IconBtn>
+        <IconBtn title="Sửa" onClick={onEdit}><Pencil className="h-4 w-4" /></IconBtn>
+        <IconBtn title={an ? 'Hiện' : 'Ẩn'} onClick={onToggle}>
+          {an ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        </IconBtn>
+        <IconBtn title="Xóa" danger onClick={onDelete}><Trash2 className="h-4 w-4" /></IconBtn>
+      </div>
     </div>
   );
 }

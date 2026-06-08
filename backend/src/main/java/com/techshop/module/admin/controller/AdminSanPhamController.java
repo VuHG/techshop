@@ -74,4 +74,20 @@ public class AdminSanPhamController {
         service.xoa(id);
         return ResponseEntity.ok(ApiResponse.ok());
     }
+
+    // ─── Thao tác từng biến thể ───────────────────────────────────────────
+
+    /** Ẩn/hiện biến thể. Body: {"trangThai":"NGUNG_BAN"|"CON_HANG"}. */
+    @PatchMapping("/bien-the/{bienTheId}/trang-thai")
+    public ResponseEntity<ApiResponse<Void>> doiTrangThaiBienThe(
+            @PathVariable Long bienTheId, @RequestBody Map<String, String> body) {
+        service.doiTrangThaiBienThe(bienTheId, body.get("trangThai"));
+        return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    @DeleteMapping("/bien-the/{bienTheId}")
+    public ResponseEntity<ApiResponse<Void>> xoaBienThe(@PathVariable Long bienTheId) {
+        service.xoaBienThe(bienTheId);
+        return ResponseEntity.ok(ApiResponse.ok());
+    }
 }

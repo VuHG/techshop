@@ -10,11 +10,12 @@ import { Modal } from '../_components/Modal';
 export function ThemBienTheModal(props: {
   sanPhamId: number;
   tenSanPham: string;
+  title?: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
   return (
-    <Modal open title="Thêm biến thể" size="md" onClose={props.onClose}>
+    <Modal open title={props.title ?? 'Thêm biến thể'} size="md" onClose={props.onClose}>
       <div className="space-y-4">
         <p className="text-sm text-gray-600">
           Sản phẩm: <b className="text-gray-900">{props.tenSanPham}</b>

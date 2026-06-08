@@ -1,6 +1,17 @@
 import { api } from '@/lib/api';
 import type { ApiResponse, PageResult } from '@/types';
 
+export interface BienTheDong {
+  id: number;
+  maBienThe: string | null;
+  thongSoBienThe: Record<string, unknown>;
+  gia: number;
+  giaKhuyenMai: number | null;
+  soLuongTon: number;
+  trangThai: string;
+  anhChinh: string | null;
+}
+
 export interface AdminSanPhamSummary {
   id: number;
   tenSanPham: string;
@@ -16,6 +27,7 @@ export interface AdminSanPhamSummary {
   soBienThe: number;
   trangThai: string;
   nhans: string[];
+  bienThes: BienTheDong[];
 }
 
 export interface AdminBienThe {
@@ -107,5 +119,13 @@ export const adminProductService = {
 
   async xoa(id: number): Promise<void> {
     await api.delete(`/admin/san-pham/${id}`);
+  },
+
+  async doiTrangThaiBienThe(bienTheId: number, trangThai: string): Promise<void> {
+    await api.patch(`/admin/san-pham/bien-the/${bienTheId}/trang-thai`, { trangThai });
+  },
+
+  async xoaBienThe(bienTheId: number): Promise<void> {
+    await api.delete(`/admin/san-pham/bien-the/${bienTheId}`);
   },
 };

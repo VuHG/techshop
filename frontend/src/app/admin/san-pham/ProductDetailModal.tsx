@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, Ticket } from 'lucide-react';
 import { formatPrice, cn } from '@/lib/utils';
@@ -15,12 +15,27 @@ const VARIANT_STATUS: Record<string, { label: string; tone: 'green' | 'amber' | 
   NGUNG_BAN: { label: 'Ngừng bán', tone: 'red' },
 };
 
-export function ProductDetailModal({ id, onClose }: { id: number; onClose: () => void }) {
+export function ProductDetailModal({
+  id,
+  bienTheId,
+  onClose,
+}: {
+  id: number;
+  bienTheId?: number;
+  onClose: () => void;
+}) {
   const { data: sp } = useQuery({
     queryKey: ['admin-sp-detail', id],
     queryFn: () => adminProductService.getChiTiet(id),
   });
   const [moBienThe, setMoBienThe] = useState<number | null>(null);
+
+  // Tự mở rộng đúng biến thể khi mở từ hàng biến thể trong bảng.
+  useEffect(() => {
+    if (bienTheId == null || !sp) return;
+    const idx = sp.bienThes.findIndex((b) => b.id === bienTheId);
+    if (idx >= 0) setMoBienThe(idx);
+  }, [bienTheId, sp]);
 
   return (
     <Modal open title="Chi tiết sản phẩm" size="lg" onClose={onClose}>

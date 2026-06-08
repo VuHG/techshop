@@ -252,6 +252,30 @@ public class AdminSanPhamService {
         sanPhamRepo.delete(sp);
     }
 
+    // ─── Thao tác từng biến thể ───────────────────────────────────────────
+
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void doiTrangThaiBienThe(Long bienTheId, String trangThai) {
+        BienTheSanPham bt = bienTheRepo.findById(bienTheId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
+        bt.setTrangThai(chuanTrangThaiBienThe(trangThai));
+        bienTheRepo.save(bt);
+    }
+
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void xoaBienThe(Long bienTheId) {
+        BienTheSanPham bt = bienTheRepo.findById(bienTheId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
+        // Biến thể đã phát sinh đơn → không xóa (admin nên ẩn thay vì xóa).
+        if (chiTietDonHangRepo.existsByBienTheIdIn(List.of(bienTheId))) {
+            throw new AppException(ErrorCode.PROD_005);
+        }
+        anhRepo.deleteByBienTheId(bienTheId);
+        bienTheRepo.delete(bt);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────
 
     private void kiemTraPhanLoai(Long phanLoaiId) {
@@ -363,6 +387,7 @@ public class AdminSanPhamService {
         int tongTon = 0;
         Set<String> nhanSet = new LinkedHashSet<>();
         String anhChinh = null;
+        List<AdminSanPhamSummaryResponse.BienTheDong> bienTheDongs = new ArrayList<>();
 
         for (BienTheSanPham bt : bts) {
             BigDecimal gia = bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : bt.getGia();
@@ -372,13 +397,23 @@ public class AdminSanPhamService {
             }
             tongTon += bt.getSoLuongTon();
             bt.getNhans().forEach(n -> nhanSet.add(n.getTenNhan()));
-            if (anhChinh == null) {
-                anhChinh = bt.getAnhs().stream()
-                        .filter(AnhSanPham::isLaAnhChinh)
-                        .map(AnhSanPham::getUrlAnh)
-                        .findFirst()
-                        .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null));
-            }
+            String anhBt = bt.getAnhs().stream()
+                    .filter(AnhSanPham::isLaAnhChinh)
+                    .map(AnhSanPham::getUrlAnh)
+                    .findFirst()
+                    .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null));
+            if (anhChinh == null) anhChinh = anhBt;
+
+            bienTheDongs.add(AdminSanPhamSummaryResponse.BienTheDong.builder()
+                    .id(bt.getId())
+                    .maBienThe(bt.getMaBienThe())
+                    .thongSoBienThe(bt.getThongSoBienThe())
+                    .gia(bt.getGia())
+                    .giaKhuyenMai(bt.getGiaKhuyenMai())
+                    .soLuongTon(bt.getSoLuongTon())
+                    .trangThai(bt.getTrangThai())
+                    .anhChinh(anhBt)
+                    .build());
         }
 
         // Hộp chứa chưa có biến thể (hoặc biến thể chưa có ảnh) → dùng ảnh cấp sản phẩm.
@@ -403,6 +438,7 @@ public class AdminSanPhamService {
                 .soBienThe(bts.size())
                 .trangThai(sp.getTrangThai())
                 .nhans(new ArrayList<>(nhanSet))
+                .bienThes(bienTheDongs)
                 .build();
     }
 

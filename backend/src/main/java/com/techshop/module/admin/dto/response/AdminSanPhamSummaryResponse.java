@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
-/** Một dòng trong danh sách sản phẩm (admin). */
+/** Một dòng trong danh sách sản phẩm (admin) — kèm danh sách biến thể để hiển thị lồng. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,4 +29,21 @@ public class AdminSanPhamSummaryResponse {
     private int soBienThe;
     private String trangThai;
     private List<String> nhans;   // tên nhãn (gộp từ các biến thể)
+    private List<BienTheDong> bienThes;
+
+    /** Biến thể hiển thị trong bảng quản lý sản phẩm (lồng dưới sản phẩm). */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BienTheDong {
+        private Long id;
+        private String maBienThe;
+        private Map<String, Object> thongSoBienThe;
+        private BigDecimal gia;
+        private BigDecimal giaKhuyenMai;
+        private int soLuongTon;
+        private String trangThai;
+        private String anhChinh;
+    }
 }
