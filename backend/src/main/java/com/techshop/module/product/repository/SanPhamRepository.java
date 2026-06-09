@@ -20,18 +20,22 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
     boolean existsBySlugAndIdNot(String slug, Long id);
 
     // ─── Admin: liệt kê mọi sản phẩm (mọi trạng thái) + lọc + tìm kiếm ──────
+    // Dùng cờ coDanhMuc/coPhanLoai thay cho ":id IS NULL" để tránh lỗi Postgres
+    // "could not determine data type" khi tham số null đứng một mình trong IS NULL.
     @Query("""
             SELECT s FROM SanPham s
             WHERE (:trangThai = '' OR s.trangThai = :trangThai)
               AND (:search = '' OR LOWER(s.tenSanPham) LIKE LOWER(CONCAT('%', :search, '%')))
-              AND (:phanLoaiId IS NULL OR s.phanLoaiId = :phanLoaiId)
-              AND (:danhMucId IS NULL OR s.phanLoaiId IN (
+              AND (:coPhanLoai = FALSE OR s.phanLoaiId = :phanLoaiId)
+              AND (:coDanhMuc = FALSE OR s.phanLoaiId IN (
                     SELECT p.id FROM PhanLoaiSanPham p WHERE p.danhMuc.id = :danhMucId))
             ORDER BY s.ngayTao DESC
             """)
     Page<SanPham> timKiemAdmin(@Param("trangThai") String trangThai,
                                @Param("search") String search,
+                               @Param("coDanhMuc") boolean coDanhMuc,
                                @Param("danhMucId") Long danhMucId,
+                               @Param("coPhanLoai") boolean coPhanLoai,
                                @Param("phanLoaiId") Long phanLoaiId,
                                Pageable pageable);
 

@@ -307,7 +307,8 @@ public class DonHangService {
         Page<DonHang> result = donHangRepo.timKiemAdmin(
                 trangThai == null ? "" : trangThai.trim(),
                 search == null ? "" : search.trim(),
-                from, to,
+                from != null, from,
+                to != null, to,
                 pageable);
 
         List<DonHang> content = result.getContent();

@@ -57,8 +57,8 @@ public class AdminSanPhamService {
         Page<SanPham> result = sanPhamRepo.timKiemAdmin(
                 trangThai == null ? "" : trangThai.trim(),
                 search == null ? "" : search.trim(),
-                danhMucId,
-                phanLoaiId,
+                danhMucId != null, danhMucId,
+                phanLoaiId != null, phanLoaiId,
                 pageable);
 
         // Nạp map phân loại → (tên phân loại, tên danh mục) một lần.

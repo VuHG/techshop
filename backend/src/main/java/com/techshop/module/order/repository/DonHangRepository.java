@@ -27,6 +27,8 @@ public interface DonHangRepository extends JpaRepository<DonHang, Long> {
     // ─── Admin (toàn hệ thống, không lọc theo nguoiDungId) ───────────────
     // Lọc trạng thái + tìm theo mã đơn / tên người nhận / SĐT.
     // Dùng mẹo chuỗi rỗng = "không lọc" để tránh lỗi PostgreSQL 42P18 với tham số NULL.
+    // Lọc ngày dùng cờ boolean (coTu/coDen) thay cho ":from IS NULL" — tránh lỗi Postgres
+    // "could not determine data type" khi tham số timestamp null đứng một mình trong IS NULL.
     @Query("""
             SELECT d FROM DonHang d
             WHERE (:trangThai = '' OR d.trangThai = :trangThai)
@@ -34,13 +36,15 @@ public interface DonHangRepository extends JpaRepository<DonHang, Long> {
                    OR LOWER(d.maDonHang) LIKE LOWER(CONCAT('%', :search, '%'))
                    OR LOWER(d.hoTenNguoiNhan) LIKE LOWER(CONCAT('%', :search, '%'))
                    OR d.soDienThoaiNhan LIKE CONCAT('%', :search, '%'))
-              AND (:from IS NULL OR d.ngayTao >= :from)
-              AND (:to IS NULL OR d.ngayTao < :to)
+              AND (:coTu = FALSE OR d.ngayTao >= :from)
+              AND (:coDen = FALSE OR d.ngayTao < :to)
             ORDER BY d.ngayTao DESC
             """)
     Page<DonHang> timKiemAdmin(@Param("trangThai") String trangThai,
                                @Param("search") String search,
+                               @Param("coTu") boolean coTu,
                                @Param("from") java.time.OffsetDateTime from,
+                               @Param("coDen") boolean coDen,
                                @Param("to") java.time.OffsetDateTime to,
                                Pageable pageable);
 
