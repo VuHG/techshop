@@ -23,6 +23,9 @@ public class DanhGia {
     @Column(name = "san_pham_id", nullable = false)
     private Long sanPhamId;
 
+    @Column(name = "bien_the_id")
+    private Long bienTheId;
+
     @Column(name = "don_hang_id")
     private Long donHangId;
 

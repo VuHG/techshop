@@ -31,7 +31,7 @@ public class SanPhamRequest {
 
     private String trangThai;              // CON_HANG | NGUNG_BAN | BAN_NHAP (mặc định CON_HANG)
 
-    private List<String> anhUrls;          // ảnh cấp sản phẩm (bien_the_id = NULL)
+    private String anhDaiDien;             // 1 ảnh đại diện sản phẩm (URL)
 
     @Valid
     private List<BienTheRequest> bienThes; // tùy chọn — null = không đụng biến thể

@@ -1,6 +1,6 @@
 // ============================================================
 // TechShop — Database schema (dbdiagram.io / DBML)
-// Sinh từ Flyway migrations V1–V13 (PostgreSQL 16)
+// Sinh từ Flyway migrations V1–V15 (PostgreSQL 16)
 // Dán toàn bộ file này vào https://dbdiagram.io
 // ============================================================
 
@@ -148,6 +148,7 @@ Table san_pham {
   mo_ta_ngan        varchar(500)
   phan_loai_id      bigint [not null, ref: > phan_loai_san_pham.id]
   thuong_hieu       varchar(100)
+  anh_dai_dien      varchar(500) [note: '1 ảnh đại diện sản phẩm — trang quản lý + banner (V15)']
   ban_do_bien_the   jsonb [note: 'sơ đồ phiên bản { "<chuỗi thông số>": { "<màu>": <id biến thể> } }; trước là thong_so_ky_thuat (V14)']
   diem_danh_gia_tb  "decimal(3,2)" [default: 0, note: 'cache']
   so_luot_danh_gia  int [default: 0, note: 'cache']
@@ -169,22 +170,15 @@ Table bien_the_san_pham {
   gia_khuyen_mai       "decimal(15,2)"
   so_luong_ton         int [not null, default: 0, note: 'cache']
   so_luot_ban          int [not null, default: 0, note: 'cache (đơn HOAN_THANH)']
+  so_luot_danh_gia     int [not null, default: 0, note: 'cache; SP = tổng của các biến thể (V15)']
   la_bien_the_mac_dinh boolean [default: false]
   trang_thai           varchar(20) [not null, default: 'CON_HANG', note: 'CON_HANG | HET_HANG | NGUNG_BAN']
   ngay_tao             timestamptz
   ngay_cap_nhat        timestamptz
 }
 
-Table bien_the_gia_tri_thuoc_tinh {
-  id                    bigserial [pk]
-  bien_the_id           bigint [not null, ref: > bien_the_san_pham.id]
-  gia_tri_thuoc_tinh_id bigint [not null, ref: > gia_tri_thuoc_tinh.id]
-  ngay_tao              timestamptz
-
-  indexes {
-    (bien_the_id, gia_tri_thuoc_tinh_id) [unique]
-  }
-}
+// (V15) Bảng pivot bien_the_gia_tri_thuoc_tinh đã bị XÓA — giá trị thuộc tính lấy từ
+//        chi_tiet_thuoc_tinh_loc.thong_so_loc.
 
 Table bien_the_nhan {
   id          bigserial [pk]
@@ -197,11 +191,10 @@ Table bien_the_nhan {
   }
 }
 
-// bien_the_id NULL = ảnh chung của sản phẩm
+// (V15) Ảnh CHỈ thuộc biến thể (đã hủy liên kết san_pham). 1 biến thể có thể nhiều ảnh.
 Table anh_san_pham {
   id            bigserial [pk]
-  san_pham_id   bigint [not null, ref: > san_pham.id]
-  bien_the_id   bigint [ref: > bien_the_san_pham.id]
+  bien_the_id   bigint [not null, ref: > bien_the_san_pham.id]
   url_anh       varchar(500) [not null]
   la_anh_chinh  boolean [not null, default: false]
   thu_tu        int [default: 0]

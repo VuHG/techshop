@@ -17,10 +17,8 @@ public class AnhSanPham {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "san_pham_id", nullable = false)
-    private Long sanPhamId;
-
-    @Column(name = "bien_the_id")
+    // Ảnh chỉ thuộc biến thể (V15: đã bỏ liên kết san_pham). Mỗi biến thể có thể nhiều ảnh.
+    @Column(name = "bien_the_id", nullable = false)
     private Long bienTheId;
 
     @Column(name = "url_anh", nullable = false, length = 500)

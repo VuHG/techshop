@@ -28,4 +28,10 @@ public interface ProductQueryService {
      * tb_moi = (tb_cu * count + diem) / (count + 1); count += 1.
      */
     void capNhatDiemDanhGia(Long sanPhamId, int diem);
+
+    /** Tăng lượt đánh giá của biến thể khi có đánh giá mới. */
+    void tangSoLuotDanhGiaBienThe(Long bienTheId);
+
+    /** Xóa đánh giá: giảm lượt của biến thể + đảo ngược điểm/lượt của sản phẩm. */
+    void giamDanhGia(Long sanPhamId, Long bienTheId, int diem);
 }

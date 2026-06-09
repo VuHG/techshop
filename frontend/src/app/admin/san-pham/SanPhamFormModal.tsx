@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Modal } from '../_components/Modal';
-import { UrlListEditor } from '../_components/UrlListEditor';
 import { PRODUCT_STATUS_OPTIONS } from '../_lib/productStatus';
 import {
   adminProductService,
@@ -37,7 +36,7 @@ export function SanPhamFormModal({
   const [moTaNgan, setMoTaNgan] = useState(editing?.moTaNgan ?? '');
   const [moTa, setMoTa] = useState(editing?.moTa ?? '');
   const [trangThai, setTrangThai] = useState(editing?.trangThai ?? 'CON_HANG');
-  const [anhUrls, setAnhUrls] = useState<string[]>(editing?.anhUrls ?? []);
+  const [anhDaiDien, setAnhDaiDien] = useState(editing?.anhDaiDien ?? '');
   const [dangLuu, setDangLuu] = useState(false);
 
   const luu = async () => {
@@ -52,8 +51,8 @@ export function SanPhamFormModal({
       phanLoaiId: Number(phanLoaiId),
       thuongHieu: thuongHieu.trim() || undefined,
       trangThai,
-      anhUrls: anhUrls.filter((u) => u.trim()),
-      // KHÔNG gửi bienThes/thongSoKyThuat → giữ nguyên biến thể khi sửa hộp chứa.
+      anhDaiDien: anhDaiDien.trim(),
+      // KHÔNG gửi bienThes → giữ nguyên biến thể khi sửa hộp chứa.
     };
 
     setDangLuu(true);
@@ -114,8 +113,17 @@ export function SanPhamFormModal({
           <textarea className={inp} rows={4} value={moTa} onChange={(e) => setMoTa(e.target.value)} />
         </Field>
 
-        <Field label="Ảnh sản phẩm">
-          <UrlListEditor urls={anhUrls} onChange={setAnhUrls} />
+        <Field label="Ảnh đại diện (URL)">
+          <input
+            className={inp}
+            value={anhDaiDien}
+            onChange={(e) => setAnhDaiDien(e.target.value)}
+            placeholder="https://... (ảnh dùng cho trang quản lý / banner)"
+          />
+          {anhDaiDien.trim() && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={anhDaiDien.trim()} alt="Ảnh đại diện" className="mt-2 h-24 w-24 rounded-lg border border-gray-200 object-cover" />
+          )}
         </Field>
 
         <div className="flex justify-end gap-2 border-t border-gray-200 pt-4">

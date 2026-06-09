@@ -29,7 +29,7 @@ public class AdminSanPhamDetailResponse {
     private int soLuotBan;
     private OffsetDateTime ngayTao;
     private OffsetDateTime ngayCapNhat;
-    private List<String> anhUrls;         // ảnh cấp sản phẩm (bien_the_id = NULL)
+    private String anhDaiDien;            // 1 ảnh đại diện sản phẩm
     private List<AdminBienTheResponse> bienThes;
     private List<VoucherItem> vouchers;   // mã giảm giá áp dụng cho sản phẩm này
 

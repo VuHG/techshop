@@ -59,6 +59,7 @@ public enum ErrorCode {
     REV_001("REV_001", "Chỉ được đánh giá sau khi đơn hàng hoàn thành", HttpStatus.BAD_REQUEST),
     REV_002("REV_002", "Bạn đã đánh giá sản phẩm này", HttpStatus.CONFLICT),
     REV_003("REV_003", "Sản phẩm không thuộc đơn hàng này", HttpStatus.BAD_REQUEST),
+    REV_004("REV_004", "Đánh giá không tồn tại hoặc bạn không có quyền", HttpStatus.NOT_FOUND),
 
     // Profile & Address
     PROFILE_001("PROFILE_001", "Email đã được sử dụng bởi tài khoản khác", HttpStatus.CONFLICT),

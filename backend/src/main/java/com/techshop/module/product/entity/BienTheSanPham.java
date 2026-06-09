@@ -60,6 +60,9 @@ public class BienTheSanPham {
     @Column(name = "so_luong_ton", nullable = false)
     private int soLuongTon;
 
+    @Column(name = "so_luot_danh_gia", nullable = false)
+    private int soLuotDanhGia;
+
     @Column(name = "trang_thai", nullable = false, length = 20)
     private String trangThai;
 

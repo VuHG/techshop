@@ -123,6 +123,7 @@ public class AdminSanPhamService {
                 .moTaNgan(req.getMoTaNgan())
                 .phanLoaiId(req.getPhanLoaiId())
                 .thuongHieu(req.getThuongHieu())
+                .anhDaiDien(rong(req.getAnhDaiDien()) ? null : req.getAnhDaiDien().trim())
                 .banDoBienThe(new HashMap<>())   // dựng lại sau khi có biến thể
                 .trangThai(chuanTrangThaiSp(req.getTrangThai()))
                 // Khởi tạo cache field đánh giá = 0 (tránh NULL gây lỗi .toFixed ở FE).
@@ -131,8 +132,6 @@ public class AdminSanPhamService {
                 .soLuotBan(0)
                 .build();
         SanPham saved = sanPhamRepo.save(sp);
-
-        luuAnhSanPham(saved.getId(), req.getAnhUrls());
 
         // Biến thể chỉ tạo nếu request có gửi (form hộp chứa không gửi).
         if (req.getBienThes() != null) {
@@ -159,13 +158,12 @@ public class AdminSanPhamService {
         sp.setMoTaNgan(req.getMoTaNgan());
         sp.setPhanLoaiId(req.getPhanLoaiId());
         sp.setThuongHieu(req.getThuongHieu());
+        // Ảnh đại diện: chỉ thay khi request có gửi (null = giữ nguyên).
+        if (req.getAnhDaiDien() != null) {
+            sp.setAnhDaiDien(req.getAnhDaiDien().isBlank() ? null : req.getAnhDaiDien().trim());
+        }
         sp.setTrangThai(chuanTrangThaiSp(req.getTrangThai()));
         sanPhamRepo.save(sp);
-
-        // Ảnh cấp sản phẩm: chỉ thay khi request có gửi anhUrls.
-        if (req.getAnhUrls() != null) {
-            luuAnhSanPham(id, req.getAnhUrls());
-        }
 
         // Biến thể: chỉ đồng bộ khi request có gửi bienThes. null = giữ nguyên (sửa hộp chứa).
         if (req.getBienThes() != null) {
@@ -205,7 +203,7 @@ public class AdminSanPhamService {
                         .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
                 apDungBienThe(existing, bt);
                 bienTheRepo.save(existing);
-                luuAnh(sp.getId(), existing.getId(), bt.getAnhUrls());
+                luuAnh(existing.getId(), bt.getAnhUrls());
             }
         }
         dongBoBanDoBienThe(sp.getId());
@@ -246,12 +244,11 @@ public class AdminSanPhamService {
             return;
         }
 
-        // Xóa cứng: ảnh → biến thể → sản phẩm.
+        // Xóa cứng: ảnh (theo biến thể) → biến thể → sản phẩm.
         for (BienTheSanPham bt : variants) {
             anhRepo.deleteByBienTheId(bt.getId());
             bienTheRepo.delete(bt);
         }
-        anhRepo.deleteBySanPhamId(id);
         sanPhamRepo.delete(sp);
     }
 
@@ -452,7 +449,7 @@ public class AdminSanPhamService {
                 .nhans(taiNhan(bt.getNhanIds()))
                 .build();
         BienTheSanPham saved = bienTheRepo.save(bienThe);
-        luuAnh(sp.getId(), saved.getId(), bt.getAnhUrls());
+        luuAnh(saved.getId(), bt.getAnhUrls());
     }
 
     private void apDungBienThe(BienTheSanPham bienThe, BienTheRequest bt) {
@@ -472,33 +469,14 @@ public class AdminSanPhamService {
     }
 
     // Thay toàn bộ ảnh của biến thể: xóa cũ → chèn mới (ảnh đầu = ảnh chính).
-    private void luuAnh(Long sanPhamId, Long bienTheId, List<String> urls) {
+    private void luuAnh(Long bienTheId, List<String> urls) {
         anhRepo.deleteByBienTheId(bienTheId);
         if (urls == null) return;
         int thuTu = 1;
         for (String url : urls) {
             if (url == null || url.isBlank()) continue;
             anhRepo.save(AnhSanPham.builder()
-                    .sanPhamId(sanPhamId)
                     .bienTheId(bienTheId)
-                    .urlAnh(url.trim())
-                    .laAnhChinh(thuTu == 1)
-                    .thuTu(thuTu)
-                    .build());
-            thuTu++;
-        }
-    }
-
-    // Thay toàn bộ ảnh CẤP SẢN PHẨM (bien_the_id = NULL).
-    private void luuAnhSanPham(Long sanPhamId, List<String> urls) {
-        anhRepo.deleteBySanPhamIdAndBienTheIdIsNull(sanPhamId);
-        if (urls == null) return;
-        int thuTu = 1;
-        for (String url : urls) {
-            if (url == null || url.isBlank()) continue;
-            anhRepo.save(AnhSanPham.builder()
-                    .sanPhamId(sanPhamId)
-                    .bienTheId(null)
                     .urlAnh(url.trim())
                     .laAnhChinh(thuTu == 1)
                     .thuTu(thuTu)
@@ -546,10 +524,9 @@ public class AdminSanPhamService {
                     .build());
         }
 
-        // Hộp chứa chưa có biến thể (hoặc biến thể chưa có ảnh) → dùng ảnh cấp sản phẩm.
-        if (anhChinh == null) {
-            anhChinh = anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
-                    .stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null);
+        // Ảnh hiển thị ở bảng quản lý = ảnh đại diện sản phẩm; thiếu thì lấy ảnh biến thể đầu.
+        if (sp.getAnhDaiDien() != null && !sp.getAnhDaiDien().isBlank()) {
+            anhChinh = sp.getAnhDaiDien();
         }
 
         PhanLoaiSanPham pl = plMap.get(sp.getPhanLoaiId());
@@ -622,8 +599,7 @@ public class AdminSanPhamService {
                 .soLuotBan(sp.getSoLuotBan())
                 .ngayTao(sp.getNgayTao())
                 .ngayCapNhat(sp.getNgayCapNhat())
-                .anhUrls(anhRepo.findBySanPhamIdAndBienTheIdIsNullOrderByThuTuAsc(sp.getId())
-                        .stream().map(AnhSanPham::getUrlAnh).collect(Collectors.toList()))
+                .anhDaiDien(sp.getAnhDaiDien())
                 .bienThes(bienThes)
                 .vouchers(vouchers)
                 .build();

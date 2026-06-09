@@ -89,7 +89,8 @@ public class SanPhamService {
                 .filter(AnhSanPham::isLaAnhChinh)
                 .map(AnhSanPham::getUrlAnh)
                 .findFirst()
-                .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst().orElse(null));
+                .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst()
+                        .orElse(sp.getAnhDaiDien()));
 
         List<NhanResponse> nhans = bt.getNhans().stream()
                 .map(n -> NhanResponse.builder()
@@ -245,7 +246,7 @@ public class SanPhamService {
                 .filter(AnhSanPham::isLaAnhChinh)
                 .map(AnhSanPham::getUrlAnh)
                 .findFirst()
-                .orElse(null);
+                .orElse(sp.getAnhDaiDien());
 
         List<NhanResponse> nhans = bienThes.stream()
                 .flatMap(bt -> bt.getNhans().stream())
@@ -312,7 +313,7 @@ public class SanPhamService {
                 .filter(AnhSanPham::isLaAnhChinh)
                 .map(AnhSanPham::getUrlAnh)
                 .findFirst()
-                .orElse(null);
+                .orElse(sp.getAnhDaiDien());
     }
 
 }

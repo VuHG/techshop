@@ -59,6 +59,17 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
             """)
     int capNhatDiemDanhGia(@Param("id") Long id, @Param("diem") int diem);
 
+    // Xóa đánh giá: giảm số lượt + đảo ngược điểm trung bình (decremental). 0 lượt → điểm về 0.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE SanPham s
+            SET s.diemDanhGiaTb = CASE WHEN s.soLuotDanhGia <= 1 THEN 0
+                    ELSE (s.diemDanhGiaTb * s.soLuotDanhGia - :diem) / (s.soLuotDanhGia - 1) END,
+                s.soLuotDanhGia = CASE WHEN s.soLuotDanhGia > 0 THEN s.soLuotDanhGia - 1 ELSE 0 END
+            WHERE s.id = :id
+            """)
+    int xoaDanhGia(@Param("id") Long id, @Param("diem") int diem);
+
     @Query("""
             SELECT s FROM SanPham s
             WHERE s.trangThai = 'CON_HANG'

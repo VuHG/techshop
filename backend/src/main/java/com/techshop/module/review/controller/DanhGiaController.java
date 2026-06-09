@@ -36,6 +36,15 @@ public class DanhGiaController {
         return ResponseEntity.ok(ApiResponse.ok(danhGiaService.getCuaToi(userId, page, size)));
     }
 
+    /** Xóa đánh giá của chính mình (lượt đánh giá biến thể/sản phẩm tự giảm). */
+    @DeleteMapping("/api/danh-gia/{id}")
+    public ResponseEntity<ApiResponse<Void>> xoaDanhGia(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long id) {
+        danhGiaService.xoaDanhGia(userId, id);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
     /** Đánh giá của 1 sản phẩm (public — hiển thị ở trang sản phẩm). */
     @GetMapping("/api/san-pham/{sanPhamId}/danh-gia")
     public ResponseEntity<ApiResponse<PageResponse<DanhGiaResponse>>> getTheoSanPham(

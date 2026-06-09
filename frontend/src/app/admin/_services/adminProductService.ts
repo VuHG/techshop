@@ -80,7 +80,7 @@ export interface AdminSanPhamDetail {
   soLuotBan?: number;
   ngayTao?: string;
   ngayCapNhat?: string;
-  anhUrls?: string[];
+  anhDaiDien?: string | null;
   bienThes: AdminBienThe[];
   vouchers?: { maCode: string; tenMa: string }[];
 }
@@ -93,7 +93,7 @@ export interface SanPhamPayload {
   phanLoaiId: number;
   thuongHieu?: string;
   trangThai: string;
-  anhUrls?: string[];
+  anhDaiDien?: string;
   bienThes?: AdminBienThe[];
 }
 

@@ -110,4 +110,13 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.soLuotBan = bt.soLuotBan + :soLuong WHERE bt.id = :id")
     int tangSoLuotBan(@Param("id") Long id, @Param("soLuong") int soLuong);
+
+    // Lượt đánh giá theo biến thể: +1 khi có đánh giá mới, -1 khi xóa đánh giá.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham bt SET bt.soLuotDanhGia = bt.soLuotDanhGia + 1 WHERE bt.id = :id")
+    int tangSoLuotDanhGia(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham bt SET bt.soLuotDanhGia = bt.soLuotDanhGia - 1 WHERE bt.id = :id AND bt.soLuotDanhGia > 0")
+    int giamSoLuotDanhGia(@Param("id") Long id);
 }

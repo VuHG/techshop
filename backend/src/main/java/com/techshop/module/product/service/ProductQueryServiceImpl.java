@@ -36,8 +36,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         SanPham sp = bt.getSanPham();
         BigDecimal giaHienThi = bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : bt.getGia();
 
-        List<AnhSanPham> anhs = anhRepo.findAnhDaiDien(bt.getId(), sp.getId(), PageRequest.of(0, 1));
-        String anhChinh = anhs.isEmpty() ? null : anhs.get(0).getUrlAnh();
+        List<AnhSanPham> anhs = anhRepo.findAnhDaiDien(bt.getId(), PageRequest.of(0, 1));
+        String anhChinh = anhs.isEmpty() ? sp.getAnhDaiDien() : anhs.get(0).getUrlAnh();
 
         boolean conHang = "CON_HANG".equals(bt.getTrangThai()) && bt.getSoLuongTon() > 0;
 
@@ -93,5 +93,18 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     @Transactional
     public void capNhatDiemDanhGia(Long sanPhamId, int diem) {
         sanPhamRepo.capNhatDiemDanhGia(sanPhamId, diem);
+    }
+
+    @Override
+    @Transactional
+    public void tangSoLuotDanhGiaBienThe(Long bienTheId) {
+        if (bienTheId != null) bienTheRepo.tangSoLuotDanhGia(bienTheId);
+    }
+
+    @Override
+    @Transactional
+    public void giamDanhGia(Long sanPhamId, Long bienTheId, int diem) {
+        sanPhamRepo.xoaDanhGia(sanPhamId, diem);
+        if (bienTheId != null) bienTheRepo.giamSoLuotDanhGia(bienTheId);
     }
 }

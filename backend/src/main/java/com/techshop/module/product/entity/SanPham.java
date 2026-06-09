@@ -41,6 +41,10 @@ public class SanPham {
     @Column(name = "thuong_hieu", length = 100)
     private String thuongHieu;
 
+    // Ảnh đại diện sản phẩm (1 ảnh) — dùng cho trang quản lý + banner. Ảnh chi tiết thuộc biến thể.
+    @Column(name = "anh_dai_dien", length = 500)
+    private String anhDaiDien;
+
     // Sơ đồ phiên bản: { "<chuỗi thông số>": { "<màu>": <id biến thể> } }.
     // Sản phẩm không còn thông số kỹ thuật chung; cột này thay thế thong_so_ky_thuat (V14).
     @Column(name = "ban_do_bien_the", columnDefinition = "jsonb")

@@ -47,6 +47,7 @@ public class DanhGiaService {
         DanhGia dg = DanhGia.builder()
                 .nguoiDungId(nguoiDungId)
                 .sanPhamId(sanPhamId)
+                .bienTheId(req.getBienTheId())
                 .donHangId(req.getDonHangId())
                 .diemDanhGia((short) (int) req.getDiem())
                 .noiDung(req.getNoiDung())
@@ -54,10 +55,26 @@ public class DanhGiaService {
                 .build();
         danhGiaRepo.save(dg);
 
-        // Cập nhật cache điểm trung bình của sản phẩm.
+        // Cập nhật cache điểm TB của sản phẩm + tăng lượt đánh giá của biến thể.
         productQueryService.capNhatDiemDanhGia(sanPhamId, req.getDiem());
+        productQueryService.tangSoLuotDanhGiaBienThe(req.getBienTheId());
 
         return toResponse(dg);
+    }
+
+    /** Xóa đánh giá của chính mình → giảm lượt của biến thể + đảo điểm/lượt của sản phẩm. */
+    @Transactional
+    public void xoaDanhGia(Long nguoiDungId, Long danhGiaId) {
+        DanhGia dg = danhGiaRepo.findById(danhGiaId)
+                .orElseThrow(() -> new AppException(ErrorCode.REV_004));
+        if (!dg.getNguoiDungId().equals(nguoiDungId)) {
+            throw new AppException(ErrorCode.REV_004);
+        }
+        Long sanPhamId = dg.getSanPhamId();
+        Long bienTheId = dg.getBienTheId();
+        int diem = dg.getDiemDanhGia();
+        danhGiaRepo.delete(dg);
+        productQueryService.giamDanhGia(sanPhamId, bienTheId, diem);
     }
 
     @Transactional(readOnly = true)
