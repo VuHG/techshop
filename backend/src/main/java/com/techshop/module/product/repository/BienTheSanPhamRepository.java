@@ -102,6 +102,10 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Query("UPDATE BienTheSanPham bt SET bt.laBienTheMacDinh = false WHERE bt.sanPham.id = :sanPhamId")
     void boMacDinhTatCa(@Param("sanPhamId") Long sanPhamId);
 
+    // Đếm số biến thể của sản phẩm (xác định biến thể đầu tiên = mặc định).
+    @Query("SELECT COUNT(bt) FROM BienTheSanPham bt WHERE bt.sanPham.id = :sanPhamId")
+    int countBySanPhamId(@Param("sanPhamId") Long sanPhamId);
+
     // Atomic cập nhật cache field so_luot_ban của biến thể khi đơn hoàn thành.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.soLuotBan = bt.soLuotBan + :soLuong WHERE bt.id = :id")

@@ -58,15 +58,37 @@ export function ThemBienTheModal({
       return next;
     });
 
+  // Màu sắc đã có ô riêng → loại khỏi dropdown thông số để tránh trùng.
+  const MAU_KEYS = ['color', 'mau_sac', 'mauSac', 'Màu sắc'];
+  const schemaKeys = schema ? Object.keys(schema).filter((k) => !MAU_KEYS.includes(k)) : [];
+
   const luu = async () => {
+    // Mọi trường bắt buộc phải có giá trị (tránh thiếu dữ liệu).
     if (!gia || Number(gia) <= 0) return toast.error('Nhập giá niêm yết hợp lệ');
+    if (!giaBan || Number(giaBan) <= 0) return toast.error('Nhập giá khuyến mãi hợp lệ');
+    if (Number(giaBan) > Number(gia)) return toast.error('Giá khuyến mãi không được lớn hơn giá niêm yết');
+    if (soLuongTon === '' || Number(soLuongTon) < 0) return toast.error('Nhập số lượng tồn hợp lệ');
+    if (!mauSac.trim()) return toast.error('Nhập màu sắc');
+
+    // Thông số bắt buộc: khi THÊM phải chọn đủ mọi thông số của phân loại; khi SỬA chỉ bắt buộc
+    // các thông số biến thể vốn có (thuộc tính mới thêm sau mà biến thể cũ chưa có → không bắt buộc).
+    const requiredKeys = editing
+      ? schemaKeys.filter((k) =>
+          editing.thongSoBienThe && Object.prototype.hasOwnProperty.call(editing.thongSoBienThe, k),
+        )
+      : schemaKeys;
+    const thieu = requiredKeys.filter((k) => !thongSo[k]);
+    if (thieu.length > 0) {
+      const tens = thieu.map((k) => schema?.[k]?.label ?? k).join(', ');
+      return toast.error(`Vui lòng chọn đầy đủ thông số: ${tens}`);
+    }
 
     const payload: BienThePayload = {
-      mauSac: mauSac.trim() || null,
+      mauSac: mauSac.trim(),
       gia: Number(gia),
-      giaBan: giaBan ? Number(giaBan) : null,
-      soLuongTon: Number(soLuongTon) || 0,
-      laMacDinh,
+      giaBan: Number(giaBan),
+      soLuongTon: Number(soLuongTon),
+      laMacDinh,   // chỉ có tác dụng khi sửa; khi thêm BE tự quyết định
       thongSoBienThe: thongSo,
     };
 
@@ -83,10 +105,6 @@ export function ThemBienTheModal({
     }
   };
 
-  // Màu sắc đã có ô riêng → loại khỏi dropdown thông số để tránh trùng.
-  const MAU_KEYS = ['color', 'mau_sac', 'mauSac', 'Màu sắc'];
-  const schemaKeys = schema ? Object.keys(schema).filter((k) => !MAU_KEYS.includes(k)) : [];
-
   return (
     <Modal open title={editing ? 'Sửa biến thể' : 'Thêm biến thể'} size="md" onClose={onClose}>
       <div className="space-y-4">
@@ -94,7 +112,7 @@ export function ThemBienTheModal({
           Sản phẩm: <b className="text-gray-900">{tenSanPham}</b>
         </p>
 
-        <Field label="Màu sắc">
+        <Field label="Màu sắc *">
           <input className={inp} value={mauSac} onChange={(e) => setMauSac(e.target.value)} placeholder="VD: Đen" />
         </Field>
         <p className="-mt-1 text-xs text-gray-400">
@@ -105,19 +123,26 @@ export function ThemBienTheModal({
           <Field label="Giá niêm yết *">
             <input type="number" className={inp} value={gia} onChange={(e) => setGia(e.target.value)} />
           </Field>
-          <Field label="Giá bán">
+          <Field label="Giá khuyến mãi *">
             <input type="number" className={inp} value={giaBan} onChange={(e) => setGiaBan(e.target.value)} />
           </Field>
-          <Field label="Số lượng tồn">
+          <Field label="Số lượng tồn *">
             <input type="number" className={inp} value={soLuongTon} onChange={(e) => setSoLuongTon(e.target.value)} />
           </Field>
-          <Field label="Biến thể mặc định">
-            <label className="flex h-[42px] items-center gap-2 rounded-lg border border-gray-300 px-3 text-sm">
-              <input type="checkbox" checked={laMacDinh} onChange={(e) => setLaMacDinh(e.target.checked)} />
-              <span className="text-gray-700">{laMacDinh ? 'Có' : 'Không'}</span>
-            </label>
-          </Field>
+          {editing && (
+            <Field label="Biến thể mặc định">
+              <label className="flex h-[42px] items-center gap-2 rounded-lg border border-gray-300 px-3 text-sm">
+                <input type="checkbox" checked={laMacDinh} onChange={(e) => setLaMacDinh(e.target.checked)} />
+                <span className="text-gray-700">{laMacDinh ? 'Có' : 'Không'}</span>
+              </label>
+            </Field>
+          )}
         </div>
+        {!editing && (
+          <p className="-mt-1 text-xs text-gray-400">
+            Biến thể đầu tiên của sản phẩm tự động là mặc định. Đổi mặc định ở chức năng <b>Sửa biến thể</b>.
+          </p>
+        )}
 
         {/* Thông số biến thể — dropdown từ filter schema */}
         <div>

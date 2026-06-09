@@ -272,27 +272,35 @@ public class AdminSanPhamService {
         BienTheSanPham bt = bienTheRepo.findById(bienTheId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
         Long sanPhamId = bt.getSanPham().getId();
+        boolean laMacDinh = Boolean.TRUE.equals(bt.getLaBienTheMacDinh());
         // Biến thể đã phát sinh đơn → không xóa (admin nên ẩn thay vì xóa).
         if (chiTietDonHangRepo.existsByBienTheIdIn(List.of(bienTheId))) {
             throw new AppException(ErrorCode.PROD_005);
         }
         anhRepo.deleteByBienTheId(bienTheId);
         bienTheRepo.delete(bt);
+
+        // Xóa biến thể mặc định → phong biến thể còn lại đầu tiên làm mặc định (giữ đúng 1 mặc định).
+        if (laMacDinh) {
+            bienTheRepo.findBySanPhamIdWithDetails(sanPhamId).stream()
+                    .findFirst()
+                    .ifPresent(con -> {
+                        con.setLaBienTheMacDinh(true);
+                        bienTheRepo.save(con);
+                    });
+        }
         dongBoBanDoBienThe(sanPhamId);
     }
 
     @Transactional
     @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
     public void themBienThe(Long sanPhamId, BienTheUpsertRequest req) {
-        if (!sanPhamRepo.existsById(sanPhamId)) {
-            throw new AppException(ErrorCode.PROD_001);
-        }
-        // Nếu đặt làm mặc định → bỏ cờ ở các biến thể khác trước (query này clear context).
-        if (req.isLaMacDinh()) {
-            bienTheRepo.boMacDinhTatCa(sanPhamId);
-        }
         SanPham sp = sanPhamRepo.findById(sanPhamId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROD_001));
+
+        // Biến thể ĐẦU TIÊN của sản phẩm tự động là mặc định; các biến thể thêm sau = false.
+        // (Form thêm không còn ô chọn mặc định — hệ thống tự quyết định.)
+        boolean laMacDinh = bienTheRepo.countBySanPhamId(sanPhamId) == 0;
 
         Map<String, Object> specs = stripMau(req.getThongSoBienThe());
         String mau = rong(req.getMauSac()) ? null : req.getMauSac().trim();
@@ -306,7 +314,7 @@ public class AdminSanPhamService {
                 .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
                 .soLuongTon(req.getSoLuongTon())
                 .trangThai(CON_HANG)
-                .laBienTheMacDinh(req.isLaMacDinh())
+                .laBienTheMacDinh(laMacDinh)
                 .build();
         bienTheRepo.save(bt);
         dongBoBanDoBienThe(sanPhamId);
