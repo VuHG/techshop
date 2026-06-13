@@ -143,10 +143,10 @@ export function MuaNgayModal({
               </div>
             </div>
 
-            {sp.bienThes.length > 0 && (
+            {Object.keys(sp.banDoBienThe ?? {}).length > 0 && (
               <div className="mt-4">
-                <p className="mb-2 text-sm font-semibold text-gray-700">Phiên bản / Màu sắc</p>
                 <VariantSelector
+                  banDoBienThe={sp.banDoBienThe}
                   bienThes={sp.bienThes}
                   selectedId={selected.id}
                   onSelect={doiBienThe}

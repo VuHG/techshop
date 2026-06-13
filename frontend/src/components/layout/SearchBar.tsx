@@ -75,7 +75,8 @@ export function SearchBar() {
           {suggests.map((s) => (
             <Link
               key={s.id}
-              href={`/san-pham/${s.slug}`}
+              // Bấm gợi ý → trang kết quả hiển thị TOÀN BỘ biến thể của sản phẩm (không nhảy thẳng vào 1 biến thể mặc định).
+              href={`/tim-kiem?q=${encodeURIComponent(s.tenSanPham)}`}
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50"
             >
