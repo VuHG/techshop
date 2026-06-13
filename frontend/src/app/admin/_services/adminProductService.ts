@@ -50,6 +50,8 @@ export interface AdminSanPhamSummary {
 export interface AdminBienThe {
   id?: number;
   maBienThe: string | null;
+  tenSanPham?: string | null;
+  thuongHieu?: string | null;
   tenBienThe?: string | null;
   mauSac?: string | null;
   soLuotBan?: number;

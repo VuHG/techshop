@@ -15,6 +15,7 @@ import java.util.Map;
 public class ChiTietDonHangResponse {
     private Long bienTheId;
     private String tenSanPham;
+    private String thuongHieu;
     private Map<String, Object> thongSoBienThe;
     private String duongDanAnhChinh;
     private BigDecimal giaLucMua;

@@ -41,9 +41,10 @@ function LichSuContent() {
   );
 
   const huy = async (id: number) => {
-    if (!window.confirm('Bạn chắc chắn muốn hủy đơn này?')) return;
+    const lyDo = window.prompt('Lý do hủy đơn (không bắt buộc):', '');
+    if (lyDo === null) return; // bấm Hủy ở hộp thoại
     try {
-      await orderService.huyDon(id);
+      await orderService.huyDon(id, lyDo.trim() || undefined);
       toast.success('Đã hủy đơn hàng');
       qc.invalidateQueries({ queryKey: ['don-hang'] });
     } catch {

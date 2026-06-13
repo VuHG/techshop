@@ -3,6 +3,8 @@ package com.techshop.module.review.dto.request;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class TaoDanhGiaRequest {
 
@@ -19,4 +21,15 @@ public class TaoDanhGiaRequest {
 
     @Size(max = 2000, message = "Nội dung tối đa 2000 ký tự")
     private String noiDung;
+
+    @Size(max = 9, message = "Tối đa 9 ảnh/video")
+    private List<Media> media;   // ảnh/video minh họa (URL)
+
+    @Data
+    public static class Media {
+        @NotBlank(message = "Thiếu URL media")
+        private String urlMedia;
+        @Pattern(regexp = "HINH_ANH|VIDEO", message = "Loại media không hợp lệ")
+        private String loaiMedia;   // HINH_ANH | VIDEO
+    }
 }

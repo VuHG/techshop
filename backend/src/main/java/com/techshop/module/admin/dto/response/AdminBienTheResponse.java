@@ -16,6 +16,8 @@ import java.util.Map;
 public class AdminBienTheResponse {
     private Long id;
     private String maBienThe;
+    private String tenSanPham;    // lấy trực tiếp từ sản phẩm (admin không nhập ở biến thể)
+    private String thuongHieu;    // lấy trực tiếp từ sản phẩm
     private String tenBienThe;
     private String mauSac;
     private int soLuotBan;

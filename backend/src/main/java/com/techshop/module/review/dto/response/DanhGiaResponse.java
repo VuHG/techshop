@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -18,4 +19,14 @@ public class DanhGiaResponse {
     private int diem;
     private String noiDung;
     private OffsetDateTime ngayTao;
+    private List<MediaItem> media;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MediaItem {
+        private String urlMedia;
+        private String loaiMedia;   // HINH_ANH | VIDEO
+    }
 }

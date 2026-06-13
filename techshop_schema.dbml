@@ -285,6 +285,7 @@ Table chi_tiet_don_hang {
   don_hang_id         bigint [not null, ref: > don_hang.id]
   bien_the_id         bigint [ref: > bien_the_san_pham.id]
   ten_san_pham        varchar(200) [not null, note: 'snapshot']
+  thuong_hieu         varchar(100) [note: 'snapshot hãng (V16)']
   ten_bien_the        varchar(200) [note: 'snapshot']
   thong_so_bien_the   jsonb [not null, note: 'snapshot']
   duong_dan_anh_chinh varchar(500) [note: 'snapshot']

@@ -43,6 +43,28 @@ export function ProductReviews({
                 <span className="text-xs text-gray-400">{formatNgay(r.ngayTao)}</span>
               </div>
               {r.noiDung && <p className="mt-1 text-sm text-gray-700">{r.noiDung}</p>}
+              {r.media && r.media.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {r.media.map((m, j) =>
+                    m.loaiMedia === 'VIDEO' ? (
+                      <video
+                        key={j}
+                        src={m.urlMedia}
+                        controls
+                        className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={j}
+                        src={m.urlMedia}
+                        alt="Ảnh đánh giá"
+                        className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+                      />
+                    ),
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>

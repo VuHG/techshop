@@ -121,6 +121,8 @@ function VariantDetail({ bt }: { bt: AdminBienThe }) {
   return (
     <div className="space-y-3 px-4 py-3">
       <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
+        <Row k="Sản phẩm" v={bt.tenSanPham || '—'} />
+        <Row k="Thương hiệu" v={bt.thuongHieu || '—'} />
         <Row k="Màu sắc" v={bt.mauSac || '—'} />
         <Row k="Đã bán" v={String(bt.soLuotBan ?? 0)} />
         <Row k="Giá niêm yết" v={formatPrice(bt.gia)} />

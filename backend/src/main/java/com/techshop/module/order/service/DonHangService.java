@@ -84,6 +84,7 @@ public class DonHangService {
             chiTietList.add(ChiTietDonHang.builder()
                     .bienTheId(item.getBienTheId())
                     .tenSanPham(item.getTenSanPham())
+                    .thuongHieu(item.getThuongHieu())
                     .thongSoBienThe(item.getThongSoBienThe())
                     .duongDanAnhChinh(item.getAnhChinh())
                     .giaLucMua(item.getGia())
@@ -204,7 +205,7 @@ public class DonHangService {
     // ─── Hủy đơn (chỉ khi CHO_XU_LY) ──────────────────────────────────
 
     @Transactional
-    public DonHangResponse huyDon(Long nguoiDungId, Long donHangId) {
+    public DonHangResponse huyDon(Long nguoiDungId, Long donHangId, String lyDo) {
         DonHang donHang = donHangRepo.findByIdAndNguoiDungId(donHangId, nguoiDungId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
 
@@ -217,11 +218,13 @@ public class DonHangService {
         // Snapshot chi tiết ra list thuần — an toàn khi @Modifying clear context phía sau.
         List<ChiTietDonHang> cts = new ArrayList<>(donHang.getChiTiet());
 
-        // Cập nhật trạng thái + timeline TRƯỚC, lưu khi entity còn managed.
+        String lyDoSach = (lyDo == null || lyDo.isBlank()) ? null : lyDo.trim();
+        // Cập nhật trạng thái + lý do + timeline TRƯỚC, lưu khi entity còn managed.
         donHang.setTrangThai("DA_HUY");
+        donHang.setLyDoHuy(lyDoSach);
         donHang.themLichSu(LichSuTrangThaiDonHang.builder()
                 .trangThai("DA_HUY")
-                .ghiChu("Khách hàng hủy đơn")
+                .ghiChu(lyDoSach == null ? "Khách hàng hủy đơn" : "Khách hàng hủy đơn: " + lyDoSach)
                 .build());
         donHangRepo.saveAndFlush(donHang);
 
@@ -466,6 +469,7 @@ public class DonHangService {
                 .map(ct -> ChiTietDonHangResponse.builder()
                         .bienTheId(ct.getBienTheId())
                         .tenSanPham(ct.getTenSanPham())
+                        .thuongHieu(ct.getThuongHieu())
                         .thongSoBienThe(ct.getThongSoBienThe())
                         .duongDanAnhChinh(ct.getDuongDanAnhChinh())
                         .giaLucMua(ct.getGiaLucMua())
@@ -497,6 +501,7 @@ public class DonHangService {
                 .phiVanChuyen(d.getPhiVanChuyen())
                 .tongThanhToan(d.getTongThanhToan())
                 .ghiChu(d.getGhiChu())
+                .lyDoHuy(d.getLyDoHuy())
                 .ngayTao(d.getNgayTao())
                 .items(items)
                 .lichSu(lichSu)

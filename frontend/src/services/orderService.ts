@@ -28,8 +28,8 @@ export const orderService = {
     return res.data.data;
   },
 
-  async huyDon(id: number): Promise<DonHang> {
-    const res = await api.patch<ApiResponse<DonHang>>(`/don-hang/${id}/huy`);
+  async huyDon(id: number, lyDo?: string): Promise<DonHang> {
+    const res = await api.patch<ApiResponse<DonHang>>(`/don-hang/${id}/huy`, { lyDo });
     return res.data.data;
   },
 

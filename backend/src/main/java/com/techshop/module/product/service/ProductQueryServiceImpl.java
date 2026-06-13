@@ -53,6 +53,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .bienTheId(bt.getId())
                 .sanPhamId(sp.getId())
                 .tenSanPham(sp.getTenSanPham())
+                .thuongHieu(sp.getThuongHieu())
                 .slug(sp.getSlug())
                 .thongSoBienThe(thongSo)
                 .anhChinh(anhChinh)

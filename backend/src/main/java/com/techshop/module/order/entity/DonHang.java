@@ -63,6 +63,9 @@ public class DonHang {
     @Column(name = "ghi_chu", columnDefinition = "TEXT")
     private String ghiChu;
 
+    @Column(name = "ly_do_huy", columnDefinition = "TEXT")
+    private String lyDoHuy;
+
     @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ChiTietDonHang> chiTiet = new ArrayList<>();

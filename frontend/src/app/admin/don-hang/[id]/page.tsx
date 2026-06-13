@@ -182,6 +182,7 @@ export default function AdminDonHangChiTietPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-gray-900">{it.tenSanPham}</p>
+                {it.thuongHieu && <p className="truncate text-xs text-gray-500">Hãng: {it.thuongHieu}</p>}
                 <p className="truncate text-xs text-gray-500">
                   {Object.values(it.thongSoBienThe).join(' · ')}
                 </p>

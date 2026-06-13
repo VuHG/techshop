@@ -6,6 +6,7 @@ export interface TaoDanhGiaPayload {
   bienTheId: number;
   diem: number;
   noiDung?: string;
+  media?: { urlMedia: string; loaiMedia: 'HINH_ANH' | 'VIDEO' }[];
 }
 
 export const reviewService = {

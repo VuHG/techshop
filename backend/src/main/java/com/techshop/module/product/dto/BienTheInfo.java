@@ -21,6 +21,7 @@ public class BienTheInfo {
     private Long bienTheId;
     private Long sanPhamId;
     private String tenSanPham;
+    private String thuongHieu;
     private String slug;
     private Map<String, Object> thongSoBienThe;
     private String anhChinh;

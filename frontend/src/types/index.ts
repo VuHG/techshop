@@ -166,6 +166,11 @@ export interface PhanLoai {
   danhMucId: number;
 }
 
+export interface ReviewMedia {
+  urlMedia: string;
+  loaiMedia: 'HINH_ANH' | 'VIDEO';
+}
+
 export interface DanhGia {
   id: number;
   sanPhamId: number;
@@ -173,6 +178,7 @@ export interface DanhGia {
   diem: number;
   noiDung: string;
   ngayTao: string;
+  media: ReviewMedia[];
 }
 
 // ─── Cart / Discount / Order / Profile (Phase 9) ─────────
@@ -212,6 +218,7 @@ export interface DiscountResult {
 export interface ChiTietDonHang {
   bienTheId: number;
   tenSanPham: string;
+  thuongHieu: string | null;
   thongSoBienThe: Record<string, unknown>;
   duongDanAnhChinh: string | null;
   giaLucMua: number;
@@ -239,6 +246,7 @@ export interface DonHang {
   phiVanChuyen: number;
   tongThanhToan: number;
   ghiChu: string | null;
+  lyDoHuy: string | null;
   ngayTao: string;
   items: ChiTietDonHang[];
   lichSu: TrangThaiDonHang[];

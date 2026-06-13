@@ -35,6 +35,9 @@ public class ChiTietDonHang {
     @Column(name = "ten_san_pham", nullable = false, length = 200)
     private String tenSanPham;
 
+    @Column(name = "thuong_hieu", length = 100)
+    private String thuongHieu;   // snapshot thương hiệu lúc mua
+
     @Column(name = "thong_so_bien_the", nullable = false, columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> thongSoBienThe;

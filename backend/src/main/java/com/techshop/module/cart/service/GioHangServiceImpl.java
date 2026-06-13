@@ -151,6 +151,7 @@ public class GioHangServiceImpl implements GioHangService {
                 .sanPhamId(info.getSanPhamId())
                 .slug(info.getSlug())
                 .tenSanPham(info.getTenSanPham())
+                .thuongHieu(info.getThuongHieu())
                 .thongSoBienThe(info.getThongSoBienThe())
                 .anhChinh(info.getAnhChinh())
                 .gia(gia)

@@ -15,7 +15,7 @@ import { ReviewModal } from '@/components/review/ReviewModal';
 import { Container } from '@/components/ui/Container';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { ORDER_STATUS } from '@/lib/constants';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, nhanThongSo } from '@/lib/utils';
 import type { DonHang } from '@/types';
 
 export default function ChiTietDonHangPage({ params }: { params: { maDonHang: string } }) {
@@ -47,9 +47,11 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
   };
 
   const huy = async () => {
-    if (!don || !window.confirm('Bạn chắc chắn muốn hủy đơn này?')) return;
+    if (!don) return;
+    const lyDo = window.prompt('Lý do hủy đơn (không bắt buộc):', '');
+    if (lyDo === null) return; // bấm Hủy ở hộp thoại
     try {
-      await orderService.huyDon(don.id);
+      await orderService.huyDon(don.id, lyDo.trim() || undefined);
       toast.success('Đã hủy đơn hàng');
       lamMoi();
     } catch {
@@ -118,6 +120,12 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
         <OrderStatusBadge trangThai={don.trangThai} />
       </div>
 
+      {don.trangThai === 'DA_HUY' && don.lyDoHuy && (
+        <div className="mb-4 rounded-lg border border-sale/30 bg-sale/5 px-4 py-2.5 text-sm text-sale">
+          <span className="font-semibold">Lý do hủy:</span> {don.lyDoHuy}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Timeline */}
         <section className="rounded-xl border border-gray-100 bg-white p-4 lg:col-span-2">
@@ -168,10 +176,13 @@ function ChiTietContent({ maDonHang }: { maDonHang: string }) {
               <ProductImage src={item.duongDanAnhChinh} alt={item.tenSanPham} className="h-16 w-16 shrink-0 rounded-lg" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-800">{item.tenSanPham}</p>
+                {item.thuongHieu && (
+                  <p className="text-xs text-gray-500">Hãng: {item.thuongHieu}</p>
+                )}
                 <div className="mt-0.5 flex flex-wrap gap-1">
-                  {Object.values(item.thongSoBienThe).map((v, j) => (
+                  {Object.entries(item.thongSoBienThe).map(([k, v], j) => (
                     <span key={j} className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-600">
-                      {String(v)}
+                      {nhanThongSo(k)}: {String(v)}
                     </span>
                   ))}
                 </div>

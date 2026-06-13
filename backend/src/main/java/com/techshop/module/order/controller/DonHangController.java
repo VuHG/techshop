@@ -1,6 +1,7 @@
 package com.techshop.module.order.controller;
 
 import com.techshop.module.order.dto.request.DatHangRequest;
+import com.techshop.module.order.dto.request.HuyDonRequest;
 import com.techshop.module.order.dto.response.DonHangResponse;
 import com.techshop.module.order.dto.response.DonHangSummaryResponse;
 import com.techshop.module.order.service.DonHangService;
@@ -48,12 +49,14 @@ public class DonHangController {
         return ResponseEntity.ok(ApiResponse.ok(donHangService.getChiTiet(userId, maDonHang)));
     }
 
-    /** Hủy đơn (chỉ khi đang CHO_XU_LY). */
+    /** Hủy đơn (chỉ khi đang CHO_XU_LY), kèm lý do hủy (tùy chọn). */
     @PatchMapping("/{id}/huy")
     public ResponseEntity<ApiResponse<DonHangResponse>> huyDon(
             @AuthenticationPrincipal Long userId,
-            @PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(donHangService.huyDon(userId, id)));
+            @PathVariable Long id,
+            @RequestBody(required = false) HuyDonRequest req) {
+        String lyDo = req == null ? null : req.getLyDo();
+        return ResponseEntity.ok(ApiResponse.ok(donHangService.huyDon(userId, id, lyDo)));
     }
 
     /** Xác nhận đã nhận hàng (GIAO_THANH_CONG → HOAN_THANH). */

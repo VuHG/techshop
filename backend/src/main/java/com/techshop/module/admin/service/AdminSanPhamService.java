@@ -560,6 +560,8 @@ public class AdminSanPhamService {
                 .map(bt -> AdminBienTheResponse.builder()
                         .id(bt.getId())
                         .maBienThe(bt.getMaBienThe())
+                        .tenSanPham(sp.getTenSanPham())
+                        .thuongHieu(sp.getThuongHieu())
                         .tenBienThe(bt.getTenBienThe())
                         .mauSac(bt.getMauSac())
                         .soLuotBan(bt.getSoLuotBan())

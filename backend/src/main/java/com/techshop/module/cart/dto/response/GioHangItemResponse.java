@@ -18,6 +18,7 @@ public class GioHangItemResponse {
     private Long sanPhamId;
     private String slug;
     private String tenSanPham;
+    private String thuongHieu;
     private Map<String, Object> thongSoBienThe;
     private String anhChinh;
     private BigDecimal gia;                 // giá hiển thị (đã tính khuyến mãi)
