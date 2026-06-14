@@ -64,7 +64,7 @@ function DanhGiaContent() {
             return (
               <li key={r.id} className="py-3">
                 {r.slug ? (
-                  <Link href={`/san-pham/${r.slug}`} className="block rounded-lg transition hover:bg-gray-50">
+                  <Link href={`/san-pham/${r.slug}?danhGia=${r.id}#danh-gia-${r.id}`} className="block rounded-lg transition hover:bg-gray-50">
                     {noiDung}
                   </Link>
                 ) : (

@@ -5,9 +5,13 @@ import axios, {
 } from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/authStore';
+import { queryClient } from '@/lib/queryClient';
 import type { ApiError, ApiResponse, AuthTokens } from '@/types';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
+// Thao tác ghi dữ liệu → sau khi thành công sẽ làm mới toàn bộ dữ liệu đang hiển thị.
+const PHUONG_THUC_GHI = ['post', 'put', 'patch', 'delete'];
 
 export const api = axios.create({
   baseURL,
@@ -53,7 +57,16 @@ async function lamMoiToken(): Promise<string | null> {
 }
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Sau MỌI thao tác ghi DB (mua hàng, hủy, đánh giá, sửa hồ sơ/địa chỉ, giỏ hàng...) thành công
+    // → invalidate toàn bộ query để trang tự refetch, hiển thị đúng với cơ sở dữ liệu.
+    const method = (res.config.method ?? '').toLowerCase();
+    const isAuth = res.config.url?.includes('/auth/') ?? false;
+    if (PHUONG_THUC_GHI.includes(method) && !isAuth && typeof window !== 'undefined') {
+      queryClient.invalidateQueries();
+    }
+    return res;
+  },
   async (error: AxiosError<ApiError>) => {
     const original = error.config as RetriableConfig | undefined;
     const status = error.response?.status;
