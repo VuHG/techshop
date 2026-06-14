@@ -1,6 +1,6 @@
 // ============================================================
 // TechShop — Database schema (dbdiagram.io / DBML)
-// Sinh từ Flyway migrations V1–V17 (PostgreSQL 16)
+// Sinh từ Flyway migrations V1–V18 (PostgreSQL 16)
 // Dán toàn bộ file này vào https://dbdiagram.io
 // ============================================================
 
@@ -168,6 +168,7 @@ Table bien_the_san_pham {
   thuong_hieu          varchar(100) [note: 'denormalize từ san_pham (V17); hệ thống tự đồng bộ']
   mau_sac              varchar(50) [note: 'tách khỏi thong_so_bien_the (V14)']
   thong_so_bien_the    jsonb [not null, note: '{"ram":"16GB","cpu":"i7"} — KHÔNG còn màu; GIN index']
+  bien_the_gan_nhan    jsonb [not null, default: '{}', note: 'denormalize nhãn (V18); {"<nhan_id>":[ten_nhan,mau_sac,thu_tu_hien_thi,trang_thai]}; card đọc 1 bảng']
   gia                  "decimal(15,2)" [not null]
   gia_khuyen_mai       "decimal(15,2)"
   so_luong_ton         int [not null, default: 0, note: 'cache']

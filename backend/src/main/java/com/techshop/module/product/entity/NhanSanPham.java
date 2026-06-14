@@ -23,6 +23,12 @@ public class NhanSanPham {
     @Column(name = "mau_sac", length = 7)
     private String mauSac;
 
+    @Column(name = "thu_tu_hien_thi")
+    private Integer thuTuHienThi;
+
+    @Column(name = "trang_thai", length = 20)
+    private String trangThai;
+
     @Column(name = "ngay_tao", updatable = false)
     private OffsetDateTime ngayTao;
 

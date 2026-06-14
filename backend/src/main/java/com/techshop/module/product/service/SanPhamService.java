@@ -92,10 +92,8 @@ public class SanPhamService {
                 .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst()
                         .orElse(sp.getAnhDaiDien()));
 
-        List<NhanResponse> nhans = bt.getNhans().stream()
-                .map(n -> NhanResponse.builder()
-                        .id(n.getId()).tenNhan(n.getTenNhan()).mauSac(n.getMauSac()).build())
-                .collect(Collectors.toCollection(ArrayList::new));
+        // Nhãn đọc từ JSON denormalized (bien_the_gan_nhan) — không lazy-load quan hệ nhans.
+        List<NhanResponse> nhans = nhanTuGanNhan(bt.getBienTheGanNhan());
 
         return BienTheCardResponse.builder()
                 .bienTheId(bt.getId())
@@ -117,6 +115,29 @@ public class SanPhamService {
                 .soLuotDanhGia(sp.getSoLuotDanhGia())
                 .nhans(nhans)
                 .build();
+    }
+
+    // Đọc nhãn từ JSON denormalized bien_the_gan_nhan: { "<id>": [ten, mau, thu_tu, trang_thai] }.
+    // Chỉ lấy nhãn đang bật (trang_thai ACTIVE), sắp theo thu_tu_hien_thi.
+    private List<NhanResponse> nhanTuGanNhan(Map<String, Object> ganNhan) {
+        if (ganNhan == null || ganNhan.isEmpty()) return new ArrayList<>();
+        record NhanTmp(Long id, String ten, String mau, int thuTu) {}
+        List<NhanTmp> tmp = new ArrayList<>();
+        for (Map.Entry<String, Object> e : ganNhan.entrySet()) {
+            if (!(e.getValue() instanceof List<?> arr) || arr.isEmpty()) continue;
+            String trangThai = arr.size() > 3 && arr.get(3) != null ? String.valueOf(arr.get(3)) : "ACTIVE";
+            if (!"ACTIVE".equalsIgnoreCase(trangThai)) continue;
+            Long id;
+            try { id = Long.valueOf(e.getKey()); } catch (NumberFormatException ex) { continue; }
+            String ten = arr.get(0) != null ? String.valueOf(arr.get(0)) : null;
+            String mau = arr.size() > 1 && arr.get(1) != null ? String.valueOf(arr.get(1)) : null;
+            int thuTu = arr.size() > 2 && arr.get(2) instanceof Number num ? num.intValue() : 0;
+            tmp.add(new NhanTmp(id, ten, mau, thuTu));
+        }
+        tmp.sort(Comparator.comparingInt(NhanTmp::thuTu));
+        return tmp.stream()
+                .map(t -> NhanResponse.builder().id(t.id()).tenNhan(t.ten()).mauSac(t.mau()).build())
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

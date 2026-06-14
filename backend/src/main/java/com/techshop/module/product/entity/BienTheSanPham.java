@@ -59,6 +59,12 @@ public class BienTheSanPham {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> thongSoBienThe;
 
+    // Denormalize nhãn (hệ thống tự dựng từ bien_the_nhan + nhan_san_pham) để card đọc 1 bảng.
+    // { "<nhan_id>": [ten_nhan, mau_sac, thu_tu_hien_thi, trang_thai] }
+    @Column(name = "bien_the_gan_nhan", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> bienTheGanNhan;
+
     @Column(name = "gia", nullable = false, precision = 15, scale = 2)
     private BigDecimal gia;
 

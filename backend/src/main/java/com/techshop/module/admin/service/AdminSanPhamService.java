@@ -311,6 +311,7 @@ public class AdminSanPhamService {
                 .tenBienThe(sinhTenBienThe(specs, mau))   // tên tự sinh = thông số + màu
                 .mauSac(mau)
                 .thongSoBienThe(specs)
+                .bienTheGanNhan(new LinkedHashMap<>())     // chưa gắn nhãn (form thêm lẻ không có nhãn)
                 .gia(req.getGia())
                 .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
                 .soLuongTon(req.getSoLuongTon())
@@ -445,6 +446,7 @@ public class AdminSanPhamService {
     }
 
     private void luuBienTheMoi(SanPham sp, BienTheRequest bt) {
+        Set<NhanSanPham> nhanSet = taiNhan(bt.getNhanIds());
         BienTheSanPham bienThe = BienTheSanPham.builder()
                 .sanPham(sp)
                 .tenSanPham(sp.getTenSanPham())           // snapshot tự điền từ sản phẩm
@@ -455,10 +457,23 @@ public class AdminSanPhamService {
                 .giaKhuyenMai(bt.getGiaKhuyenMai())
                 .soLuongTon(bt.getSoLuongTon())
                 .trangThai(chuanTrangThaiBienThe(bt.getTrangThai()))
-                .nhans(taiNhan(bt.getNhanIds()))
+                .nhans(nhanSet)
+                .bienTheGanNhan(buildGanNhan(nhanSet))    // denormalize nhãn để card đọc 1 bảng
                 .build();
         BienTheSanPham saved = bienTheRepo.save(bienThe);
         luuAnh(saved.getId(), bt.getAnhUrls());
+    }
+
+    // Dựng JSON nhãn của biến thể: { "<nhan_id>": [ten_nhan, mau_sac, thu_tu_hien_thi, trang_thai] }.
+    private Map<String, Object> buildGanNhan(Set<NhanSanPham> nhans) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        if (nhans == null) return map;
+        for (NhanSanPham n : nhans) {
+            // Arrays.asList cho phép phần tử null (mau_sac có thể null).
+            map.put(String.valueOf(n.getId()),
+                    Arrays.asList(n.getTenNhan(), n.getMauSac(), n.getThuTuHienThi(), n.getTrangThai()));
+        }
+        return map;
     }
 
     private void apDungBienThe(BienTheSanPham bienThe, BienTheRequest bt) {
@@ -468,8 +483,10 @@ public class AdminSanPhamService {
         bienThe.setGiaKhuyenMai(bt.getGiaKhuyenMai());
         bienThe.setSoLuongTon(bt.getSoLuongTon());
         bienThe.setTrangThai(chuanTrangThaiBienThe(bt.getTrangThai()));
+        Set<NhanSanPham> nhanSet = taiNhan(bt.getNhanIds());
         bienThe.getNhans().clear();
-        bienThe.getNhans().addAll(taiNhan(bt.getNhanIds()));
+        bienThe.getNhans().addAll(nhanSet);
+        bienThe.setBienTheGanNhan(buildGanNhan(nhanSet));   // đồng bộ JSON nhãn theo nhãn vừa gắn
     }
 
     private Set<NhanSanPham> taiNhan(List<Long> nhanIds) {

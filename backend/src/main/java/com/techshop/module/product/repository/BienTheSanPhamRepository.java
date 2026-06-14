@@ -114,6 +114,24 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
                              @Param("ten") String ten,
                              @Param("thuongHieu") String thuongHieu);
 
+    // Khi nhan_san_pham đổi → cập nhật lại value [ten_nhan, mau_sac, thu_tu_hien_thi, trang_thai]
+    // trong bien_the_gan_nhan của MỌI biến thể đang gắn nhãn đó (key = nhan_id). Native vì thao tác JSONB.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE bien_the_san_pham
+            SET bien_the_gan_nhan = jsonb_set(
+                    bien_the_gan_nhan,
+                    ARRAY[CAST(:nhanId AS text)],
+                    jsonb_build_array(CAST(:tenNhan AS text), CAST(:mauSac AS text),
+                                      CAST(:thuTu AS int), CAST(:trangThai AS text)))
+            WHERE jsonb_exists(bien_the_gan_nhan, CAST(:nhanId AS text))
+            """, nativeQuery = true)
+    int dongBoNhanVaoCacBienThe(@Param("nhanId") Long nhanId,
+                                @Param("tenNhan") String tenNhan,
+                                @Param("mauSac") String mauSac,
+                                @Param("thuTu") Integer thuTu,
+                                @Param("trangThai") String trangThai);
+
     // Admin: bỏ cờ "biến thể mặc định" ở mọi biến thể của sản phẩm (trước khi set 1 cái mới).
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.laBienTheMacDinh = false WHERE bt.sanPham.id = :sanPhamId")
