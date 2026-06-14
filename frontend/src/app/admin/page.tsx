@@ -67,7 +67,19 @@ export default function AdminDashboardPage() {
       />
 
       {isLoading || !data ? (
-        <div className="py-20 text-center text-gray-400">Đang tải...</div>
+        // Khung skeleton hiện ngay (load từng phần) — tránh cảm giác màn hình bị đơ khi chờ backend.
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-28 animate-pulse rounded-xl border border-gray-200 bg-gray-100" />
+            ))}
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="h-80 animate-pulse rounded-xl border border-gray-200 bg-gray-100 lg:col-span-2" />
+            <div className="h-80 animate-pulse rounded-xl border border-gray-200 bg-gray-100" />
+          </div>
+          <div className="h-56 animate-pulse rounded-xl border border-gray-200 bg-gray-100" />
+        </div>
       ) : (
         <div className="space-y-6">
           {/* KPI */}

@@ -25,3 +25,11 @@
     overflow: hidden;
   }
 }
+
+/* Con trỏ "đang xử lý" (vòng tròn quay) khi backend đang truy vấn — báo cho người dùng
+   biết trang đang tải, không phải bị đơ. Bật/tắt bằng class app-busy trên <body>
+   (xem GlobalLoadingCursor + useIsFetching/useIsMutating của TanStack Query). */
+body.app-busy,
+body.app-busy * {
+  cursor: progress !important;
+}
