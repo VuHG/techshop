@@ -494,21 +494,46 @@ public class AdminSanPhamService {
         return new HashSet<>(nhanRepo.findAllById(nhanIds));
     }
 
-    // Thay toàn bộ ảnh của biến thể: xóa cũ → chèn mới (ảnh đầu = ảnh chính).
+    // Thay toàn bộ ảnh của biến thể: xóa cũ → chèn mới (thu_tu 0-based, ảnh đầu = thu_tu 0 = ảnh chính).
     private void luuAnh(Long bienTheId, List<String> urls) {
         anhRepo.deleteByBienTheId(bienTheId);
-        if (urls == null) return;
-        int thuTu = 1;
-        for (String url : urls) {
-            if (url == null || url.isBlank()) continue;
-            anhRepo.save(AnhSanPham.builder()
-                    .bienTheId(bienTheId)
-                    .urlAnh(url.trim())
-                    .laAnhChinh(thuTu == 1)
-                    .thuTu(thuTu)
-                    .build());
-            thuTu++;
+        if (urls != null) {
+            int thuTu = 0;
+            for (String url : urls) {
+                if (url == null || url.isBlank()) continue;
+                anhRepo.save(AnhSanPham.builder()
+                        .bienTheId(bienTheId)
+                        .urlAnh(url.trim())
+                        .laAnhChinh(thuTu == 0)
+                        .thuTu(thuTu)
+                        .build());
+                thuTu++;
+            }
         }
+        // Đồng bộ ảnh chính denormalized (= ảnh thu_tu 0; null nếu không còn ảnh).
+        bienTheRepo.dongBoAnhBienThe(bienTheId);
+    }
+
+    // Xóa MỘT ảnh của biến thể: gỡ ảnh → ảnh thu_tu > n tụt 1 (giữ dãy liên tục) →
+    // đồng bộ cờ la_anh_chinh (0 = ảnh chính) + ảnh chính denormalized.
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void xoaAnhBienThe(Long anhId) {
+        AnhSanPham anh = anhRepo.findById(anhId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_007));
+        Long bienTheId = anh.getBienTheId();
+        int thuTu = anh.getThuTu() == null ? 0 : anh.getThuTu();
+        anhRepo.delete(anh);
+        anhRepo.giamThuTuLonHon(bienTheId, thuTu);   // các ảnh sau tụt 1
+        // Ảnh thu_tu 0 có thể đã đổi → cập nhật lại cờ ảnh chính cho khớp.
+        anhRepo.findByBienTheIdOrderByThuTuAsc(bienTheId).forEach(a -> {
+            boolean chinh = a.getThuTu() != null && a.getThuTu() == 0;
+            if (a.isLaAnhChinh() != chinh) {
+                a.setLaAnhChinh(chinh);
+                anhRepo.save(a);
+            }
+        });
+        bienTheRepo.dongBoAnhBienThe(bienTheId);
     }
 
     private AdminSanPhamSummaryResponse toSummary(SanPham sp, Map<Long, PhanLoaiSanPham> plMap) {

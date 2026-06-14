@@ -23,6 +23,7 @@ public enum ErrorCode {
     PROD_004("PROD_004", "Biến thể đã hết hàng", HttpStatus.BAD_REQUEST),
     PROD_005("PROD_005", "Không thể xóa biến thể đã phát sinh đơn hàng", HttpStatus.BAD_REQUEST),
     PROD_006("PROD_006", "Phân loại sản phẩm không tồn tại", HttpStatus.NOT_FOUND),
+    PROD_007("PROD_007", "Ảnh sản phẩm không tồn tại", HttpStatus.NOT_FOUND),
 
     // Catalog (admin)
     CAT_001("CAT_001", "Danh mục không tồn tại", HttpStatus.NOT_FOUND),

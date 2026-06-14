@@ -114,6 +114,17 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
                              @Param("ten") String ten,
                              @Param("thuongHieu") String thuongHieu);
 
+    // Đồng bộ ảnh chính denormalized: = url ảnh có thu_tu = 0 của biến thể (null nếu không còn ảnh).
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE bien_the_san_pham SET anh_bien_the_san_pham = (
+                SELECT a.url_anh FROM anh_san_pham a
+                WHERE a.bien_the_id = :bienTheId AND a.thu_tu = 0
+                LIMIT 1)
+            WHERE id = :bienTheId
+            """, nativeQuery = true)
+    int dongBoAnhBienThe(@Param("bienTheId") Long bienTheId);
+
     // Khi nhan_san_pham đổi → cập nhật lại value [ten_nhan, mau_sac, thu_tu_hien_thi, trang_thai]
     // trong bien_the_gan_nhan của MỌI biến thể đang gắn nhãn đó (key = nhan_id). Native vì thao tác JSONB.
     @Modifying(clearAutomatically = true, flushAutomatically = true)

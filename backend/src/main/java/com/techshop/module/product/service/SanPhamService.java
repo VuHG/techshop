@@ -85,12 +85,8 @@ public class SanPhamService {
                     .intValue();
         }
 
-        String anhChinh = bt.getAnhs().stream()
-                .filter(AnhSanPham::isLaAnhChinh)
-                .map(AnhSanPham::getUrlAnh)
-                .findFirst()
-                .orElseGet(() -> bt.getAnhs().stream().map(AnhSanPham::getUrlAnh).findFirst()
-                        .orElse(sp.getAnhDaiDien()));
+        // Ảnh đọc từ trường denormalized anh_bien_the_san_pham — không lazy-load quan hệ anhs.
+        String anhChinh = bt.getAnhBienTheSanPham() != null ? bt.getAnhBienTheSanPham() : sp.getAnhDaiDien();
 
         // Nhãn đọc từ JSON denormalized (bien_the_gan_nhan) — không lazy-load quan hệ nhans.
         List<NhanResponse> nhans = nhanTuGanNhan(bt.getBienTheGanNhan());

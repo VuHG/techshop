@@ -1,23 +1,19 @@
 package com.techshop.module.product.service;
 
 import com.techshop.module.product.dto.BienTheInfo;
-import com.techshop.module.product.entity.AnhSanPham;
 import com.techshop.module.product.entity.BienTheSanPham;
 import com.techshop.module.product.entity.SanPham;
-import com.techshop.module.product.repository.AnhSanPhamRepository;
 import com.techshop.module.product.repository.BienTheSanPhamRepository;
 import com.techshop.module.product.repository.SanPhamRepository;
 import com.techshop.shared.exception.AppException;
 import com.techshop.shared.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,7 +22,6 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final BienTheSanPhamRepository bienTheRepo;
     private final SanPhamRepository sanPhamRepo;
-    private final AnhSanPhamRepository anhRepo;
 
     @Override
     @Transactional(readOnly = true)
@@ -37,8 +32,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         SanPham sp = bt.getSanPham();
         BigDecimal giaHienThi = bt.getGiaKhuyenMai() != null ? bt.getGiaKhuyenMai() : bt.getGia();
 
-        List<AnhSanPham> anhs = anhRepo.findAnhDaiDien(bt.getId(), PageRequest.of(0, 1));
-        String anhChinh = anhs.isEmpty() ? sp.getAnhDaiDien() : anhs.get(0).getUrlAnh();
+        // Ảnh chính lấy từ trường denormalized anh_bien_the_san_pham (không cần truy vấn anh_san_pham).
+        String anhChinh = bt.getAnhBienTheSanPham() != null ? bt.getAnhBienTheSanPham() : sp.getAnhDaiDien();
 
         boolean conHang = "CON_HANG".equals(bt.getTrangThai()) && bt.getSoLuongTon() > 0;
 

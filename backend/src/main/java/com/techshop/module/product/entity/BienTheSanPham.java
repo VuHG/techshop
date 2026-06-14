@@ -65,6 +65,11 @@ public class BienTheSanPham {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> bienTheGanNhan;
 
+    // Ảnh chính denormalized = url_anh của ảnh có thu_tu = 0 (hệ thống tự đồng bộ khi lưu/xóa ảnh).
+    // Card đọc ảnh từ đây, không cần JOIN/lazy-load anh_san_pham.
+    @Column(name = "anh_bien_the_san_pham", length = 500)
+    private String anhBienTheSanPham;
+
     @Column(name = "gia", nullable = false, precision = 15, scale = 2)
     private BigDecimal gia;
 
