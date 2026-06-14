@@ -35,6 +35,14 @@ public class BienTheSanPham {
     @Column(name = "ten_bien_the", length = 200)
     private String tenBienThe;
 
+    // Denormalize từ san_pham (hệ thống tự điền/đồng bộ, admin không nhập tay).
+    // Để product card đọc 1 bảng bien_the_san_pham, không JOIN san_pham.
+    @Column(name = "ten_san_pham", length = 255)
+    private String tenSanPham;
+
+    @Column(name = "thuong_hieu", length = 100)
+    private String thuongHieu;
+
     @Column(name = "mau_sac", length = 50)
     private String mauSac;
 

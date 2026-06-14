@@ -101,8 +101,9 @@ public class SanPhamService {
                 .bienTheId(bt.getId())
                 .sanPhamId(sp.getId())
                 .slug(sp.getSlug())
-                .tenSanPham(sp.getTenSanPham())
-                .thuongHieu(sp.getThuongHieu())
+                // Tên SP + thương hiệu lấy thẳng từ biến thể (denormalized) — không phụ thuộc bảng san_pham.
+                .tenSanPham(bt.getTenSanPham() != null ? bt.getTenSanPham() : sp.getTenSanPham())
+                .thuongHieu(bt.getThuongHieu() != null ? bt.getThuongHieu() : sp.getThuongHieu())
                 .tenBienThe(bt.getTenBienThe())
                 .mauSac(bt.getMauSac())
                 .trangThai(bt.getTrangThai())

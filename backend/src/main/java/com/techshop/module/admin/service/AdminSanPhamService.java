@@ -169,6 +169,8 @@ public class AdminSanPhamService {
         if (req.getBienThes() != null) {
             dongBoBienThe(sp, req.getBienThes());
         }
+        // Đổi tên/thương hiệu sản phẩm → đồng bộ snapshot xuống mọi biến thể (kể cả khi chỉ sửa hộp chứa).
+        bienTheRepo.dongBoTenThuongHieu(id, sp.getTenSanPham(), sp.getThuongHieu());
         return toDetail(sp);
     }
 
@@ -304,6 +306,8 @@ public class AdminSanPhamService {
         BienTheSanPham bt = BienTheSanPham.builder()
                 .sanPham(sp)
                 .phanLoaiId(sp.getPhanLoaiId())
+                .tenSanPham(sp.getTenSanPham())           // snapshot tự điền từ sản phẩm
+                .thuongHieu(sp.getThuongHieu())
                 .tenBienThe(sinhTenBienThe(specs, mau))   // tên tự sinh = thông số + màu
                 .mauSac(mau)
                 .thongSoBienThe(specs)
@@ -326,6 +330,9 @@ public class AdminSanPhamService {
 
         Map<String, Object> specs = stripMau(req.getThongSoBienThe());
         String mau = rong(req.getMauSac()) ? null : req.getMauSac().trim();
+        // Làm tươi snapshot tên SP + thương hiệu từ sản phẩm cha (phòng khi đã lệch).
+        bt.setTenSanPham(bt.getSanPham().getTenSanPham());
+        bt.setThuongHieu(bt.getSanPham().getThuongHieu());
         bt.setTenBienThe(sinhTenBienThe(specs, mau));   // tên tự sinh = thông số + màu
         bt.setMauSac(mau);
         bt.setThongSoBienThe(specs);
@@ -440,6 +447,8 @@ public class AdminSanPhamService {
     private void luuBienTheMoi(SanPham sp, BienTheRequest bt) {
         BienTheSanPham bienThe = BienTheSanPham.builder()
                 .sanPham(sp)
+                .tenSanPham(sp.getTenSanPham())           // snapshot tự điền từ sản phẩm
+                .thuongHieu(sp.getThuongHieu())
                 .maBienThe(bt.getMaBienThe() == null || bt.getMaBienThe().isBlank() ? null : bt.getMaBienThe().trim())
                 .thongSoBienThe(bt.getThongSoBienThe() == null ? new HashMap<>() : bt.getThongSoBienThe())
                 .gia(bt.getGia())
