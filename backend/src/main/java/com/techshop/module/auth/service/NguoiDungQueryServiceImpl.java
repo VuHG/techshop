@@ -40,7 +40,8 @@ public class NguoiDungQueryServiceImpl implements NguoiDungQueryService {
 
     @Override
     @Transactional
-    public NguoiDungInfo capNhatThongTin(Long nguoiDungId, String hoTen, String email, LocalDate ngaySinh) {
+    public NguoiDungInfo capNhatThongTin(Long nguoiDungId, String hoTen, String email,
+                                         LocalDate ngaySinh, String avatarUrl) {
         NguoiDung nd = nguoiDungRepository.findById(nguoiDungId)
                 .orElseThrow(() -> new AppException(ErrorCode.AUTH_008));
 
@@ -52,6 +53,7 @@ public class NguoiDungQueryServiceImpl implements NguoiDungQueryService {
         nd.setHoTen(hoTen);
         nd.setEmail(email == null || email.isBlank() ? null : email);
         nd.setNgaySinh(ngaySinh);
+        nd.setAvatarUrl(avatarUrl == null || avatarUrl.isBlank() ? null : avatarUrl.trim());
         nguoiDungRepository.save(nd);
 
         return toInfo(nd);
@@ -64,6 +66,7 @@ public class NguoiDungQueryServiceImpl implements NguoiDungQueryService {
                 .soDienThoai(nd.getSoDienThoai())
                 .email(nd.getEmail())
                 .ngaySinh(nd.getNgaySinh())
+                .avatarUrl(nd.getAvatarUrl())
                 .vaiTro(nd.getVaiTro().getTenVaiTro())
                 .build();
     }

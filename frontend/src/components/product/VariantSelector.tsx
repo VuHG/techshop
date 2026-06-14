@@ -24,14 +24,18 @@ export function VariantSelector({
     () => new Map(bienThes.map((b) => [b.id, b])),
     [bienThes],
   );
-  const conHang = (id: number) => btById.get(id)?.trangThai === 'CON_HANG';
+  // Hiện cả biến thể HẾT HÀNG (để khách vẫn xem); chỉ ẩn biến thể đã ngừng bán.
+  const hienThi = (id: number) => {
+    const tt = btById.get(id)?.trangThai;
+    return tt === 'CON_HANG' || tt === 'HET_HANG';
+  };
 
-  // Lọc bản đồ: chỉ giữ biến thể đang bán & tồn tại trong danh sách trả về.
+  // Lọc bản đồ: giữ biến thể còn hiển thị (còn hàng / hết hàng), bỏ biến thể đã ngừng bán.
   const cauHinhs = useMemo(() => {
     const out: { ten: string; mau: { ten: string; id: number }[] }[] = [];
     for (const [spec, colorMap] of Object.entries(banDoBienThe ?? {})) {
       const mau = Object.entries(colorMap)
-        .filter(([, id]) => conHang(id))
+        .filter(([, id]) => hienThi(id))
         .map(([ten, id]) => ({ ten, id }));
       if (mau.length) out.push({ ten: spec || 'Mặc định', mau });
     }

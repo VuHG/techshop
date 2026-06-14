@@ -79,7 +79,10 @@ public class DanhGiaService {
         productQueryService.capNhatDiemDanhGia(sanPhamId, req.getDiem());
         productQueryService.tangSoLuotDanhGiaBienThe(req.getBienTheId());
 
-        return toResponse(dg, Map.of(dg.getId(), mediaList));
+        var spMini = com.techshop.module.product.dto.SanPhamMini.builder()
+                .id(sanPhamId).slug(info.getSlug()).tenSanPham(info.getTenSanPham())
+                .anhDaiDien(info.getAnhChinh()).build();
+        return toResponse(dg, Map.of(dg.getId(), mediaList), Map.of(sanPhamId, spMini));
     }
 
     /** Xóa đánh giá của chính mình → giảm lượt của biến thể + đảo điểm/lượt của sản phẩm. */
@@ -121,20 +124,29 @@ public class DanhGiaService {
         Map<Long, List<DanhGiaMedia>> mediaMap = ids.isEmpty() ? Map.of()
                 : mediaRepo.findByDanhGiaIdInOrderByDanhGiaIdAscThuTuAsc(ids).stream()
                         .collect(Collectors.groupingBy(DanhGiaMedia::getDanhGiaId));
+        // Nạp thông tin sản phẩm (slug/tên/ảnh) để điều hướng từ trang đánh giá.
+        List<Long> spIds = content.stream().map(DanhGia::getSanPhamId).distinct().toList();
+        Map<Long, com.techshop.module.product.dto.SanPhamMini> spMap =
+                productQueryService.layThongTinSanPham(spIds);
         var items = content.stream()
-                .map(dg -> toResponse(dg, mediaMap))
+                .map(dg -> toResponse(dg, mediaMap, spMap))
                 .collect(Collectors.toCollection(ArrayList::new));
         return PageResponse.of(items, result.getTotalElements(), result.getTotalPages(), page);
     }
 
-    private DanhGiaResponse toResponse(DanhGia dg, Map<Long, List<DanhGiaMedia>> mediaMap) {
+    private DanhGiaResponse toResponse(DanhGia dg, Map<Long, List<DanhGiaMedia>> mediaMap,
+                                       Map<Long, com.techshop.module.product.dto.SanPhamMini> spMap) {
         List<DanhGiaResponse.MediaItem> media = mediaMap.getOrDefault(dg.getId(), List.of()).stream()
                 .map(m -> DanhGiaResponse.MediaItem.builder()
                         .urlMedia(m.getUrlMedia()).loaiMedia(m.getLoaiMedia()).build())
                 .collect(Collectors.toList());
+        var sp = spMap.get(dg.getSanPhamId());
         return DanhGiaResponse.builder()
                 .id(dg.getId())
                 .sanPhamId(dg.getSanPhamId())
+                .slug(sp == null ? null : sp.getSlug())
+                .tenSanPham(sp == null ? null : sp.getTenSanPham())
+                .anhSanPham(sp == null ? null : sp.getAnhDaiDien())
                 .donHangId(dg.getDonHangId())
                 .diem(dg.getDiemDanhGia())
                 .noiDung(dg.getNoiDung())

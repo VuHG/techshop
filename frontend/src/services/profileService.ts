@@ -5,6 +5,7 @@ export interface CapNhatProfilePayload {
   hoTen: string;
   email?: string;
   ngaySinh?: string;
+  avatarUrl?: string;
 }
 
 export interface DiaChiPayload {

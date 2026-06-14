@@ -15,6 +15,9 @@ import java.util.List;
 public class DanhGiaResponse {
     private Long id;
     private Long sanPhamId;
+    private String slug;          // để điều hướng sang trang sản phẩm
+    private String tenSanPham;
+    private String anhSanPham;
     private Long donHangId;
     private int diem;
     private String noiDung;

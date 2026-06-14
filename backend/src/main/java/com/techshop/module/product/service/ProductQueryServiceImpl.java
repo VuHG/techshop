@@ -10,6 +10,7 @@ import com.techshop.module.product.repository.SanPhamRepository;
 import com.techshop.shared.exception.AppException;
 import com.techshop.shared.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,14 +69,19 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
     public boolean truTonKho(Long bienTheId, int soLuong) {
-        return bienTheRepo.truTonKho(bienTheId, soLuong) > 0;
+        boolean ok = bienTheRepo.truTonKho(bienTheId, soLuong) > 0;
+        if (ok) bienTheRepo.danhDauHetHang(bienTheId);   // hết tồn → HET_HANG
+        return ok;
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
     public void hoanTonKho(Long bienTheId, int soLuong) {
         bienTheRepo.hoanTonKho(bienTheId, soLuong);
+        bienTheRepo.danhDauConHang(bienTheId);           // có tồn lại → CON_HANG
     }
 
     @Override
@@ -100,6 +106,21 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     @Transactional
     public void tangSoLuotDanhGiaBienThe(Long bienTheId) {
         if (bienTheId != null) bienTheRepo.tangSoLuotDanhGia(bienTheId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, com.techshop.module.product.dto.SanPhamMini> layThongTinSanPham(
+            java.util.List<Long> sanPhamIds) {
+        if (sanPhamIds == null || sanPhamIds.isEmpty()) return java.util.Map.of();
+        return sanPhamRepo.findAllById(sanPhamIds).stream()
+                .collect(java.util.stream.Collectors.toMap(SanPham::getId,
+                        sp -> com.techshop.module.product.dto.SanPhamMini.builder()
+                                .id(sp.getId())
+                                .slug(sp.getSlug())
+                                .tenSanPham(sp.getTenSanPham())
+                                .anhDaiDien(sp.getAnhDaiDien())
+                                .build()));
     }
 
     @Override

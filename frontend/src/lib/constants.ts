@@ -51,7 +51,7 @@ export const SORT_OPTIONS = [
 /** Cấu hình menu tài khoản (sidebar). `stub: true` = tính năng ngoài MVP → trang "Sắp có". */
 export const ACCOUNT_MENU = [
   { id: 'tai-khoan', ten: 'Tài khoản của tôi', icon: 'User', href: '/tai-khoan' },
-  { id: 'dia-chi', ten: 'Sổ địa chỉ', icon: 'MapPin', href: '/so-dia-chi' },
+  { id: 'dia-chi', ten: 'Địa chỉ của tôi', icon: 'MapPin', href: '/so-dia-chi' },
   { id: 'don-hang', ten: 'Lịch sử mua hàng', icon: 'ShoppingBag', href: '/lich-su-mua-hang' },
   { id: 'tu-van-ai', ten: 'Lịch sử tư vấn AI', icon: 'MessageSquare', href: '/sap-co', stub: true },
   { id: 'danh-gia', ten: 'Đánh giá sản phẩm', icon: 'Star', href: '/danh-gia' },

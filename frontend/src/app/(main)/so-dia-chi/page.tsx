@@ -67,8 +67,8 @@ function SoDiaChiContent() {
 
   return (
     <div className="rounded-xl border border-gray-100 bg-white p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Sổ địa chỉ</h1>
+      <div className="mb-1 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-800">Địa chỉ của tôi</h1>
         <button
           type="button"
           onClick={() => {
@@ -80,6 +80,9 @@ function SoDiaChiContent() {
           <Plus className="h-4 w-4" /> Thêm địa chỉ
         </button>
       </div>
+      <p className="mb-4 text-sm text-gray-500">
+        Bạn có thể lưu nhiều địa chỉ nhưng chỉ <b>1 địa chỉ đang được sử dụng</b> (địa chỉ mặc định) để giao hàng.
+      </p>
 
       {isLoading ? (
         <div className="h-24 animate-pulse rounded-lg bg-gray-100" />
@@ -90,23 +93,30 @@ function SoDiaChiContent() {
           {list.map((d) => (
             <li
               key={d.id}
-              className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 p-3"
+              className={
+                'flex items-start justify-between gap-3 rounded-lg border p-3 ' +
+                (d.laMacDinh ? 'border-primary bg-primary-50/40 ring-1 ring-primary/30' : 'border-gray-100')
+              }
             >
               <div className="text-sm">
                 <p className="font-medium text-gray-800">
                   {d.hoTenNguoiNhan} · {d.soDienThoai}
                   {d.laMacDinh && (
-                    <span className="ml-1 rounded bg-primary-100 px-1.5 py-0.5 text-[11px] text-primary">
-                      Mặc định
+                    <span className="ml-1 inline-flex items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[11px] font-medium text-green-700">
+                      <Star className="h-3 w-3" /> Đang sử dụng
                     </span>
                   )}
                 </p>
                 <p className="text-gray-600">{d.diaChiDayDu}</p>
               </div>
-              <div className="flex shrink-0 gap-2 text-gray-500">
+              <div className="flex shrink-0 items-center gap-2 text-gray-500">
                 {!d.laMacDinh && (
-                  <button type="button" onClick={() => datMacDinh(d.id)} title="Đặt mặc định" className="hover:text-primary">
-                    <Star className="h-4 w-4" />
+                  <button
+                    type="button"
+                    onClick={() => datMacDinh(d.id)}
+                    className="rounded-lg border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:border-primary hover:text-primary"
+                  >
+                    Dùng địa chỉ này
                   </button>
                 )}
                 <button

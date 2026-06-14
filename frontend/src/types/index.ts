@@ -122,8 +122,10 @@ export interface BienTheCard {
   sanPhamId: number;
   slug: string;
   tenSanPham: string;
+  thuongHieu: string | null;
   tenBienThe: string | null;
   mauSac: string | null;
+  trangThai: string;  // CON_HANG | HET_HANG
   thongSoBienThe: Record<string, unknown>;
   anhChinh: string | null;
   gia: number;        // niêm yết
@@ -174,6 +176,9 @@ export interface ReviewMedia {
 export interface DanhGia {
   id: number;
   sanPhamId: number;
+  slug: string | null;
+  tenSanPham: string | null;
+  anhSanPham: string | null;
   donHangId: number;
   diem: number;
   noiDung: string;
@@ -287,6 +292,7 @@ export interface Profile {
   soDienThoai: string;
   email: string | null;
   ngaySinh: string | null;
+  avatarUrl: string | null;
   vaiTro: string;
 }
 

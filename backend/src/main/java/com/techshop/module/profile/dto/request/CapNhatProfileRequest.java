@@ -18,4 +18,7 @@ public class CapNhatProfileRequest {
     private String email;
 
     private LocalDate ngaySinh;
+
+    @Size(max = 500, message = "URL ảnh quá dài")
+    private String avatarUrl;
 }

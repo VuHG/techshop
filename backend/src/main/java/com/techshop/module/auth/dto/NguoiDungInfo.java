@@ -21,5 +21,6 @@ public class NguoiDungInfo {
     private String soDienThoai;
     private String email;
     private LocalDate ngaySinh;
+    private String avatarUrl;
     private String vaiTro;
 }

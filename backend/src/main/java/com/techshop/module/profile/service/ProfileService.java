@@ -35,7 +35,7 @@ public class ProfileService {
     @Transactional
     public ProfileResponse capNhatProfile(Long nguoiDungId, CapNhatProfileRequest req) {
         NguoiDungInfo info = nguoiDungQueryService.capNhatThongTin(
-                nguoiDungId, req.getHoTen(), req.getEmail(), req.getNgaySinh());
+                nguoiDungId, req.getHoTen(), req.getEmail(), req.getNgaySinh(), req.getAvatarUrl());
         return toProfileResponse(info);
     }
 
@@ -117,6 +117,7 @@ public class ProfileService {
                 .soDienThoai(info.getSoDienThoai())
                 .email(info.getEmail())
                 .ngaySinh(info.getNgaySinh())
+                .avatarUrl(info.getAvatarUrl())
                 .vaiTro(info.getVaiTro())
                 .build();
     }

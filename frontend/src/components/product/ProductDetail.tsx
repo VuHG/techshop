@@ -51,6 +51,7 @@ export function ProductDetail({ slug }: { slug: string }) {
 
   const bienThes = sp.bienThes;
   const selected = bienThes.find((b) => b.id === variantId) ?? bienThes[0];
+  const hetHang = !selected || selected.soLuongTon <= 0 || selected.trangThai === 'HET_HANG';
   const gia = selected ? giaBienThe(selected) : null;
   const giaGoc = selected && selected.giaKhuyenMai != null ? selected.gia : null;
   // Sản phẩm không còn thông số chung → bảng thông số = thông số của biến thể đang chọn + màu.
@@ -109,7 +110,16 @@ export function ProductDetail({ slug }: { slug: string }) {
   return (
     <Container className="py-5">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ProductGallery images={selected?.anhs ?? []} alt={sp.tenSanPham} />
+        <div className="relative">
+          <div className={hetHang ? 'opacity-60' : ''}>
+            <ProductGallery images={selected?.anhs ?? []} alt={sp.tenSanPham} />
+          </div>
+          {hetHang && (
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-sale/90 px-4 py-2 text-base font-bold text-white shadow">
+              Sản phẩm đang hết
+            </span>
+          )}
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold text-gray-800">{sp.tenSanPham}</h1>
@@ -147,18 +157,18 @@ export function ProductDetail({ slug }: { slug: string }) {
             <button
               type="button"
               onClick={() => themGio(false)}
-              disabled={dangThem}
-              className="flex items-center gap-2 rounded-lg border border-primary px-5 py-3 font-semibold text-primary transition hover:bg-primary-50 disabled:opacity-60"
+              disabled={dangThem || hetHang}
+              className="flex items-center gap-2 rounded-lg border border-primary px-5 py-3 font-semibold text-primary transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ShoppingCart className="h-5 w-5" /> Thêm vào giỏ
             </button>
             <button
               type="button"
               onClick={() => themGio(true)}
-              disabled={dangThem}
-              className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60"
+              disabled={dangThem || hetHang}
+              className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Mua ngay
+              {hetHang ? 'Hết hàng' : 'Mua ngay'}
             </button>
             <button
               type="button"

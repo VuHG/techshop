@@ -32,6 +32,9 @@ public interface ProductQueryService {
     /** Tăng lượt đánh giá của biến thể khi có đánh giá mới. */
     void tangSoLuotDanhGiaBienThe(Long bienTheId);
 
+    /** Thông tin tối thiểu (slug, tên, ảnh) của nhiều sản phẩm — cho điều hướng từ module khác. */
+    java.util.Map<Long, com.techshop.module.product.dto.SanPhamMini> layThongTinSanPham(java.util.List<Long> sanPhamIds);
+
     /** Xóa đánh giá: giảm lượt của biến thể + đảo ngược điểm/lượt của sản phẩm. */
     void giamDanhGia(Long sanPhamId, Long bienTheId, int diem);
 }

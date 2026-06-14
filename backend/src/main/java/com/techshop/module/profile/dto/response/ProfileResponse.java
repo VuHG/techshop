@@ -17,5 +17,6 @@ public class ProfileResponse {
     private String soDienThoai;
     private String email;
     private LocalDate ngaySinh;
+    private String avatarUrl;
     private String vaiTro;
 }

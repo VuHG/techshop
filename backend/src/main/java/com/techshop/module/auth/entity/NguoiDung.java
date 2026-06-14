@@ -30,6 +30,9 @@ public class NguoiDung {
     @Column(name = "ngay_sinh")
     private LocalDate ngaySinh;
 
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @Column(name = "mat_khau", nullable = false)
     private String matKhau;
 

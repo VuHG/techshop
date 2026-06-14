@@ -18,8 +18,10 @@ public class BienTheCardResponse {
     private Long sanPhamId;
     private String slug;
     private String tenSanPham;
+    private String thuongHieu;
     private String tenBienThe;
     private String mauSac;
+    private String trangThai;     // trạng thái biến thể (CON_HANG | HET_HANG)
     private Map<String, Object> thongSoBienThe;
     private String anhChinh;
     private BigDecimal gia;        // giá niêm yết

@@ -21,7 +21,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Query(value = """
             SELECT bt.* FROM bien_the_san_pham bt
             JOIN san_pham sp ON bt.san_pham_id = sp.id
-            WHERE bt.trang_thai = 'CON_HANG' AND sp.trang_thai = 'CON_HANG'
+            WHERE bt.trang_thai IN ('CON_HANG','HET_HANG') AND sp.trang_thai = 'CON_HANG'
             AND (CAST(:phanLoaiId AS bigint) IS NULL OR sp.phan_loai_id = :phanLoaiId)
             AND (CAST(:search AS text) IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
             AND (CAST(:minPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
@@ -33,6 +33,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
                  SELECT 1 FROM bien_the_nhan bn JOIN nhan_san_pham n ON bn.nhan_id = n.id
                  WHERE bn.bien_the_id = bt.id AND n.ma_nhan = :nhanMa))
             ORDER BY
+                CASE WHEN bt.trang_thai = 'CON_HANG' THEN 0 ELSE 1 END,
                 CASE WHEN :sortBy = 'rating'     THEN sp.diem_danh_gia_tb END DESC NULLS LAST,
                 CASE WHEN :sortBy = 'sold'       THEN sp.so_luot_ban END DESC NULLS LAST,
                 CASE WHEN :sortBy = 'price_asc'  THEN COALESCE(bt.gia_khuyen_mai, bt.gia) END ASC NULLS LAST,
@@ -42,7 +43,7 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
             countQuery = """
             SELECT COUNT(*) FROM bien_the_san_pham bt
             JOIN san_pham sp ON bt.san_pham_id = sp.id
-            WHERE bt.trang_thai = 'CON_HANG' AND sp.trang_thai = 'CON_HANG'
+            WHERE bt.trang_thai IN ('CON_HANG','HET_HANG') AND sp.trang_thai = 'CON_HANG'
             AND (CAST(:phanLoaiId AS bigint) IS NULL OR sp.phan_loai_id = :phanLoaiId)
             AND (CAST(:search AS text) IS NULL OR LOWER(sp.ten_san_pham) LIKE :search)
             AND (CAST(:minPrice AS numeric) IS NULL OR COALESCE(bt.gia_khuyen_mai, bt.gia) >= :minPrice)
@@ -96,6 +97,15 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.soLuongTon = bt.soLuongTon + :soLuong WHERE bt.id = :id")
     int hoanTonKho(@Param("id") Long id, @Param("soLuong") int soLuong);
+
+    // Đồng bộ trạng thái theo tồn: hết tồn → HET_HANG; có tồn lại → CON_HANG (không đụng biến thể NGUNG_BAN).
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham bt SET bt.trangThai = 'HET_HANG' WHERE bt.id = :id AND bt.soLuongTon <= 0 AND bt.trangThai = 'CON_HANG'")
+    int danhDauHetHang(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham bt SET bt.trangThai = 'CON_HANG' WHERE bt.id = :id AND bt.soLuongTon > 0 AND bt.trangThai = 'HET_HANG'")
+    int danhDauConHang(@Param("id") Long id);
 
     // Admin: bỏ cờ "biến thể mặc định" ở mọi biến thể của sản phẩm (trước khi set 1 cái mới).
     @Modifying(clearAutomatically = true, flushAutomatically = true)

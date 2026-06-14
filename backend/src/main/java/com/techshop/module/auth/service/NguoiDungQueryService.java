@@ -18,5 +18,5 @@ public interface NguoiDungQueryService {
     Map<Long, NguoiDungInfo> layThongTinNhieu(List<Long> nguoiDungIds);
 
     /** Cập nhật hồ sơ. SĐT là khóa đăng nhập nên KHÔNG cho đổi ở MVP. */
-    NguoiDungInfo capNhatThongTin(Long nguoiDungId, String hoTen, String email, LocalDate ngaySinh);
+    NguoiDungInfo capNhatThongTin(Long nguoiDungId, String hoTen, String email, LocalDate ngaySinh, String avatarUrl);
 }
