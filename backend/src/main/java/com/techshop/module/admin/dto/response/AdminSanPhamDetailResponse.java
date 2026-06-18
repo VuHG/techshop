@@ -30,6 +30,7 @@ public class AdminSanPhamDetailResponse {
     private OffsetDateTime ngayTao;
     private OffsetDateTime ngayCapNhat;
     private String anhDaiDien;            // 1 ảnh đại diện sản phẩm
+    private List<Long> nhanIds;           // thẻ cấp sản phẩm (form chọn)
     private List<AdminBienTheResponse> bienThes;
     private List<VoucherItem> vouchers;   // mã giảm giá áp dụng cho sản phẩm này
 

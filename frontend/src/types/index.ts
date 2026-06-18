@@ -252,6 +252,7 @@ export interface DonHang {
   tongThanhToan: number;
   ghiChu: string | null;
   lyDoHuy: string | null;
+  daHoanKho: boolean;
   ngayTao: string;
   items: ChiTietDonHang[];
   lichSu: TrangThaiDonHang[];

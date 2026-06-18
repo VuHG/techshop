@@ -126,8 +126,17 @@ export function ThemBienTheModal({
           <Field label="Giá khuyến mãi *">
             <input type="number" className={inp} value={giaBan} onChange={(e) => setGiaBan(e.target.value)} />
           </Field>
-          <Field label="Số lượng tồn *">
-            <input type="number" className={inp} value={soLuongTon} onChange={(e) => setSoLuongTon(e.target.value)} />
+          <Field label={editing ? 'Số lượng tồn' : 'Số lượng tồn *'}>
+            <input
+              type="number"
+              className={inp + (editing ? ' cursor-not-allowed bg-gray-100 text-gray-500' : '')}
+              value={soLuongTon}
+              onChange={(e) => setSoLuongTon(e.target.value)}
+              disabled={!!editing}
+            />
+            {editing && (
+              <p className="mt-1 text-xs text-gray-400">Sửa tồn kho ở trang <b>Kho hàng</b>.</p>
+            )}
           </Field>
           {editing && (
             <Field label="Biến thể mặc định">

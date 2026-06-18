@@ -83,6 +83,7 @@ export interface AdminSanPhamDetail {
   ngayTao?: string;
   ngayCapNhat?: string;
   anhDaiDien?: string | null;
+  nhanIds?: number[];
   bienThes: AdminBienThe[];
   vouchers?: { maCode: string; tenMa: string }[];
 }
@@ -96,6 +97,7 @@ export interface SanPhamPayload {
   thuongHieu?: string;
   trangThai: string;
   anhDaiDien?: string;
+  nhanIds?: number[];
   bienThes?: AdminBienThe[];
 }
 
@@ -175,6 +177,11 @@ export const adminProductService = {
 
   async suaBienThe(bienTheId: number, payload: BienThePayload): Promise<void> {
     await api.put(`/admin/san-pham/bien-the/${bienTheId}`, payload);
+  },
+
+  /** Kho hàng: cập nhật tồn 1 biến thể. */
+  async capNhatTonKho(bienTheId: number, soLuongTon: number): Promise<void> {
+    await api.patch(`/admin/kho/bien-the/${bienTheId}/ton`, { soLuongTon });
   },
 
   /** Filter schema của phân loại (cho dropdown thông số biến thể). */

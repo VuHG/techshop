@@ -215,8 +215,6 @@ public class DonHangService {
 
         Long id = donHang.getId();
         Long maGiamGiaId = donHang.getMaGiamGiaId();
-        // Snapshot chi tiết ra list thuần — an toàn khi @Modifying clear context phía sau.
-        List<ChiTietDonHang> cts = new ArrayList<>(donHang.getChiTiet());
 
         String lyDoSach = (lyDo == null || lyDo.isBlank()) ? null : lyDo.trim();
         // Cập nhật trạng thái + lý do + timeline TRƯỚC, lưu khi entity còn managed.
@@ -228,10 +226,8 @@ public class DonHangService {
                 .build());
         donHangRepo.saveAndFlush(donHang);
 
-        // Hoàn kho từng item (atomic) + hoàn lượt dùng mã.
-        for (ChiTietDonHang ct : cts) {
-            productQueryService.hoanTonKho(ct.getBienTheId(), ct.getSoLuong());
-        }
+        // KHÔNG tự hoàn kho — chờ quản trị viên xác nhận "hàng đã trở lại kho" (da_hoan_kho).
+        // Chỉ hoàn lượt dùng mã ngay (không phải tồn vật lý).
         if (maGiamGiaId != null) {
             maGiamGiaService.hoanTraSuDung(maGiamGiaId, id);
         }
@@ -391,21 +387,19 @@ public class DonHangService {
         Long id = donHang.getId();
         Long nguoiDungId = donHang.getNguoiDungId();
         Long maGiamGiaId = donHang.getMaGiamGiaId();
-        List<ChiTietDonHang> cts = new ArrayList<>(donHang.getChiTiet());
 
         String ghiChu = (lyDo == null || lyDo.isBlank())
                 ? "Quản trị viên hủy đơn"
                 : "Quản trị viên hủy đơn: " + lyDo.trim();
         donHang.setTrangThai("DA_HUY");
+        donHang.setLyDoHuy(lyDo == null || lyDo.isBlank() ? null : lyDo.trim());
         donHang.themLichSu(LichSuTrangThaiDonHang.builder()
                 .trangThai("DA_HUY")
                 .ghiChu(ghiChu)
                 .build());
         donHangRepo.saveAndFlush(donHang);
 
-        for (ChiTietDonHang ct : cts) {
-            productQueryService.hoanTonKho(ct.getBienTheId(), ct.getSoLuong());
-        }
+        // KHÔNG tự hoàn kho — chờ admin xác nhận "hàng đã trở lại kho". Chỉ hoàn lượt mã ngay.
         if (maGiamGiaId != null) {
             maGiamGiaService.hoanTraSuDung(maGiamGiaId, id);
         }
@@ -414,6 +408,37 @@ public class DonHangService {
                 "Đơn hàng đã bị hủy",
                 "Đơn hàng " + donHang.getMaDonHang() + " đã bị hủy. " + ghiChu,
                 id);
+
+        DonHang fresh = donHangRepo.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+        return toDetailResponse(fresh);
+    }
+
+    /** Admin xác nhận hàng của đơn đã hủy đã trở lại kho → hoàn tồn (1 lần duy nhất). */
+    @Transactional
+    public DonHangResponse xacNhanHoanKho(Long donHangId) {
+        DonHang donHang = donHangRepo.findById(donHangId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
+
+        // Chỉ áp dụng cho đơn ĐÃ HỦY và CHƯA hoàn kho.
+        if (!"DA_HUY".equals(donHang.getTrangThai()) || donHang.isDaHoanKho()) {
+            throw new AppException(ErrorCode.ORD_004);
+        }
+
+        Long id = donHang.getId();
+        List<ChiTietDonHang> cts = new ArrayList<>(donHang.getChiTiet());
+
+        donHang.setDaHoanKho(true);
+        donHang.themLichSu(LichSuTrangThaiDonHang.builder()
+                .trangThai("DA_HUY")
+                .ghiChu("Quản trị viên xác nhận hàng đã trở lại kho")
+                .build());
+        donHangRepo.saveAndFlush(donHang);
+
+        // Hoàn kho từng item (atomic) — hoanTonKho cũng đồng bộ HET_HANG → CON_HANG.
+        for (ChiTietDonHang ct : cts) {
+            productQueryService.hoanTonKho(ct.getBienTheId(), ct.getSoLuong());
+        }
 
         DonHang fresh = donHangRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORD_001));
@@ -502,6 +527,7 @@ public class DonHangService {
                 .tongThanhToan(d.getTongThanhToan())
                 .ghiChu(d.getGhiChu())
                 .lyDoHuy(d.getLyDoHuy())
+                .daHoanKho(d.isDaHoanKho())
                 .ngayTao(d.getNgayTao())
                 .items(items)
                 .lichSu(lichSu)

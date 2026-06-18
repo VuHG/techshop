@@ -54,4 +54,9 @@ export const adminOrderService = {
     const res = await api.patch<ApiResponse<DonHang>>(`/admin/don-hang/${id}/huy`, { lyDo });
     return res.data.data;
   },
+
+  async xacNhanHoanKho(id: number): Promise<DonHang> {
+    const res = await api.patch<ApiResponse<DonHang>>(`/admin/don-hang/${id}/hoan-kho`);
+    return res.data.data;
+  },
 };

@@ -33,6 +33,8 @@ public class SanPhamRequest {
 
     private String anhDaiDien;             // 1 ảnh đại diện sản phẩm (URL)
 
+    private List<Long> nhanIds;            // thẻ cấp sản phẩm — áp xuống mọi biến thể
+
     @Valid
     private List<BienTheRequest> bienThes; // tùy chọn — null = không đụng biến thể
 }

@@ -70,12 +70,18 @@ public class AdminDonHangController {
         return ResponseEntity.ok(ApiResponse.ok(donHangService.hoanTatGiao(id)));
     }
 
-    /** Hủy đơn (admin) + hoàn kho + hoàn lượt mã. */
+    /** Hủy đơn (admin) + hoàn lượt mã. Tồn kho chờ xác nhận "hàng đã trở lại kho" riêng. */
     @PatchMapping("/{id}/huy")
     public ResponseEntity<ApiResponse<DonHangResponse>> huy(
             @PathVariable Long id,
             @RequestBody(required = false) HuyDonAdminRequest req) {
         String lyDo = req == null ? null : req.getLyDo();
         return ResponseEntity.ok(ApiResponse.ok(donHangService.huyDonAdmin(id, lyDo)));
+    }
+
+    /** Xác nhận hàng của đơn đã hủy đã trở lại kho → hoàn tồn (1 lần). */
+    @PatchMapping("/{id}/hoan-kho")
+    public ResponseEntity<ApiResponse<DonHangResponse>> hoanKho(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(donHangService.xacNhanHoanKho(id)));
     }
 }

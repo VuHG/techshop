@@ -66,6 +66,10 @@ public class DonHang {
     @Column(name = "ly_do_huy", columnDefinition = "TEXT")
     private String lyDoHuy;
 
+    // Đơn đã hủy: hàng đã được xác nhận trở lại kho hay chưa (admin xác nhận thủ công).
+    @Column(name = "da_hoan_kho", nullable = false)
+    private boolean daHoanKho;
+
     @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ChiTietDonHang> chiTiet = new ArrayList<>();

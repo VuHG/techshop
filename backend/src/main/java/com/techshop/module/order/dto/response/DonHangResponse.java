@@ -27,6 +27,7 @@ public class DonHangResponse {
     private BigDecimal tongThanhToan;
     private String ghiChu;
     private String lyDoHuy;
+    private boolean daHoanKho;
     private OffsetDateTime ngayTao;
     private List<ChiTietDonHangResponse> items;
     private List<TrangThaiResponse> lichSu;

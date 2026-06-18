@@ -37,7 +37,11 @@ export function SanPhamFormModal({
   const [moTa, setMoTa] = useState(editing?.moTa ?? '');
   const [trangThai, setTrangThai] = useState(editing?.trangThai ?? 'CON_HANG');
   const [anhDaiDien, setAnhDaiDien] = useState(editing?.anhDaiDien ?? '');
+  const [nhanIds, setNhanIds] = useState<number[]>(editing?.nhanIds ?? []);
   const [dangLuu, setDangLuu] = useState(false);
+
+  const toggleNhan = (id: number) =>
+    setNhanIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const luu = async () => {
     if (!tenSanPham.trim()) return toast.error('Vui lòng nhập tên sản phẩm');
@@ -52,6 +56,7 @@ export function SanPhamFormModal({
       thuongHieu: thuongHieu.trim() || undefined,
       trangThai,
       anhDaiDien: anhDaiDien.trim(),
+      nhanIds, // thẻ cấp sản phẩm — BE áp xuống mọi biến thể
       // KHÔNG gửi bienThes → giữ nguyên biến thể khi sửa hộp chứa.
     };
 
@@ -124,6 +129,33 @@ export function SanPhamFormModal({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={anhDaiDien.trim()} alt="Ảnh đại diện" className="mt-2 h-24 w-24 rounded-lg border border-gray-200 object-cover" />
           )}
+        </Field>
+
+        <Field label="Gắn thẻ sản phẩm">
+          {options.nhans.length === 0 ? (
+            <p className="text-xs text-gray-400">Chưa có thẻ nào. Thêm ở mục quản lý nhãn trước.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {options.nhans.map((n) => {
+                const chon = nhanIds.includes(n.id);
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => toggleNhan(n.id)}
+                    className={
+                      chon
+                        ? 'rounded-full border border-primary bg-primary px-3 py-1 text-sm font-medium text-white'
+                        : 'rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-600 hover:bg-gray-50'
+                    }
+                  >
+                    {n.tenNhan}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-1 text-xs text-gray-400">Thẻ áp dụng cho mọi biến thể của sản phẩm.</p>
         </Field>
 
         <div className="flex justify-end gap-2 border-t border-gray-200 pt-4">

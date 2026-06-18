@@ -1,6 +1,6 @@
 // ============================================================
 // TechShop — Database schema (dbdiagram.io / DBML)
-// Sinh từ Flyway migrations V1–V19 (PostgreSQL 16)
+// Sinh từ Flyway migrations V1–V21 (PostgreSQL 16)
 // Dán toàn bộ file này vào https://dbdiagram.io
 // ============================================================
 
@@ -150,6 +150,7 @@ Table san_pham {
   thuong_hieu       varchar(100)
   anh_dai_dien      varchar(500) [note: '1 ảnh đại diện sản phẩm — trang quản lý + banner (V15)']
   ban_do_bien_the   jsonb [note: 'sơ đồ phiên bản { "<chuỗi thông số>": { "<màu>": <id biến thể> } }; trước là thong_so_ky_thuat (V14)']
+  nhan_ids          jsonb [not null, default: '[]', note: 'thẻ cấp sản phẩm (V21); áp xuống mọi biến thể (bien_the_nhan + bien_the_gan_nhan)']
   diem_danh_gia_tb  "decimal(3,2)" [default: 0, note: 'cache']
   so_luot_danh_gia  int [default: 0, note: 'cache']
   so_luot_ban       int [default: 0, note: 'cache']
@@ -273,6 +274,7 @@ Table don_hang {
   trang_thai_thanh_toan   varchar(20) [default: 'CHUA_THANH_TOAN']
   ma_giao_dich_thanh_toan varchar(100)
   ly_do_huy               text
+  da_hoan_kho             boolean [not null, default: false, note: 'đơn đã hủy: hàng đã xác nhận trở lại kho chưa (V20)']
   ghi_chu                 text
   ngay_tao                timestamptz
   ngay_cap_nhat           timestamptz

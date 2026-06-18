@@ -125,6 +125,7 @@ public class AdminSanPhamService {
                 .thuongHieu(req.getThuongHieu())
                 .anhDaiDien(rong(req.getAnhDaiDien()) ? null : req.getAnhDaiDien().trim())
                 .banDoBienThe(new HashMap<>())   // dựng lại sau khi có biến thể
+                .nhanIds(chuanNhanIds(req.getNhanIds()))   // thẻ cấp sản phẩm
                 .trangThai(chuanTrangThaiSp(req.getTrangThai()))
                 // Khởi tạo cache field đánh giá = 0 (tránh NULL gây lỗi .toFixed ở FE).
                 .diemDanhGiaTb(BigDecimal.ZERO)
@@ -140,6 +141,8 @@ public class AdminSanPhamService {
             }
             dongBoBanDoBienThe(saved.getId());
         }
+        // Áp thẻ cấp sản phẩm xuống mọi biến thể (nếu đã có biến thể).
+        apDungNhanChoTatCaBienThe(saved.getId(), saved.getNhanIds());
         return toDetail(saved);
     }
 
@@ -162,6 +165,11 @@ public class AdminSanPhamService {
         if (req.getAnhDaiDien() != null) {
             sp.setAnhDaiDien(req.getAnhDaiDien().isBlank() ? null : req.getAnhDaiDien().trim());
         }
+        // Thẻ cấp sản phẩm: chỉ thay khi request có gửi (null = giữ nguyên).
+        boolean coDoiNhan = req.getNhanIds() != null;
+        if (coDoiNhan) {
+            sp.setNhanIds(chuanNhanIds(req.getNhanIds()));
+        }
         sp.setTrangThai(chuanTrangThaiSp(req.getTrangThai()));
         sanPhamRepo.save(sp);
 
@@ -171,6 +179,10 @@ public class AdminSanPhamService {
         }
         // Đổi tên/thương hiệu sản phẩm → đồng bộ snapshot xuống mọi biến thể (kể cả khi chỉ sửa hộp chứa).
         bienTheRepo.dongBoTenThuongHieu(id, sp.getTenSanPham(), sp.getThuongHieu());
+        // Đổi thẻ → áp lại xuống mọi biến thể (bien_the_nhan + bien_the_gan_nhan).
+        if (coDoiNhan) {
+            apDungNhanChoTatCaBienThe(id, sp.getNhanIds());
+        }
         return toDetail(sp);
     }
 
@@ -265,6 +277,23 @@ public class AdminSanPhamService {
         bienTheRepo.save(bt);
     }
 
+    // ─── Kho hàng: cập nhật tồn (chỉ đổi số lượng + đồng bộ CON_HANG/HET_HANG) ──
+    @Transactional
+    @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
+    public void capNhatTonKho(Long bienTheId, int soLuongTon) {
+        BienTheSanPham bt = bienTheRepo.findById(bienTheId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROD_002));
+        int ton = Math.max(0, soLuongTon);
+        bt.setSoLuongTon(ton);
+        // Đồng bộ trạng thái theo tồn (không đụng biến thể đang ẩn NGUNG_BAN).
+        if (ton <= 0 && CON_HANG.equals(bt.getTrangThai())) {
+            bt.setTrangThai("HET_HANG");
+        } else if (ton > 0 && "HET_HANG".equals(bt.getTrangThai())) {
+            bt.setTrangThai(CON_HANG);
+        }
+        bienTheRepo.save(bt);
+    }
+
     @Transactional
     @CacheEvict(value = "san-pham-chi-tiet", allEntries = true)
     public void xoaBienThe(Long bienTheId) {
@@ -303,6 +332,8 @@ public class AdminSanPhamService {
 
         Map<String, Object> specs = stripMau(req.getThongSoBienThe());
         String mau = rong(req.getMauSac()) ? null : req.getMauSac().trim();
+        // Biến thể mới kế thừa thẻ của sản phẩm (thẻ quản lý ở cấp sản phẩm).
+        Set<NhanSanPham> nhanSet = taiNhan(sp.getNhanIds());
         BienTheSanPham bt = BienTheSanPham.builder()
                 .sanPham(sp)
                 .phanLoaiId(sp.getPhanLoaiId())
@@ -311,7 +342,8 @@ public class AdminSanPhamService {
                 .tenBienThe(sinhTenBienThe(specs, mau))   // tên tự sinh = thông số + màu
                 .mauSac(mau)
                 .thongSoBienThe(specs)
-                .bienTheGanNhan(new LinkedHashMap<>())     // chưa gắn nhãn (form thêm lẻ không có nhãn)
+                .nhans(nhanSet)
+                .bienTheGanNhan(buildGanNhan(nhanSet))     // kế thừa thẻ sản phẩm
                 .gia(req.getGia())
                 .giaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()))
                 .soLuongTon(req.getSoLuongTon())
@@ -339,7 +371,7 @@ public class AdminSanPhamService {
         bt.setThongSoBienThe(specs);
         bt.setGia(req.getGia());
         bt.setGiaKhuyenMai(tinhGiaKhuyenMai(req.getGia(), req.getGiaBan()));
-        bt.setSoLuongTon(req.getSoLuongTon());
+        // KHÔNG đổi tồn kho khi sửa biến thể — tồn quản lý riêng ở trang Kho hàng.
         bt.setLaBienTheMacDinh(req.isLaMacDinh());
 
         // Đặt mặc định → bỏ cờ các biến thể khác (clear context), rồi save merge lại biến thể này.
@@ -464,6 +496,29 @@ public class AdminSanPhamService {
         luuAnh(saved.getId(), bt.getAnhUrls());
     }
 
+    // Chuẩn hóa danh sách id thẻ: bỏ null + trùng.
+    private List<Long> chuanNhanIds(List<Long> ids) {
+        if (ids == null) return new ArrayList<>();
+        return ids.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+    }
+
+    // Áp thẻ cấp sản phẩm xuống MỌI biến thể: thay bien_the_nhan + dựng lại bien_the_gan_nhan.
+    private void apDungNhanChoTatCaBienThe(Long sanPhamId, List<Long> nhanIds) {
+        Set<NhanSanPham> nhanSet = taiNhan(nhanIds);
+        Map<String, Object> ganNhan = buildGanNhan(nhanSet);
+        List<BienTheSanPham> bts = new ArrayList<>(
+                bienTheRepo.findBySanPhamIdWithDetails(sanPhamId).stream()
+                        .collect(Collectors.toMap(BienTheSanPham::getId, b -> b, (a, b) -> a,
+                                LinkedHashMap::new))
+                        .values());
+        for (BienTheSanPham bt : bts) {
+            bt.getNhans().clear();
+            bt.getNhans().addAll(nhanSet);
+            bt.setBienTheGanNhan(new LinkedHashMap<>(ganNhan)); // map riêng cho từng biến thể
+            bienTheRepo.save(bt);
+        }
+    }
+
     // Dựng JSON nhãn của biến thể: { "<nhan_id>": [ten_nhan, mau_sac, thu_tu_hien_thi, trang_thai] }.
     private Map<String, Object> buildGanNhan(Set<NhanSanPham> nhans) {
         Map<String, Object> map = new LinkedHashMap<>();
@@ -481,7 +536,7 @@ public class AdminSanPhamService {
         bienThe.setThongSoBienThe(bt.getThongSoBienThe() == null ? new HashMap<>() : bt.getThongSoBienThe());
         bienThe.setGia(bt.getGia());
         bienThe.setGiaKhuyenMai(bt.getGiaKhuyenMai());
-        bienThe.setSoLuongTon(bt.getSoLuongTon());
+        // KHÔNG đổi tồn kho khi sửa biến thể — tồn quản lý riêng ở trang Kho hàng.
         bienThe.setTrangThai(chuanTrangThaiBienThe(bt.getTrangThai()));
         Set<NhanSanPham> nhanSet = taiNhan(bt.getNhanIds());
         bienThe.getNhans().clear();
@@ -653,6 +708,7 @@ public class AdminSanPhamService {
                 .ngayTao(sp.getNgayTao())
                 .ngayCapNhat(sp.getNgayCapNhat())
                 .anhDaiDien(sp.getAnhDaiDien())
+                .nhanIds(sp.getNhanIds() == null ? new ArrayList<>() : sp.getNhanIds())
                 .bienThes(bienThes)
                 .vouchers(vouchers)
                 .build();

@@ -51,6 +51,12 @@ public class SanPham {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> banDoBienThe;
 
+    // Thẻ (nhãn) cấp sản phẩm: mảng id nhãn — nguồn chuẩn do admin chọn ở form sản phẩm,
+    // hệ thống áp xuống mọi biến thể (bien_the_nhan + bien_the_gan_nhan).
+    @Column(name = "nhan_ids", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Long> nhanIds;
+
     @Column(name = "diem_danh_gia_tb", precision = 3, scale = 2)
     private BigDecimal diemDanhGiaTb;
 

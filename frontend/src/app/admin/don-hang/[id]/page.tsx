@@ -62,6 +62,13 @@ export default function AdminDonHangChiTietPage() {
       lamMoi();
     },
   });
+  const hoanKho = useMutation({
+    mutationFn: () => adminOrderService.xacNhanHoanKho(donHangId),
+    onSuccess: () => {
+      toast.success('Đã xác nhận hàng trở lại kho');
+      lamMoi();
+    },
+  });
 
   if (isLoading || !don) {
     return <div className="py-20 text-center text-gray-400">Đang tải...</div>;
@@ -132,6 +139,20 @@ export default function AdminDonHangChiTietPage() {
             >
               Hủy đơn
             </button>
+          )}
+          {tt === 'DA_HUY' && !don.daHoanKho && (
+            <button
+              onClick={() => hoanKho.mutate()}
+              disabled={hoanKho.isPending}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+            >
+              Xác nhận đã nhập lại kho
+            </button>
+          )}
+          {tt === 'DA_HUY' && don.daHoanKho && (
+            <span className="inline-flex items-center rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+              Đã nhập lại kho
+            </span>
           )}
         </div>
       </div>
@@ -227,7 +248,8 @@ export default function AdminDonHangChiTietPage() {
         message={
           <div>
             <p className="mb-2">
-              Đơn sẽ chuyển sang <b>Đã hủy</b>, tồn kho và lượt dùng mã sẽ được hoàn lại.
+              Đơn sẽ chuyển sang <b>Đã hủy</b>, lượt dùng mã được hoàn ngay. Riêng <b>tồn kho</b> chỉ
+              hoàn sau khi bấm <b>“Xác nhận đã nhập lại kho”</b>.
             </p>
             <textarea
               value={lyDo}
