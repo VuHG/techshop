@@ -125,6 +125,7 @@ public class AdminSanPhamService {
                 .thuongHieu(req.getThuongHieu())
                 .anhDaiDien(rong(req.getAnhDaiDien()) ? null : req.getAnhDaiDien().trim())
                 .banDoBienThe(new HashMap<>())   // dựng lại sau khi có biến thể
+                .nhanIds(new ArrayList<>())      // cột nhan_ids NOT NULL (thẻ nay quản lý ở biến thể)
                 .trangThai(chuanTrangThaiSp(req.getTrangThai()))
                 // Khởi tạo cache field đánh giá = 0 (tránh NULL gây lỗi .toFixed ở FE).
                 .diemDanhGiaTb(BigDecimal.ZERO)
