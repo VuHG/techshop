@@ -7,7 +7,7 @@ import { Search } from 'lucide-react';
 import { formatPrice, formatNgay, cn } from '@/lib/utils';
 import type { DonHangSummary } from '@/types';
 import { adminOrderService } from '../_services/adminOrderService';
-import { ORDER_TABS, nhanTrangThai } from '../_lib/orderStatus';
+import { ORDER_TABS, nhanTrangThaiDon } from '../_lib/orderStatus';
 import { PageHeader } from '../_components/PageHeader';
 import { DataTable, type Column } from '../_components/DataTable';
 import { StatusBadge } from '../_components/StatusBadge';
@@ -63,7 +63,7 @@ export default function AdminDonHangPage() {
     {
       header: 'Trạng thái',
       cell: (d) => {
-        const { label, tone } = nhanTrangThai(d.trangThai);
+        const { label, tone } = nhanTrangThaiDon(d.trangThai, d.daHoanKho);
         return <StatusBadge label={label} tone={tone} />;
       },
     },

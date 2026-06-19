@@ -322,6 +322,7 @@ export default function AdminSanPhamPage() {
           sanPhamId={bienTheForm.sanPhamId}
           phanLoaiId={bienTheForm.phanLoaiId}
           tenSanPham={bienTheForm.tenSanPham}
+          nhans={options?.nhans ?? []}
           editing={bienTheForm.editing}
           onClose={() => setBienTheForm(null)}
           onSaved={() => { setBienTheForm(null); lamMoi(); }}

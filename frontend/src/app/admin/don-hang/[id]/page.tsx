@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { formatPrice, formatNgay } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { adminOrderService } from '../../_services/adminOrderService';
-import { nhanTrangThai } from '../../_lib/orderStatus';
+import { nhanTrangThai, nhanTrangThaiDon } from '../../_lib/orderStatus';
 import { StatusBadge } from '../../_components/StatusBadge';
 import { ConfirmDialog } from '../../_components/ConfirmDialog';
 import { OrderStatusStepper } from '../../_components/OrderStatusStepper';
@@ -75,7 +75,7 @@ export default function AdminDonHangChiTietPage() {
   }
 
   const tt = don.trangThai;
-  const { label, tone } = nhanTrangThai(tt);
+  const { label, tone } = nhanTrangThaiDon(tt, don.daHoanKho);
   const coTheHuy = ['CHO_XU_LY', 'DA_DUYET', 'DANG_GIAO'].includes(tt);
 
   return (

@@ -14,6 +14,7 @@ export interface BienTheDong {
   soLuongTon: number;
   trangThai: string;
   anhChinh: string | null;
+  nhanIds: number[];
 }
 
 /** Filter schema (chi_tiet_thuoc_tinh_loc.thong_so_loc) cho dropdown thông số biến thể. */
@@ -27,6 +28,7 @@ export interface BienThePayload {
   soLuongTon: number;
   laMacDinh: boolean;
   thongSoBienThe: Record<string, string>;
+  nhanIds: number[];
 }
 
 export interface AdminSanPhamSummary {

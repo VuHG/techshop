@@ -18,6 +18,7 @@ export function ThemBienTheModal({
   sanPhamId,
   phanLoaiId,
   tenSanPham,
+  nhans,
   editing,
   onClose,
   onSaved,
@@ -25,6 +26,7 @@ export function ThemBienTheModal({
   sanPhamId: number;
   phanLoaiId: number;
   tenSanPham: string;
+  nhans: { id: number; tenNhan: string; mauSac: string | null }[];
   editing?: BienTheDong | null;
   onClose: () => void;
   onSaved: () => void;
@@ -41,6 +43,9 @@ export function ThemBienTheModal({
   );
   const [soLuongTon, setSoLuongTon] = useState(editing ? String(editing.soLuongTon) : '0');
   const [laMacDinh, setLaMacDinh] = useState(editing?.laMacDinh ?? false);
+  const [nhanIds, setNhanIds] = useState<number[]>(editing?.nhanIds ?? []);
+  const toggleNhan = (id: number) =>
+    setNhanIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const [thongSo, setThongSo] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     if (editing?.thongSoBienThe) {
@@ -90,6 +95,7 @@ export function ThemBienTheModal({
       soLuongTon: Number(soLuongTon),
       laMacDinh,   // chỉ có tác dụng khi sửa; khi thêm BE tự quyết định
       thongSoBienThe: thongSo,
+      nhanIds,     // thẻ gắn cho riêng biến thể này
     };
 
     setDangLuu(true);
@@ -174,6 +180,34 @@ export function ThemBienTheModal({
                       ))}
                     </select>
                   </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Gắn thẻ cho riêng biến thể này */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Gắn thẻ</label>
+          {nhans.length === 0 ? (
+            <p className="text-xs text-gray-400">Chưa có thẻ nào.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {nhans.map((n) => {
+                const chon = nhanIds.includes(n.id);
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => toggleNhan(n.id)}
+                    className={
+                      chon
+                        ? 'rounded-full border border-primary bg-primary px-3 py-1 text-sm font-medium text-white'
+                        : 'rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-600 hover:bg-gray-50'
+                    }
+                  >
+                    {n.tenNhan}
+                  </button>
                 );
               })}
             </div>

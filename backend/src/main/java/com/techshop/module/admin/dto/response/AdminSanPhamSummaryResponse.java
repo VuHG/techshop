@@ -49,5 +49,6 @@ public class AdminSanPhamSummaryResponse {
         private int soLuongTon;
         private String trangThai;
         private String anhChinh;
+        private List<Long> nhanIds;   // thẻ gắn cho biến thể (để form sửa prefill)
     }
 }

@@ -543,6 +543,7 @@ public class DonHangService {
                 .id(d.getId())
                 .maDonHang(d.getMaDonHang())
                 .trangThai(d.getTrangThai())
+                .daHoanKho(d.isDaHoanKho())
                 .tongThanhToan(d.getTongThanhToan())
                 .soLuongSanPham(soLuong)
                 .tenSanPhamDau(dau == null ? null : dau.getTenSanPham())

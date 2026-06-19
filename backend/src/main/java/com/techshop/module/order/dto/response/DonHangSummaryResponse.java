@@ -16,6 +16,7 @@ public class DonHangSummaryResponse {
     private Long id;
     private String maDonHang;
     private String trangThai;
+    private boolean daHoanKho;      // đơn đã hủy: hàng đã trở lại kho chưa (phân biệt nhãn trạng thái)
     private BigDecimal tongThanhToan;
     private int soLuongSanPham;     // tổng số lượng item trong đơn
     private String tenSanPhamDau;   // tên sản phẩm đầu tiên (hiển thị nhanh)

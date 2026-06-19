@@ -262,6 +262,7 @@ export interface DonHangSummary {
   id: number;
   maDonHang: string;
   trangThai: string;
+  daHoanKho?: boolean;
   tongThanhToan: number;
   soLuongSanPham: number;
   tenSanPhamDau: string;

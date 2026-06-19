@@ -31,4 +31,6 @@ public class BienTheUpsertRequest {
     private boolean laMacDinh;         // chỉ dùng khi SỬA (thêm: hệ thống tự quyết định)
 
     private Map<String, Object> thongSoBienThe;  // chọn từ filter schema (chi_tiet_thuoc_tinh_loc)
+
+    private java.util.List<Long> nhanIds;        // thẻ gắn cho RIÊNG biến thể này
 }

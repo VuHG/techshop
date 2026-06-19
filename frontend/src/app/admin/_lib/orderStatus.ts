@@ -15,6 +15,15 @@ export function nhanTrangThai(tt: string): { label: string; tone: Tone } {
   return ORDER_STATUS[tt] ?? { label: tt, tone: 'gray' };
 }
 
+/**
+ * Nhãn trạng thái cho danh sách/chi tiết đơn — phân biệt đơn ĐÃ HỦY nhưng CHƯA nhập lại kho.
+ * Khi admin xác nhận nhập kho (da_hoan_kho=true) mới hiện "Đã hủy".
+ */
+export function nhanTrangThaiDon(tt: string, daHoanKho?: boolean): { label: string; tone: Tone } {
+  if (tt === 'DA_HUY' && !daHoanKho) return { label: 'Hủy (chờ nhập kho)', tone: 'amber' };
+  return nhanTrangThai(tt);
+}
+
 /** Các tab lọc trên trang danh sách (value rỗng = tất cả). */
 export const ORDER_TABS: { value: string; label: string }[] = [
   { value: '', label: 'Tất cả' },
