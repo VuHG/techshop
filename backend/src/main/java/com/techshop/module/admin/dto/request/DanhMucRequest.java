@@ -12,6 +12,8 @@ public class DanhMucRequest {
 
     private String slug;             // tùy chọn — bỏ trống thì tự sinh
 
+    private Long danhMucChaId;       // null = danh mục gốc; có = danh mục con
+
     private Integer thuTuHienThi;
 
     private String trangThai;        // HIEN_THI | AN (mặc định HIEN_THI)

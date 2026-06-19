@@ -18,7 +18,9 @@ public class DanhMucTreeResponse {
     private String slug;
     private String trangThai;
     private Integer thuTuHienThi;
+    private Long danhMucChaId;                 // null = danh mục gốc
     private List<PhanLoaiNode> phanLoais;
+    private List<DanhMucTreeResponse> danhMucCon;   // danh mục con (đệ quy)
 
     @Data
     @Builder

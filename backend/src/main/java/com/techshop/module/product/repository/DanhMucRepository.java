@@ -20,6 +20,9 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Long> {
     // Toàn bộ danh mục gốc (cả HIEN_THI lẫn AN) cho cây quản trị.
     List<DanhMuc> findByDanhMucChaIsNullOrderByThuTuHienThiAsc();
 
+    // Danh mục con (mọi trạng thái) của 1 danh mục — dựng cây quản trị nhiều cấp.
+    List<DanhMuc> findByDanhMucChaIdOrderByThuTuHienThiAsc(Long danhMucChaId);
+
     boolean existsBySlug(String slug);
 
     boolean existsBySlugAndIdNot(String slug, Long id);

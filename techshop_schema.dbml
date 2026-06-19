@@ -1,6 +1,6 @@
 // ============================================================
 // TechShop — Database schema (dbdiagram.io / DBML)
-// Sinh từ Flyway migrations V1–V22 (PostgreSQL 16; V22 = seed thuộc tính, không đổi schema)
+// Sinh từ Flyway migrations V1–V23 (PostgreSQL 16; V22–V23 = seed danh mục/thuộc tính, không đổi schema)
 // Dán toàn bộ file này vào https://dbdiagram.io
 // ============================================================
 

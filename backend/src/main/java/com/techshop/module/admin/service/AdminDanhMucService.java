@@ -17,8 +17,8 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,27 +32,32 @@ public class AdminDanhMucService {
 
     @Transactional(readOnly = true)
     public List<DanhMucTreeResponse> getCay() {
-        List<DanhMuc> roots = danhMucRepo.findByDanhMucChaIsNullOrderByThuTuHienThiAsc();
-        List<DanhMucTreeResponse> tree = new ArrayList<>();
-        for (DanhMuc dm : roots) {
-            List<DanhMucTreeResponse.PhanLoaiNode> nodes = phanLoaiRepo.findByDanhMucId(dm.getId())
-                    .stream()
-                    .map(pl -> DanhMucTreeResponse.PhanLoaiNode.builder()
-                            .id(pl.getId())
-                            .tenPhanLoai(pl.getTenPhanLoai())
-                            .soSanPham(sanPhamRepo.countByPhanLoaiId(pl.getId()))
-                            .build())
-                    .toList();
-            tree.add(DanhMucTreeResponse.builder()
-                    .id(dm.getId())
-                    .tenDanhMuc(dm.getTenDanhMuc())
-                    .slug(dm.getSlug())
-                    .trangThai(dm.getTrangThai())
-                    .thuTuHienThi(dm.getThuTuHienThi())
-                    .phanLoais(nodes)
-                    .build());
-        }
-        return tree;
+        return danhMucRepo.findByDanhMucChaIsNullOrderByThuTuHienThiAsc()
+                .stream().map(this::buildNode).collect(Collectors.toList());
+    }
+
+    // Dựng node đệ quy: phân loại trực tiếp + danh mục con (nhiều cấp).
+    private DanhMucTreeResponse buildNode(DanhMuc dm) {
+        List<DanhMucTreeResponse.PhanLoaiNode> nodes = phanLoaiRepo.findByDanhMucId(dm.getId())
+                .stream()
+                .map(pl -> DanhMucTreeResponse.PhanLoaiNode.builder()
+                        .id(pl.getId())
+                        .tenPhanLoai(pl.getTenPhanLoai())
+                        .soSanPham(sanPhamRepo.countByPhanLoaiId(pl.getId()))
+                        .build())
+                .collect(Collectors.toList());
+        List<DanhMucTreeResponse> con = danhMucRepo.findByDanhMucChaIdOrderByThuTuHienThiAsc(dm.getId())
+                .stream().map(this::buildNode).collect(Collectors.toList());
+        return DanhMucTreeResponse.builder()
+                .id(dm.getId())
+                .tenDanhMuc(dm.getTenDanhMuc())
+                .slug(dm.getSlug())
+                .trangThai(dm.getTrangThai())
+                .thuTuHienThi(dm.getThuTuHienThi())
+                .danhMucChaId(dm.getDanhMucCha() == null ? null : dm.getDanhMucCha().getId())
+                .phanLoais(nodes)
+                .danhMucCon(con)
+                .build();
     }
 
     // ─── Danh mục gốc ─────────────────────────────────────────────────────
@@ -69,6 +74,7 @@ public class AdminDanhMucService {
                 .thuTuHienThi(req.getThuTuHienThi() == null ? 0 : req.getThuTuHienThi())
                 .trangThai(chuanTrangThai(req.getTrangThai()))
                 .build();
+        dm.setDanhMucCha(timDanhMucCha(req.getDanhMucChaId(), null));
         danhMucRepo.save(dm);
     }
 
@@ -84,7 +90,16 @@ public class AdminDanhMucService {
         dm.setSlug(sinhSlug(req.getTenDanhMuc(), req.getSlug(), id));
         if (req.getThuTuHienThi() != null) dm.setThuTuHienThi(req.getThuTuHienThi());
         dm.setTrangThai(chuanTrangThai(req.getTrangThai()));
+        dm.setDanhMucCha(timDanhMucCha(req.getDanhMucChaId(), id));
         danhMucRepo.save(dm);
+    }
+
+    // Tìm danh mục cha theo id (null = danh mục gốc). Chặn tự làm cha của chính nó.
+    private DanhMuc timDanhMucCha(Long chaId, Long idHienTai) {
+        if (chaId == null) return null;
+        if (chaId.equals(idHienTai)) throw new AppException(ErrorCode.CAT_002);
+        return danhMucRepo.findById(chaId)
+                .orElseThrow(() -> new AppException(ErrorCode.CAT_001));
     }
 
     @Transactional

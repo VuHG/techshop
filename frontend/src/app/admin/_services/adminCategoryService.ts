@@ -13,12 +13,15 @@ export interface DanhMucTree {
   slug: string;
   trangThai: string;
   thuTuHienThi: number | null;
+  danhMucChaId: number | null;
   phanLoais: PhanLoaiNode[];
+  danhMucCon: DanhMucTree[];
 }
 
 export interface DanhMucPayload {
   tenDanhMuc: string;
   slug?: string;
+  danhMucChaId?: number | null;
   thuTuHienThi?: number;
   trangThai?: string;
 }
