@@ -1,6 +1,10 @@
 # File tổng kết phase — chỉ giữ local, không đẩy lên GitHub
 phase*_tong_ket.md
 
+# Luôn cho phép push README (không bao giờ bị ignore)
+!README.md
+!**/README.md
+
 # Build artifacts
 backend/target/
 *.class
