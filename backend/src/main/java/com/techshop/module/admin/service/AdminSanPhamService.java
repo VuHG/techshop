@@ -192,8 +192,7 @@ public class AdminSanPhamService {
                 if (chiTietDonHangRepo.existsByBienTheIdIn(List.of(db.getId()))) {
                     throw new AppException(ErrorCode.PROD_005);
                 }
-                anhRepo.deleteByBienTheId(db.getId());
-                bienTheRepo.delete(db);
+                bienTheRepo.xoaTheoId(db.getId());   // bulk-delete → DB cascade dọn ảnh/nhãn/flash sale
             }
         }
 
@@ -247,12 +246,9 @@ public class AdminSanPhamService {
             return;
         }
 
-        // Xóa cứng: ảnh (theo biến thể) → biến thể → sản phẩm.
-        for (BienTheSanPham bt : variants) {
-            anhRepo.deleteByBienTheId(bt.getId());
-            bienTheRepo.delete(bt);
-        }
-        sanPhamRepo.delete(sp);
+        // Xóa cứng: bulk-delete biến thể (DB cascade dọn ảnh/nhãn/flash sale) → xóa sản phẩm.
+        bienTheRepo.xoaTheoSanPham(id);
+        sanPhamRepo.deleteById(id);
     }
 
     // ─── Thao tác từng biến thể ───────────────────────────────────────────
@@ -294,8 +290,8 @@ public class AdminSanPhamService {
         if (chiTietDonHangRepo.existsByBienTheIdIn(List.of(bienTheId))) {
             throw new AppException(ErrorCode.PROD_005);
         }
-        anhRepo.deleteByBienTheId(bienTheId);
-        bienTheRepo.delete(bt);
+        // Bulk-delete → DB cascade dọn ảnh/nhãn/flash sale (tránh lỗi flush mapping ảnh một chiều).
+        bienTheRepo.xoaTheoId(bienTheId);
 
         // Xóa biến thể mặc định → phong biến thể còn lại đầu tiên làm mặc định (giữ đúng 1 mặc định).
         if (laMacDinh) {

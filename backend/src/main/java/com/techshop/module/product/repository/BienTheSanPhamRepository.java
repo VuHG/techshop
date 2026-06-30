@@ -107,6 +107,16 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Query("UPDATE BienTheSanPham bt SET bt.trangThai = 'CON_HANG' WHERE bt.id = :id AND bt.soLuongTon > 0 AND bt.trangThai = 'HET_HANG'")
     int danhDauConHang(@Param("id") Long id);
 
+    // Xóa biến thể bằng bulk query → DB tự cascade dọn anh_san_pham / bien_the_nhan / flashsale.
+    // Tránh xóa từng entity (mapping anhs một chiều @JoinColumn gây StaleState khi flush).
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM BienTheSanPham b WHERE b.sanPham.id = :sanPhamId")
+    int xoaTheoSanPham(@Param("sanPhamId") Long sanPhamId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM BienTheSanPham b WHERE b.id = :id")
+    int xoaTheoId(@Param("id") Long id);
+
     // Đồng bộ snapshot tên SP + thương hiệu xuống mọi biến thể khi sản phẩm đổi tên/thương hiệu.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.tenSanPham = :ten, bt.thuongHieu = :thuongHieu WHERE bt.sanPham.id = :sanPhamId")
