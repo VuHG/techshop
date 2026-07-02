@@ -160,6 +160,31 @@ Mở trình duyệt: **http://localhost:3000**
 
 ---
 
+## ⚡ Chạy nhanh toàn bộ bằng Docker (khuyến nghị)
+
+Thay vì cài JDK/Node/Postgres/Redis riêng, có thể chạy **tất cả** bằng Docker:
+
+```bash
+cp .env.example .env          # điền GEMINI_API_KEY; đổi IP trong NEXT_PUBLIC_*/CORS_ORIGINS nếu deploy LAN/VPS
+docker compose up -d --build
+```
+
+Compose dựng 6 dịch vụ: **postgres, redis, qdrant, backend, ai-gateway, frontend**
+(cổng 5432 · 6379 · 6333 · 8080 · 3001 · 3000). Flyway tự tạo bảng + seed khi backend khởi động;
+ai-gateway tự index sản phẩm vào Qdrant (RAG) cho chatbot.
+
+- Mở web: http://localhost:3000 (hoặc `http://<IP-server>:3000`)
+- Xem log: `docker compose logs -f backend` · Dừng: `docker compose down` · Xóa cả dữ liệu: `docker compose down -v`
+
+> ⚠️ Nếu đang chạy Postgres/Redis/Qdrant thủ công thì **tắt** chúng trước (tránh trùng cổng).
+> ⚠️ `NEXT_PUBLIC_*` được nướng vào lúc **build** frontend → đổi IP xong phải build lại: `docker compose build frontend`.
+
+### CI/CD với Jenkins
+[Jenkinsfile](Jenkinsfile) định nghĩa pipeline: **Checkout → Build image → Deploy (`docker compose up -d`) → Smoke test**.
+Tạo Pipeline job trỏ vào repo; agent cần có Docker + docker compose (v2) + `curl` và file `.env` ở workspace.
+
+---
+
 ## 8. Lệnh thường dùng
 
 **Backend:**

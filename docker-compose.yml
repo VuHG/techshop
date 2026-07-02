@@ -1,0 +1,94 @@
+# TechShop — chạy toàn bộ hệ thống bằng Docker.
+#   cp .env.example .env   (điền GEMINI_API_KEY + đổi IP/domain trong NEXT_PUBLIC_*/CORS_ORIGINS)
+#   docker compose up -d --build
+# Cổng: frontend 3000 · backend 8080 · ai-gateway 3001 · postgres 5432 · redis 6379 · qdrant 6333
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-techshop}
+      POSTGRES_USER: ${POSTGRES_USER:-techshop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-techshop_dev_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-techshop} -d ${POSTGRES_DB:-techshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrantdata:/qdrant/storage
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-techshop}
+      DB_USERNAME: ${POSTGRES_USER:-techshop}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-techshop_dev_2026}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      MAIL_DEV_MODE: ${MAIL_DEV_MODE:-true}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@techshop.vn}
+      ADMIN_PHONE: ${ADMIN_PHONE:-0999999999}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+    ports:
+      - "8080:8080"
+
+  ai-gateway:
+    build: ./ai-gateway
+    depends_on:
+      - backend
+      - qdrant
+    environment:
+      PORT: 3001
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      EMBED_MODEL: ${EMBED_MODEL:-gemini-embedding-001}
+      BACKEND_URL: http://backend:8080/api
+      QDRANT_URL: http://qdrant:6333
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
+        NEXT_PUBLIC_AI_URL: ${NEXT_PUBLIC_AI_URL:-http://localhost:3001/api/ai}
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  qdrantdata:
