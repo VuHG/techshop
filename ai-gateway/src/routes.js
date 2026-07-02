@@ -4,6 +4,7 @@ import { chat } from './geminiService.js';
 import { getCatalog } from './productCatalog.js';
 import { retrieve } from './retriever.js';
 import { daIndex } from './indexer.js';
+import { parseBudget, locNganSach } from './budget.js';
 
 export const router = Router();
 
@@ -61,9 +62,16 @@ router.post('/chat', async (req, res) => {
     : [];
 
   try {
+    // Đọc ngân sách trong câu hỏi (nếu có) để lọc theo tầm giá.
+    const budget = parseBudget(message);
+    // Có ngân sách → lấy pool rộng hơn để còn lọc; không thì top-k như thường.
+    const soLuong = budget ? Math.max(config.ragTopK * 4, 32) : config.ragTopK;
+
     // RAG: tìm ngữ nghĩa toàn kho qua Qdrant; lỗi/tắt → fallback catalog top-40 như cũ.
-    const relevant = await retrieve(message.trim());
-    const catalog = relevant && relevant.length ? relevant : await getCatalog();
+    const relevant = await retrieve(message.trim(), soLuong);
+    let catalog = relevant && relevant.length ? relevant : await getCatalog();
+    if (budget) catalog = locNganSach(catalog, budget).slice(0, config.ragTopK);
+
     const rawReply = await chat(message.trim(), safeHistory, catalog);
     const { reply, products } = taySanPham(rawReply, catalog);
     return res.json({ success: true, reply, products, sessionId: sessionId ?? null });
