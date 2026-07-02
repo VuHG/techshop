@@ -117,6 +117,11 @@ public interface BienTheSanPhamRepository extends JpaRepository<BienTheSanPham, 
     @Query("DELETE FROM BienTheSanPham b WHERE b.id = :id")
     int xoaTheoId(@Param("id") Long id);
 
+    // Cập nhật giá khuyến mãi (dùng khi admin duyệt đề xuất giá).
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE BienTheSanPham b SET b.giaKhuyenMai = :gia WHERE b.id = :id")
+    int capNhatGiaKhuyenMai(@Param("id") Long id, @Param("gia") BigDecimal gia);
+
     // Đồng bộ snapshot tên SP + thương hiệu xuống mọi biến thể khi sản phẩm đổi tên/thương hiệu.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE BienTheSanPham bt SET bt.tenSanPham = :ten, bt.thuongHieu = :thuongHieu WHERE bt.sanPham.id = :sanPhamId")

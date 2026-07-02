@@ -75,6 +75,9 @@ public enum ErrorCode {
     USER_002("USER_002", "Không thể thao tác trên tài khoản quản trị khác", HttpStatus.FORBIDDEN),
     USER_003("USER_003", "Vai trò không hợp lệ", HttpStatus.BAD_REQUEST),
 
+    // Đề xuất giá & voucher
+    DX_001("DX_001", "Đề xuất không tồn tại hoặc đã được xử lý", HttpStatus.BAD_REQUEST),
+
     // Common
     VALIDATION_ERROR("VALIDATION_ERROR", "Dữ liệu đầu vào không hợp lệ", HttpStatus.BAD_REQUEST),
     INTERNAL_ERROR("INTERNAL_ERROR", "Lỗi hệ thống, vui lòng thử lại sau", HttpStatus.INTERNAL_SERVER_ERROR);

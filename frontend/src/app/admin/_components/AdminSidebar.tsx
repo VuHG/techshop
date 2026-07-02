@@ -11,6 +11,7 @@ import {
   Ticket,
   Users,
   SlidersHorizontal,
+  Sparkles,
   LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
@@ -24,6 +25,7 @@ const NAV = [
   { href: '/admin/thuoc-tinh', label: 'Thuộc tính', icon: SlidersHorizontal },
   { href: '/admin/danh-muc', label: 'Danh mục', icon: FolderTree },
   { href: '/admin/ma-giam-gia', label: 'Mã giảm giá', icon: Ticket },
+  { href: '/admin/de-xuat', label: 'Đề xuất giá & voucher', icon: Sparkles },
   { href: '/admin/nguoi-dung', label: 'Người dùng', icon: Users },
 ];
 
