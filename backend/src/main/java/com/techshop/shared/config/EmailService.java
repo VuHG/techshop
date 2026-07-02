@@ -21,6 +21,9 @@ public class EmailService {
     @Value("${app.mail.dev-mode}")
     private boolean devMode;
 
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
     @Async("emailExecutor")
     public void sendOtpXacThucTaiKhoan(String toEmail, String hoTen, String otp) {
         String subject = "[TechShop] Mã xác thực tài khoản";
@@ -42,10 +45,15 @@ public class EmailService {
     }
 
     private void send(String to, String subject, String body) {
+        // DEV mode: luôn in OTP ra console để tiện kiểm tra.
         if (devMode) {
             log.info("===== [DEV MODE - EMAIL] =====\nTo: {}\nSubject: {}\n{}\n==============================",
                     to, subject, body);
-            return;
+            // Chưa cấu hình SMTP (Gmail) → chỉ log, KHÔNG gửi.
+            boolean coSmtp = mailUsername != null && !mailUsername.isBlank()
+                    && !"apikey".equalsIgnoreCase(mailUsername.trim());
+            if (!coSmtp) return;
+            // Đã cấu hình Gmail → vừa log (ở trên) VỪA gửi thật (chạy tiếp xuống dưới).
         }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
