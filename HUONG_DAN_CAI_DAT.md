@@ -1,4 +1,4 @@
-# Hướng dẫn cài đặt & chạy TechShop (dành cho người chấm)
+# Hướng dẫn cài đặt & chạy TechShop 
 
 Toàn bộ hệ thống (frontend, backend, AI gateway, PostgreSQL, Redis, Qdrant) được đóng gói bằng
 **Docker**. Chỉ cần cài Docker và chạy **một lệnh** — không phải cài Java/Node/Postgres riêng.
