@@ -15,6 +15,7 @@ public enum ErrorCode {
     AUTH_006("AUTH_006", "Token không hợp lệ hoặc đã hết hạn", HttpStatus.UNAUTHORIZED),
     AUTH_007("AUTH_007", "Tài khoản không có email để nhận OTP", HttpStatus.BAD_REQUEST),
     AUTH_008("AUTH_008", "Không tìm thấy tài khoản với số điện thoại này", HttpStatus.NOT_FOUND),
+    AUTH_009("AUTH_009", "Email này đã được đăng ký", HttpStatus.CONFLICT),
 
     // Product
     PROD_001("PROD_001", "Sản phẩm không tồn tại", HttpStatus.NOT_FOUND),

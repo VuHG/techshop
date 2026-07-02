@@ -56,6 +56,10 @@ public class AuthService {
         if (nguoiDungRepository.existsBySoDienThoai(req.getSoDienThoai())) {
             throw new AppException(ErrorCode.AUTH_001);
         }
+        if (req.getEmail() != null && !req.getEmail().isBlank()
+                && nguoiDungRepository.existsByEmail(req.getEmail())) {
+            throw new AppException(ErrorCode.AUTH_009);
+        }
 
         VaiTro customerRole = vaiTroRepository.findByTenVaiTro("CUSTOMER")
                 .orElseThrow(() -> new AppException(ErrorCode.INTERNAL_ERROR));
