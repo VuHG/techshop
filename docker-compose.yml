@@ -39,11 +39,10 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped        # tự khởi động lại tới khi Postgres sẵn sàng
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - postgres
+      - redis
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-techshop}
@@ -64,6 +63,7 @@ services:
 
   ai-gateway:
     build: ./ai-gateway
+    restart: unless-stopped
     depends_on:
       - backend
       - qdrant
@@ -84,6 +84,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
         NEXT_PUBLIC_AI_URL: ${NEXT_PUBLIC_AI_URL:-http://localhost:3001/api/ai}
+    restart: unless-stopped
     depends_on:
       - backend
     ports:
