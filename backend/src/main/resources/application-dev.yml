@@ -1,6 +1,7 @@
 app:
   mail:
-    dev-mode: true   # OTP sẽ được log ra console, không cần SendGrid khi dev
+    # Mặc định DEV (log OTP ra console); đặt MAIL_DEV_MODE=false để gửi email thật.
+    dev-mode: ${MAIL_DEV_MODE:true}
 
 spring:
   jpa:
