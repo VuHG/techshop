@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { config } from './config.js';
 import { chat } from './geminiService.js';
 import { getCatalog } from './productCatalog.js';
+import { retrieve } from './retriever.js';
+import { daIndex } from './indexer.js';
 
 export const router = Router();
 
@@ -26,7 +28,11 @@ function taySanPham(rawReply, catalog) {
 }
 
 router.get('/health', (req, res) => {
-  res.json({ status: 'OK', model: config.geminiModel });
+  res.json({
+    status: 'OK',
+    model: config.geminiModel,
+    rag: config.qdrantUrl ? (daIndex() ? 'ready' : 'indexing') : 'off',
+  });
 });
 
 router.post('/chat', async (req, res) => {
@@ -55,7 +61,9 @@ router.post('/chat', async (req, res) => {
     : [];
 
   try {
-    const catalog = await getCatalog();
+    // RAG: tìm ngữ nghĩa toàn kho qua Qdrant; lỗi/tắt → fallback catalog top-40 như cũ.
+    const relevant = await retrieve(message.trim());
+    const catalog = relevant && relevant.length ? relevant : await getCatalog();
     const rawReply = await chat(message.trim(), safeHistory, catalog);
     const { reply, products } = taySanPham(rawReply, catalog);
     return res.json({ success: true, reply, products, sessionId: sessionId ?? null });
