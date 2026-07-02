@@ -27,7 +27,7 @@ export const config = {
   maxHistory: 6,
   // RAG/Qdrant — để trống QDRANT_URL = TẮT RAG (chatbot dùng catalog top-40 như cũ).
   qdrantUrl: (process.env.QDRANT_URL || '').trim(),
-  embedModel: process.env.EMBED_MODEL || 'text-embedding-004',
+  embedModel: process.env.EMBED_MODEL || 'gemini-embedding-001',
   ragTopK: Number(process.env.RAG_TOP_K) || 8,
   ragReindexMs: Number(process.env.RAG_REINDEX_MS) || 1_800_000, // 30 phút
 };
