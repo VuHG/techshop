@@ -21,7 +21,7 @@ export const dangKySchema = z
   .object({
     hoTen: z.string().min(1, 'Họ tên không được để trống').max(100, 'Tối đa 100 ký tự'),
     soDienThoai: sdt,
-    email: z.union([z.string().email('Email không hợp lệ'), z.literal('')]).optional(),
+    email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
     ngaySinh: z.string().optional(),
     matKhau: matKhau,
     xacNhanMatKhau: z.string().min(1, 'Vui lòng nhập lại mật khẩu'),

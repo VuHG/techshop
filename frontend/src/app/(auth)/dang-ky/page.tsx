@@ -23,7 +23,7 @@ export default function DangKyPage() {
       const msg = await authService.dangKy({
         hoTen: data.hoTen,
         soDienThoai: data.soDienThoai,
-        email: data.email || undefined,
+        email: data.email,
         ngaySinh: data.ngaySinh || undefined,
         matKhau: data.matKhau,
         xacNhanMatKhau: data.xacNhanMatKhau,
@@ -58,13 +58,13 @@ export default function DangKyPage() {
             />
             <div>
               <Input
-                label="Email (không bắt buộc)"
+                label="Email"
                 placeholder="email@gmail.com"
                 error={errors.email?.message}
                 {...register('email')}
               />
               <p className="mt-1 text-xs text-green-600">
-                Hóa đơn VAT khi mua hàng sẽ được gửi qua email này
+                Mã OTP xác thực tài khoản và hóa đơn VAT sẽ được gửi qua email này
               </p>
             </div>
           </div>
