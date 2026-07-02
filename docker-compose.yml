@@ -3,6 +3,9 @@
 #   docker compose up -d --build
 # Cổng: frontend 3000 · backend 8080 · ai-gateway 3001 · postgres 5432 · redis 6379 · qdrant 6333
 
+# version 3.7 để tương thích docker-compose v1 (1.22+). docker compose v2 vẫn đọc được (chỉ cảnh báo obsolete).
+version: "3.7"
+
 services:
   postgres:
     image: postgres:16-alpine
