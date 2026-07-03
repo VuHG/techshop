@@ -30,6 +30,19 @@ export default function SoSanhPage() {
   // Lượt đầu (chưa có mốc) = chọn bất kỳ; các lượt sau = chỉ SP tương quan cùng phân loại mốc.
   const modalPhanLoaiId = isEmpty ? undefined : mocPhanLoaiId;
 
+  // Nhãn thông số đúng (vd "Ổ cứng") lấy từ filter-schema của phân loại mốc;
+  // các SP so sánh luôn cùng phân loại nên 1 schema là đủ. Fallback: prettify mã.
+  const { data: schema } = useQuery({
+    queryKey: ['filter-schema', mocPhanLoaiId],
+    queryFn: () => productService.getFilterSchema(mocPhanLoaiId as number),
+    enabled: mocPhanLoaiId != null,
+    retry: false,
+  });
+  const nhan = (k: string): string => {
+    const it = schema?.[k] as { label?: string } | undefined;
+    return it?.label ?? nhanThongSo(k);
+  };
+
   const products = data ?? [];
   // Sản phẩm không còn thông số chung → gộp thông số từ các biến thể (mỗi key = các giá trị khác nhau).
   const specOf = (p: (typeof products)[number]): Record<string, string> => {
@@ -133,7 +146,7 @@ export default function SoSanhPage() {
             <tbody>
               {rows.map((k, i) => (
                 <tr key={k} className={i % 2 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-3 py-2.5 font-medium text-gray-600">{nhanThongSo(k)}</td>
+                  <td className="px-3 py-2.5 font-medium text-gray-600">{nhan(k)}</td>
                   {products.map((p) => (
                     <td key={p.id} className="px-3 py-2.5 text-center text-gray-800">
                       {specMap.get(p.id)?.[k] ?? '-'}
