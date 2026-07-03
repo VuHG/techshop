@@ -97,8 +97,9 @@ BEGIN
     FROM tmp_sp_anh s WHERE sp.id = s.san_pham_id AND sp.anh_dai_dien IS NULL;
 
     -- 3) Ảnh gallery cho trang chi tiết (mỗi biến thể 1 ảnh chính) — nếu biến thể chưa có ảnh.
-    INSERT INTO anh_san_pham (san_pham_id, bien_the_id, url_anh, la_anh_chinh, thu_tu)
-    SELECT bt.san_pham_id, bt.id, s.url, true, 0
+    --    anh_san_pham gắn theo bien_the_id (cột san_pham_id đã bị bỏ ở V2).
+    INSERT INTO anh_san_pham (bien_the_id, url_anh, la_anh_chinh, thu_tu)
+    SELECT bt.id, s.url, true, 0
     FROM bien_the_san_pham bt
     JOIN tmp_sp_anh s ON s.san_pham_id = bt.san_pham_id
     WHERE NOT EXISTS (SELECT 1 FROM anh_san_pham a WHERE a.bien_the_id = bt.id);
